@@ -136,6 +136,7 @@ public class JSONUtil {
 
     public static String lastFM(String user) {
         String api_key = BotManager.getInstance().LastFMAPIKey;
+	String lastSong;
         try {
             JSONParser parser = new JSONParser();
             Object obj = parser.parse(BotManager.getRemoteContent("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=" + user + "&format=json&limit=1&api_key=" + api_key));
@@ -150,11 +151,15 @@ public class JSONUtil {
                 String trackName = (String) index0.get("name");
                 JSONObject artistO = (JSONObject) index0.get("artist");
                 String artist = (String) artistO.get("#text");
+		lastSong = trackname + " by " + artist;
 
-                return trackName + " by " + artist;
+                return lastSong;
 
             } else {
-                return "(Nothing)";
+		if (lastSong == null)
+                	return "(Nothing)";
+		else
+			return lastSong;
             }
         } catch (Exception ex) {
             ex.printStackTrace();
