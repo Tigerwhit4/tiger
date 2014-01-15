@@ -19,7 +19,6 @@
 package net.bashtech.geobot;
 
 
-
 public class MessageReplaceParser {
 
     public static String parseMessage(String channel, String sender, String message, String[] args) {
