@@ -18,17 +18,12 @@
 
 package net.bashtech.geobot;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.ArrayList;
-
 
 public class MessageReplaceParser {
-	private static ArrayList<String>listOfQuotes;
+
     public static String parseMessage(String channel, String sender, String message, String[] args) {
         Channel ci = BotManager.getInstance().getChannel(channel);
-        
+
         if (sender != null && message.contains("(_USER_)"))
             message = message.replace("(_USER_)", sender);
         if (message.contains("(_GAME_)"))
@@ -63,18 +58,6 @@ public class MessageReplaceParser {
             String url = JSONUtil.shortenURL("https://twitter.com/intent/tweet?text=" + JSONUtil.urlEncode(MessageReplaceParser.parseMessage(channel, sender, ci.getClickToTweetFormat(), args)));
             message = message.replace("(_TWEET_URL_)", url);
         }
-        if (message.contains("(_QUOTE_)")) {
-        	try {
-        		read("quotesList.txt");
-			
-        	} catch (Exception e) {
-        		message = message.replace("(_QUOTE_)", "(Unavailable)");
-        	}
-        	int numQuotes = listOfQuotes.size()-1;
-        	int randomNum = (int) (Math.random() * numQuotes);
-        	message = message.replace("(_QUOTE_)", listOfQuotes.get(randomNum));
-        }
-		
 
         if (args != null) {
             int argCounter = 1;
@@ -87,10 +70,4 @@ public class MessageReplaceParser {
 
         return message;
     }
-    public static void read(String fileName) throws Exception {
-		FileInputStream fin= new FileInputStream (fileName);
-		ObjectInputStream ois = new ObjectInputStream(fin);
-		listOfQuotes = (ArrayList<String>)ois.readObject();
-		fin.close();
-		}
 }

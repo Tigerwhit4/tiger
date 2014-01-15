@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2012 Andrew Bashore
  * This file is part of GeoBot.
  * 
@@ -44,7 +44,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ReceiverBot extends PircBot {
-    private ArrayList<String> quotesList;
+
     static ReceiverBot instance;
     Timer joinCheck;
     Random random = new Random();
@@ -61,13 +61,6 @@ public class ReceiverBot extends PircBot {
 
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
-	    quotesList = new ArrayList<String>();
-	    try {
-			read("quotesList.txt");
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
         linkPatterns[0] = Pattern.compile(".*http://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[1] = Pattern.compile(".*https://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[2] = Pattern.compile(".*[-A-Za-z0-9]+\\s?(\\.|\\(dot\\))\\s?(ac|ad|ae|aero|af|ag|ai|al|am|an|ao|aq|ar|as|asia|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|biz|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cat|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|com|coop|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|info|int|io|iq|ir|is|it|je|jm|jo|jobs|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mo|mobi|mp|mq|mr|ms|mt|mu|museum|mv|mw|mx|my|mz|na|name|nc|ne|net|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|post|pr|pro|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|travel|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xxx|ye|yt|za|zm|zw)(\\W|$).*", Pattern.CASE_INSENSITIVE);
@@ -643,24 +636,6 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
-	// !addQuote
-	if (msg[0].equalsIgnoreCase(prefix + "addQuote")){
-	    log("RB: Matched command !addQuote");
-	    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
-		String quoteReceived = this.fuseArray(msg, 1);
-		quoteReceived.trim();
-		quotesList.add(quoteReceived);
-		try {
-			save("quotesList.txt", quotesList);
-			int index = quotesList.size()-1;
-			send(channel, quoteReceived + " added, this is quote #" + index);
-		} catch (IOException e) {
-			send(channel, "Error saving the quote");
-			
-		}
-	    }
-	}
-	
 
         // !status - All
         if (msg[0].equalsIgnoreCase(prefix + "status")) {
@@ -2433,20 +2408,7 @@ public class ReceiverBot extends PircBot {
         return rt;
 
     }
-    public void save(String fileName, Object test) throws IOException {
-		FileOutputStream fout= new FileOutputStream (fileName);
-		ObjectOutputStream oos = new ObjectOutputStream(fout);
-		oos.writeObject(test);
-		fout.close();
-		}
-    @SuppressWarnings("unchecked")
-	public void read(String fileName) throws Exception {
-		FileInputStream fin= new FileInputStream (fileName);
-		ObjectInputStream ois = new ObjectInputStream(fin);
-		quotesList = (ArrayList<String>)ois.readObject();
-		fin.close();
-		}
-    
+
     private class giveawayTimer extends TimerTask {
         private Channel channelInfo;
 
