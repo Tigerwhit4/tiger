@@ -660,6 +660,21 @@ public class ReceiverBot extends PircBot {
 		}
 	    }
 	}
+	//getQuote
+	if (msg[0].equalsIgnoreCase(prefix + "getQuote")){
+	    log("RB: Matched command !getQuote");
+	    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
+		String quoteReceived1 = this.fuseArray(msg, 1);
+		quoteReceived1.trim();
+		int wantedQuote = Integer.parseInt(quoteReceived1);
+		if (wantedQuote < quotesList.size()){
+			send(channel, quotesList.get(wantedQuote));
+		}
+		else {
+			send(channel, "Parameter mismatch or no quote at requested index.");
+		}
+	    }
+	}
 	
 
         // !status - All
