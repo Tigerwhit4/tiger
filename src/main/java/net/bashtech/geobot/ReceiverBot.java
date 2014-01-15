@@ -660,6 +660,45 @@ public class ReceiverBot extends PircBot {
 		}
 	    }
 	}
+	// !getQuoteIndex
+		if (msg[0].equalsIgnoreCase(prefix + "getQuoteIndex")){
+		    log("RB: Matched command !getQuoteIndex");
+		    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
+			String quoteReceived3 = this.fuseArray(msg, 1);
+			quoteReceived3.trim();
+			int index = quotesList.indexOf(quoteReceived3);
+			if(index > -1){
+			send(channel, "This quote's index is "+ index);
+			}
+			else{
+				send(channel, "Quote not found, make sure you have the EXACT quote");
+			}
+			
+		    }
+		}
+	//delQuote
+	if (msg[0].equalsIgnoreCase(prefix + "delQuote")){
+	    log("RB: Matched command !delQuote");
+	    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
+		String quoteReceived2 = this.fuseArray(msg, 1);
+		quoteReceived2.trim();
+		int wantedQuote = Integer.parseInt(quoteReceived2);
+		if (wantedQuote < quotesList.size()){
+			try {
+				quotesList.remove(wantedQuote);
+				send(channel, "Quote #" + wantedQuote + " removed.");
+				save("quotesList.txt", quotesList);
+			} catch (IOException e) {
+				send(channel, "Error deleting the quote.");
+				
+			}
+		}
+		else {
+			send(channel, "Parameter mismatch or no quote at requested index.");
+		}
+		
+	    }
+	}
 	//getQuote
 	if (msg[0].equalsIgnoreCase(prefix + "getQuote")){
 	    log("RB: Matched command !getQuote");
