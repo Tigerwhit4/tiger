@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2012 Andrew Bashore
  * This file is part of GeoBot.
  * 
@@ -17,6 +17,7 @@
 */
 
 package net.bashtech.geobot;
+
 
 import net.bashtech.geobot.modules.BotModule;
 import org.jibble.pircbot.IrcException;
