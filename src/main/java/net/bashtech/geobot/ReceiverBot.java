@@ -852,7 +852,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !command - Ops
-        if (msg[0].equalsIgnoreCase(prefix + "command") && isOp) {
+        if ((msg[0].equalsIgnoreCase(prefix + "command") || (msg[0].equalsIgnoreCase(prefix + "coemand"))) && isOp) {
             log("RB: Matched command !command");
             if (msg.length < 3) {
                 send(channel, "Syntax: \"!command add/delete [name] [message]\" - Name is the command trigger without \"!\" and message is the response.");
