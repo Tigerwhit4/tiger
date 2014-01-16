@@ -64,8 +64,8 @@ public class ReceiverBot extends PircBot {
         ReceiverBot.setInstance(this);
 	    quotesList = new ArrayList<String>();
 	    try {
-			read("quotesList.txt", quotesList);
-			read("commandList.txt", commandList);
+			read("quotesList.txt");
+//			read("commandList.txt", commandList);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -2537,10 +2537,10 @@ public class ReceiverBot extends PircBot {
 		fout.close();
 		}
     @SuppressWarnings("unchecked")
-	public void read(String fileName, Object obj) throws Exception {
+	public void read(String fileName) throws Exception {
 		FileInputStream fin= new FileInputStream (fileName);
 		ObjectInputStream ois = new ObjectInputStream(fin);
-		obj = ois.readObject();
+		quotesList = (ArrayList<String>) ois.readObject();
 		fin.close();
 		}
     
