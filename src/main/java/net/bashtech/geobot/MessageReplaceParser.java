@@ -18,8 +18,13 @@
 
 package net.bashtech.geobot;
 
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+
 
 public class MessageReplaceParser {
+	private static ArrayList<String>quotesList = new ArrayList<String>();
 
     public static String parseMessage(String channel, String sender, String message, String[] args) {
         Channel ci = BotManager.getInstance().getChannel(channel);
@@ -58,6 +63,20 @@ public class MessageReplaceParser {
             String url = JSONUtil.shortenURL("https://twitter.com/intent/tweet?text=" + JSONUtil.urlEncode(MessageReplaceParser.parseMessage(channel, sender, ci.getClickToTweetFormat(), args)));
             message = message.replace("(_TWEET_URL_)", url);
         }
+        if (message.contains("(_QUOTE_)")){
+		try {
+			read("quotesList.txt");
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+        	int randQuotes = (int) (Math.random()* quotesList.size());
+        	if (randQuotes >-1)
+        	message = message.replace("(_QUOTE_)", quotesList.get(randQuotes));
+        	else
+        		message = message.replace("(_QUOTE_)", "Error, whoops");
+        }
 
         if (args != null) {
             int argCounter = 1;
@@ -70,4 +89,11 @@ public class MessageReplaceParser {
 
         return message;
     }
+    @SuppressWarnings("unchecked")
+	public static void read(String fileName) throws Exception {
+		FileInputStream fin= new FileInputStream (fileName);
+		ObjectInputStream ois = new ObjectInputStream(fin);
+		quotesList = (ArrayList<String>)ois.readObject();
+		fin.close();
+		}
 }

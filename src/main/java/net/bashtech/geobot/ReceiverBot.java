@@ -621,7 +621,7 @@ public class ReceiverBot extends PircBot {
         // !game - All
         if (msg[0].equalsIgnoreCase(prefix + "game") && BotManager.getInstance().twitchChannels) {
             log("RB: Matched command !game");
-            if (isOwner && msg.length > 1) {
+            if (isOp && msg.length > 1) {
                 String game = this.fuseArray(msg, 1);
                 game.trim();
                 if (game.equals("-"))
@@ -719,7 +719,7 @@ public class ReceiverBot extends PircBot {
         // !status - All
         if (msg[0].equalsIgnoreCase(prefix + "status")) {
             log("RB: Matched command !status");
-            if (isOwner && msg.length > 1 && BotManager.getInstance().twitchChannels) {
+            if (isOp && msg.length > 1 && BotManager.getInstance().twitchChannels) {
                 String status = this.fuseArray(msg, 1);
                 status.trim();
                 try {
@@ -753,7 +753,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !properties - Owner
-        if (msg[0].equalsIgnoreCase(prefix + "properties") && isOwner && BotManager.getInstance().twitchChannels) {
+        if (msg[0].equalsIgnoreCase(prefix + "properties") && isOp && BotManager.getInstance().twitchChannels) {
             log("RB: Matched command !properties");
             send(channel, JSONUtil.getChatProperties(channelInfo.getTwitchName()));
             return;
@@ -835,7 +835,7 @@ public class ReceiverBot extends PircBot {
         // !commercial
         if (msg[0].equalsIgnoreCase(prefix + "commercial") && BotManager.getInstance().twitchChannels) {
             log("RB: Matched command !commercial");
-            if (isOwner) {
+            if (isOp) {
                 channelInfo.runCommercial();
                 //send(channel, "Running a 30 second commercial. Thank you for supporting the channel!");
             }
@@ -843,7 +843,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !command - Ops
-        if (msg[0].equalsIgnoreCase(prefix + "command") && isOwner) {
+        if (msg[0].equalsIgnoreCase(prefix + "command") && isOp) {
             log("RB: Matched command !command");
             if (msg.length < 3) {
                 send(channel, "Syntax: \"!command add/delete [name] [message]\" - Name is the command trigger without \"!\" and message is the response.");
@@ -893,7 +893,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !repeat - Ops
-        if (msg[0].equalsIgnoreCase(prefix + "repeat") && isOwner) {
+        if (msg[0].equalsIgnoreCase(prefix + "repeat") && isOp) {
             log("RB: Matched command !repeat");
             if (msg.length < 3) {
                 if (msg.length > 1 && msg[1].equalsIgnoreCase("list")) {
@@ -952,7 +952,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !schedule - Ops
-        if (msg[0].equalsIgnoreCase(prefix + "schedule") && isOwner) {
+        if (msg[0].equalsIgnoreCase(prefix + "schedule") && isOp) {
             log("RB: Matched command !schedule");
             if (msg.length < 3) {
                 if (msg.length > 1 && msg[1].equalsIgnoreCase("list")) {
@@ -1253,7 +1253,7 @@ public class ReceiverBot extends PircBot {
         }
 
         //Filters
-        if (msg[0].equalsIgnoreCase(prefix + "filter") && isOwner) {
+        if (msg[0].equalsIgnoreCase(prefix + "filter") && isOp) {
             if (msg.length < 2) {
                 send(channel, "Syntax: !filter <option> [sub options]. Options: on/off, status, me, enablewarnings, timeoutduration, displaywarnings, messagelength, links, pd, banphrase, caps, emotes, and symbols.");
                 return;
@@ -1380,7 +1380,7 @@ public class ReceiverBot extends PircBot {
                             send(channel, "Domain does not exist. " + "(" + msg[2] + ")");
                         }
                     }
-                } else if (msg.length > 1 && msg[1].equalsIgnoreCase("list") && isOwner) {
+                } else if (msg.length > 1 && msg[1].equalsIgnoreCase("list") && isOp) {
                     String tempList = "Permitted domains: ";
                     for (String s : channelInfo.getpermittedDomains()) {
                         tempList += s + ", ";
@@ -1561,7 +1561,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !regular - Owner
-        if (msg[0].equalsIgnoreCase(prefix + "regular") && isOwner) {
+        if (msg[0].equalsIgnoreCase(prefix + "regular") && isOp) {
             log("RB: Matched command !regular");
             if (msg.length < 2) {
                 send(channel, "Syntax: \"!regular add/delete [name]\", \"!regular list\"");
@@ -1581,7 +1581,7 @@ public class ReceiverBot extends PircBot {
                         send(channel, "User does not exist. " + "(" + msg[2] + ")");
                     }
                 }
-            } else if (msg.length > 1 && msg[1].equalsIgnoreCase("list") && isOwner) {
+            } else if (msg.length > 1 && msg[1].equalsIgnoreCase("list") && isOp) {
                 String tempList = "Regulars: ";
                 for (String s : channelInfo.getRegulars()) {
                     tempList += s + ", ";
@@ -1656,7 +1656,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !set - Owner
-        if (msg[0].equalsIgnoreCase(prefix + "set") && isOwner) {
+        if (msg[0].equalsIgnoreCase(prefix + "set") && isOp) {
             log("RB: Matched command !set");
             if (msg.length == 1) {
                 send(channel, "Syntax: \"!set [option] [value]\". Options: topic, filters, throw, signedkicks, joinsparts, lastfm, steam, mode, chatlogging, maxlength");
