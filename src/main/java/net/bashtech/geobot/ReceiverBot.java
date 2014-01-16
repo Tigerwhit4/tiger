@@ -58,12 +58,14 @@ public class ReceiverBot extends PircBot {
     private Pattern banNoticePattern = Pattern.compile("^You are permanently banned from talking in ([a-z_]+).$", Pattern.CASE_INSENSITIVE);
     private Pattern toNoticePattern = Pattern.compile("^You are banned from talking in ([a-z_]+) for (?:[0-9]+) more seconds.$", Pattern.CASE_INSENSITIVE);
     private Pattern vinePattern = Pattern.compile(".*(vine|4).*(4|vine).*(Google|\\*\\*\\*).*", Pattern.CASE_INSENSITIVE);
-
+	private Map<String, String>commandList = new HashMap<String, String>();
+	
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
 	    quotesList = new ArrayList<String>();
 	    try {
-			read("quotesList.txt");
+			read("quotesList.txt", quotesList);
+			read("commandList.txt", commandList);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -598,9 +600,16 @@ public class ReceiverBot extends PircBot {
         }
 
         // !music - All
-        if (msg[0].equalsIgnoreCase(prefix + "music") || msg[0].equalsIgnoreCase(prefix + "lastfm")) {
+        if (msg[0].equalsIgnoreCase(prefix + "music")) {
             log("RB: Matched command !music");
             send(channel, "Now playing: " + JSONUtil.lastFM(channelInfo.getLastfm()));
+		
+        }
+
+// !lastfm - All
+        if (msg[0].equalsIgnoreCase(prefix + "lastfm")) {
+            log("RB: Matched command !lastfm");
+		send(channel, "http://www.last.fm/user/"+ channelInfo.getLastfm());
         }
 
         // !steam - All
@@ -852,8 +861,15 @@ public class ReceiverBot extends PircBot {
                     String key = msg[2].replaceAll("[^a-zA-Z0-9]", "");
                     String value = fuseArray(msg, 3);
                     if (!value.contains(",,")) {
+						
                         channelInfo.setCommand(key, value);
+						commandList.put(key, value);
                         send(channel, "Command added/updated.");
+						try{
+						save("commandList.txt", commandList);
+						}catch (IOException e){
+						}
+						
                     } else {
                         send(channel, "Command cannot contain double commas (\",,\").");
                     }
@@ -861,6 +877,12 @@ public class ReceiverBot extends PircBot {
                 } else if (msg[1].equalsIgnoreCase("delete") || msg[1].equalsIgnoreCase("remove")) {
                     String key = msg[2];
                     channelInfo.removeCommand(key);
+					commandList.remove(key);
+					try{
+						save("commandList.txt", commandList);
+						}catch (IOException e){
+						send(channel, "Error deleting command from command list");
+						}
                     channelInfo.removeRepeatCommand(key);
                     channelInfo.removeScheduledCommand(key);
 
@@ -884,7 +906,8 @@ public class ReceiverBot extends PircBot {
                             send(channel, prefix + command + " restricted to " + levelStr + " only.");
                         else
                             send(channel, "Error setting restriction.");
-                    } else {
+                    } 
+						else {
                         send(channel, "Command does not exist.");
                     }
                 }
@@ -892,6 +915,26 @@ public class ReceiverBot extends PircBot {
             return;
         }
 
+		// !listcommands
+		if (msg[0].equalsIgnoreCase(prefix + "listcommands")) {
+            log("RB: Matched command !listcommands");
+            Collection<String> test = commandList.values();
+			Set<String> test1 = commandList.keySet();
+			String[]values = null;
+			values =(String[]) test.toArray(values);
+			String[]keys = null;
+			keys = (String[]) test1.toArray(keys);
+			send(channel, "There are " + keys.length + " commands.");
+				for (int i = 0; i < commandList.size(); i++){
+					
+						send(channel, keys[i] + " - " + values[i]);
+						}
+		
+        }
+		
+						
+
+                
         // !repeat - Ops
         if (msg[0].equalsIgnoreCase(prefix + "repeat") && isOp) {
             log("RB: Matched command !repeat");
@@ -2494,10 +2537,10 @@ public class ReceiverBot extends PircBot {
 		fout.close();
 		}
     @SuppressWarnings("unchecked")
-	public void read(String fileName) throws Exception {
+	public void read(String fileName, Object obj) throws Exception {
 		FileInputStream fin= new FileInputStream (fileName);
 		ObjectInputStream ois = new ObjectInputStream(fin);
-		quotesList = (ArrayList<String>)ois.readObject();
+		obj = ois.readObject();
 		fin.close();
 		}
     
