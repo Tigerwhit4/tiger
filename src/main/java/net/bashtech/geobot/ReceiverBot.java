@@ -646,7 +646,7 @@ public class ReceiverBot extends PircBot {
 	// !addQuote
 	if (msg[0].equalsIgnoreCase(prefix + "addQuote")){
 	    log("RB: Matched command !addQuote");
-	    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
+	    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
 		String quoteReceived = this.fuseArray(msg, 1);
 		quoteReceived.trim();
 		quotesList.add(quoteReceived);
@@ -679,7 +679,7 @@ public class ReceiverBot extends PircBot {
 	//delQuote
 	if (msg[0].equalsIgnoreCase(prefix + "delQuote")){
 	    log("RB: Matched command !delQuote");
-	    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
+	    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
 		String quoteReceived2 = this.fuseArray(msg, 1);
 		quoteReceived2.trim();
 		int wantedQuote = Integer.parseInt(quoteReceived2);
