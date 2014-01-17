@@ -871,7 +871,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !commands - Op/Regular
-        if ((msg[0].equalsIgnoreCase(prefix + "commands")|| msg[0].equalsIgnoreCase(prefix + "coemands")) && isOp) {
+        if ((msg[0].equalsIgnoreCase(prefix + "commands")|| msg[0].equalsIgnoreCase(prefix + "coemands")) && isRegular) {
             log("RB: Matched command !commands");
             send(channel, "Commands: " + channelInfo.getCommandList());
             return;
