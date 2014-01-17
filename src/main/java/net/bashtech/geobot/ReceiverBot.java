@@ -59,6 +59,10 @@ public class ReceiverBot extends PircBot {
     private Pattern toNoticePattern = Pattern.compile("^You are banned from talking in ([a-z_]+) for (?:[0-9]+) more seconds.$", Pattern.CASE_INSENSITIVE);
     private Pattern vinePattern = Pattern.compile(".*(vine|4).*(4|vine).*(Google|\\*\\*\\*).*", Pattern.CASE_INSENSITIVE);
 	private Map<String, String>commandList = new HashMap<String, String>();
+	long lastQuoted = 0;
+    long newQuoted = System.currentTimeMillis();
+    long lastQuoted1 = 0;
+    long newQuoted1 = System.currentTimeMillis();
 	
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
@@ -668,14 +672,11 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
-        long lastQuoted = 0;
-        long newQuoted = System.currentTimeMillis();;
-        long lastQuoted1 = 0;
-        long newQuoted1 = System.currentTimeMillis();;
         
+        long newQuoted = System.currentTimeMillis();
         
 		if ((newQuoted >= (lastQuoted + 30*1000)) || isOp){
-			lastQuoted = newQuoted;
+			
 			//getQuote
 			if (msg[0].equalsIgnoreCase(prefix + "getQuote")){
 			    log("RB: Matched command !getQuote");
@@ -692,6 +693,7 @@ public class ReceiverBot extends PircBot {
 				int wantedQuote = Integer.parseInt(quoteReceived1);
 				if (wantedQuote < quotesList.size()){
 					send(channel, quotesList.get(wantedQuote));
+					lastQuoted = newQuoted;
 				}
 				else {
 					send(channel, "Parameter mismatch or no quote at requested index.");
@@ -700,6 +702,7 @@ public class ReceiverBot extends PircBot {
 			}
 			
 		}
+		long newQuoted1 = System.currentTimeMillis();
 		if ((newQuoted1 >= (lastQuoted1 + 30*1000)) || isOp){
 			//randomquote
 			if (msg[0].equalsIgnoreCase(prefix + "randomquote")){
@@ -726,6 +729,24 @@ public class ReceiverBot extends PircBot {
 			    }
 			}
 		}
+	    
+	  //LMGTFY command
+		if (msg[0].equalsIgnoreCase(prefix + "google")){
+		    log("RB: Matched command !google");
+		    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
+			String queryReceived = this.fuseArray(msg, 1);
+			queryReceived.trim();
+			queryReceived = queryReceived.replaceAll(" ", "+");
+			String queryLink = "http://www.lmgtfy.com/?q=" + queryReceived;
+			try {
+				send(channel, "Here, let me google that for you: " + queryLink);
+			} catch (Exception e) {
+				send(channel, "Error building URL");
+				
+			}
+		 }
+		}
+
 	// !addQuote
 	if (msg[0].equalsIgnoreCase(prefix + "addQuote")){
 	    log("RB: Matched command !addQuote");
