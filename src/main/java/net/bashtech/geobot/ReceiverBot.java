@@ -1382,6 +1382,9 @@ public class ReceiverBot extends PircBot {
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase());
                 }
                 if (msg[0].equalsIgnoreCase("-k")) {
+                	sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
+                }
+                if (msg[0].equalsIgnoreCase("-k")) {
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase()+ " 1");
                 }
                 if (msg[0].equalsIgnoreCase("+p")) {
