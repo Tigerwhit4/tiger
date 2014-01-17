@@ -802,6 +802,23 @@ public class ReceiverBot extends PircBot {
 		}
 		
 	    }
+	    
+	  //LMGTFY command
+		if (msg[0].equalsIgnoreCase(prefix + "lmgtfy")){
+		    log("RB: Matched command !lmgtfy");
+		    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
+			String queryReceived = this.fuseArray(msg, 1);
+			queryReceived.trim();
+			queryReceived = queryReceived.replaceAll(" ", "+");
+			String queryLink = "http://www.lmgtfy.com/?q=" + queryReceived;
+			try {
+				send(channel, "Here, let me google that for you: " + queryLink);
+			} catch (Exception e) {
+				send(channel, "Error building URL");
+				
+			}
+		 }
+	    
 	}
 	
 	
@@ -2072,7 +2089,9 @@ public class ReceiverBot extends PircBot {
                 if (!channelInfo.onCooldown(channelInfo.autoReplyTrigger.get(i).toString()))
                     send(channel, sender, channelInfo.autoReplyResponse.get(i));
             }
+
         }
+	}
     }
 
     protected void onAdministrativeMessage(String message, Channel channelinfo) {
