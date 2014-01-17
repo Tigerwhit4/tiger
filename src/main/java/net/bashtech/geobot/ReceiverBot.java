@@ -58,7 +58,7 @@ public class ReceiverBot extends PircBot {
     private Pattern banNoticePattern = Pattern.compile("^You are permanently banned from talking in ([a-z_]+).$", Pattern.CASE_INSENSITIVE);
     private Pattern toNoticePattern = Pattern.compile("^You are banned from talking in ([a-z_]+) for (?:[0-9]+) more seconds.$", Pattern.CASE_INSENSITIVE);
     private Pattern vinePattern = Pattern.compile(".*(vine|4).*(4|vine).*(Google|\\*\\*\\*).*", Pattern.CASE_INSENSITIVE);
-	private Map<String, String>commandList = new HashMap<String, String>();
+	private ArrayList<String>commandList = new ArrayList<String>();
 	long lastQuoted = 0;
     long newQuoted = System.currentTimeMillis();
     long lastQuoted1 = 0;
@@ -685,7 +685,7 @@ public class ReceiverBot extends PircBot {
 				quoteReceived1.trim();
 				try {
 					read("quotesList"+channel+".txt");
-//					read("commandList.txt", commandList);
+
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -711,7 +711,7 @@ public class ReceiverBot extends PircBot {
 				
 				try {
 					read("quotesList"+channel+".txt");
-//					read("commandList.txt", commandList);
+
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -755,7 +755,7 @@ public class ReceiverBot extends PircBot {
 		quoteReceived.trim();
 		 try {
 				read("quotesList"+channel+".txt");
-//				read("commandList.txt", commandList);
+
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -779,7 +779,7 @@ public class ReceiverBot extends PircBot {
 			quoteReceived3.trim();
 			try {
 				read("quotesList"+channel+".txt");
-//				read("commandList.txt", commandList);
+
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -802,7 +802,7 @@ public class ReceiverBot extends PircBot {
 		quoteReceived2.trim();
 		try {
 			read("quotesList"+channel+".txt");
-//			read("commandList.txt", commandList);
+
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -965,10 +965,11 @@ public class ReceiverBot extends PircBot {
                     if (!value.contains(",,")) {
 						
                         channelInfo.setCommand(key, value);
-						commandList.put(key, value);
+						commandList.add(key);
+						commandList.add(value);
                         send(channel, "Command added/updated.");
 						try{
-						save("commandList.txt", commandList);
+						save("commandList"+channel+".txt", commandList);
 						}catch (IOException e){
 						}
 						
@@ -979,9 +980,11 @@ public class ReceiverBot extends PircBot {
                 } else if (msg[1].equalsIgnoreCase("delete") || msg[1].equalsIgnoreCase("remove")) {
                     String key = msg[2];
                     channelInfo.removeCommand(key);
-					commandList.remove(key);
+					int index = commandList.indexOf(key);
+					commandList.remove(index);
+					commandList.remove(index);
 					try{
-						save("commandList.txt", commandList);
+						save("commandList"+channel+".txt", commandList);
 						}catch (IOException e){
 						send(channel, "Error deleting command from command list");
 						}
@@ -1020,16 +1023,11 @@ public class ReceiverBot extends PircBot {
 		// !listcommands
 		if (msg[0].equalsIgnoreCase(prefix + "listcommands")) {
             log("RB: Matched command !listcommands");
-            Collection<String> test = commandList.values();
-			Set<String> test1 = commandList.keySet();
-			String[]values = null;
-			values =(String[]) test.toArray(values);
-			String[]keys = null;
-			keys = (String[]) test1.toArray(keys);
-			send(channel, "There are " + keys.length + " commands.");
-				for (int i = 0; i < commandList.size(); i++){
+            
+			send(channel, "There are " + commandList.size()/2 + " commands.");
+				for (int i = 0; i < commandList.size(); i+=2){
 					
-						send(channel, keys[i] + " - " + values[i]);
+						send(channel, commandList.get(i) + " - " + commandList.get(i+1));
 						}
 		
         }
