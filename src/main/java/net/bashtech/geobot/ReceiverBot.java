@@ -63,19 +63,13 @@ public class ReceiverBot extends PircBot {
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
 	    quotesList = new ArrayList<String>();
-	    try {
-			read("quotesList.txt");
-//			read("commandList.txt", commandList);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+	   
         linkPatterns[0] = Pattern.compile(".*http://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[1] = Pattern.compile(".*https://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[2] = Pattern.compile(".*[-A-Za-z0-9]+\\s?(\\.|\\(dot\\))\\s?(ac|ad|ae|aero|af|ag|ai|al|am|an|ao|aq|ar|as|asia|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|biz|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cat|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|com|coop|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|info|int|io|iq|ir|is|it|je|jm|jo|jobs|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mo|mobi|mp|mq|mr|ms|mt|mu|museum|mv|mw|mx|my|mz|na|name|nc|ne|net|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|post|pr|pro|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|travel|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xxx|ye|yt|za|zm|zw)(\\W|$).*", Pattern.CASE_INSENSITIVE);
         linkPatterns[3] = Pattern.compile(".*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\s+|:|/|$).*");
 
-        symbolsPatterns[0] = Pattern.compile("(\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|つ|°|ຈ|░|▀|▄|̰̦̮̠ę̟̹ͦͯͯ́ͮ̊̐͌̉͑ͨ̊́́̚|U̶̧ͩͭͧ͊̅̊ͥͩ̿̔̔ͥ͌ͬ͊͋ͬ҉|Ọ̵͇̖̖|A̴͍̥̳̠̞̹ͩ̋̆ͤͅ|E̡̛͚̺̖̪͈̲̻̠̰̳̐̿)");
+        symbolsPatterns[0] = Pattern.compile("(\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|ã�¤|Â°|àºˆ|â–‘|â–€|â–„|Ì°Ì¦Ì®Ì eÍ¦ÌšÍ¯Í¯Ì�Í®ÌŠÌ�ÍŒÌ‰Í‘Í¨ÌŠÍ�Í�Ì¨ÌŸÌ¹|UÌ¶Ì§Í©Í­Í§ÍŠÌ…ÌŠÍ¥Í©Ì¿Ì”Ì”Í¥ÍŒÍ¬ÍŠÍ‹Í¬Ò‰|á»ŒÌµÍ‡Ì–Ì–|AÌ´Í�Ì¥Ì³Ì ÌžÌ¹Í©Ì‹Ì†Í¤Í…|EÌ¡Ì›ÍšÌºÌ–ÌªÍˆÌ²Ì»Ì Ì°Ì³Ì�Ì¿)");
         symbolsPatterns[1] = Pattern.compile("[!-/:-@\\[-`{-~]");
 
         this.setName(BotManager.getInstance().getInstance().nick);
@@ -626,8 +620,30 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
+        //statusgame
+        if (msg[0].equalsIgnoreCase(prefix + "statusgame") && BotManager.getInstance().twitchChannels) {
+            log("RB: Matched command !statusgame");
+            if (isOp && msg.length > 1) {
+                String newStatus = this.fuseArray(msg, 1);
+                newStatus.trim();
+                
+                try {
+                    channelInfo.updateStatus(newStatus);
+                    if(JSONUtil.steam(channelInfo.getSteam(), "game").equals("(unavailable)")){
+                    	channelInfo.updateGame("");
+                    }
+                    else
+                    	channelInfo.updateGame(JSONUtil.steam(channelInfo.getSteam(), "game"));
+                    send(channel, "Game and Status update sent.");
+                } catch (Exception ex) {
+                    send(channel, "Error updating game and/or status. Did you add me as an editor?");
+                }
 
+            }
+            
+        }
         // !game - All
+        
         if (msg[0].equalsIgnoreCase(prefix + "game") && BotManager.getInstance().twitchChannels) {
             log("RB: Matched command !game");
             if (isOp && msg.length > 1) {
@@ -652,15 +668,80 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
+        long lastQuoted = 0;
+        long newQuoted = System.currentTimeMillis();;
+        long lastQuoted1 = 0;
+        long newQuoted1 = System.currentTimeMillis();;
+        
+        
+		if ((newQuoted >= (lastQuoted + 30*1000)) || isOp){
+			lastQuoted = newQuoted;
+			//getQuote
+			if (msg[0].equalsIgnoreCase(prefix + "getQuote")){
+			    log("RB: Matched command !getQuote");
+			    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
+				String quoteReceived1 = this.fuseArray(msg, 1);
+				quoteReceived1.trim();
+				try {
+					read("quotesList"+channel+".txt");
+//					read("commandList.txt", commandList);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				int wantedQuote = Integer.parseInt(quoteReceived1);
+				if (wantedQuote < quotesList.size()){
+					send(channel, quotesList.get(wantedQuote));
+				}
+				else {
+					send(channel, "Parameter mismatch or no quote at requested index.");
+				}
+			    }
+			}
+			
+		}
+		if ((newQuoted1 >= (lastQuoted1 + 30*1000)) || isOp){
+			//randomquote
+			if (msg[0].equalsIgnoreCase(prefix + "randomquote")){
+			    log("RB: Matched command !randomquote");
+			    if(isRegular && BotManager.getInstance().twitchChannels){
+				
+				try {
+					read("quotesList"+channel+".txt");
+//					read("commandList.txt", commandList);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				int randQuotes = (int) (Math.random()* quotesList.size());
+				
+				if (randQuotes >-1){
+					send(channel, quotesList.get(randQuotes));
+					lastQuoted1 = newQuoted1;
+				}
+				else
+					send(channel, "Error, whoops");
+				
+			    }
+			}
+		}
 	// !addQuote
 	if (msg[0].equalsIgnoreCase(prefix + "addQuote")){
 	    log("RB: Matched command !addQuote");
 	    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
 		String quoteReceived = this.fuseArray(msg, 1);
 		quoteReceived.trim();
+		 try {
+				read("quotesList"+channel+".txt");
+//				read("commandList.txt", commandList);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		quotesList.add(quoteReceived);
 		try {
-			save("quotesList.txt", quotesList);
+			save("quotesList"+channel+".txt", quotesList);
 			int index = quotesList.size()-1;
 			send(channel, quoteReceived + " added, this is quote #" + index);
 		} catch (IOException e) {
@@ -675,6 +756,13 @@ public class ReceiverBot extends PircBot {
 		    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
 			String quoteReceived3 = this.fuseArray(msg, 1);
 			quoteReceived3.trim();
+			try {
+				read("quotesList"+channel+".txt");
+//				read("commandList.txt", commandList);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			int index = quotesList.indexOf(quoteReceived3);
 			if(index > -1){
 			send(channel, "This quote's index is "+ index);
@@ -691,12 +779,19 @@ public class ReceiverBot extends PircBot {
 	    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
 		String quoteReceived2 = this.fuseArray(msg, 1);
 		quoteReceived2.trim();
+		try {
+			read("quotesList"+channel+".txt");
+//			read("commandList.txt", commandList);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		int wantedQuote = Integer.parseInt(quoteReceived2);
 		if (wantedQuote < quotesList.size()){
 			try {
 				quotesList.remove(wantedQuote);
 				send(channel, "Quote #" + wantedQuote + " removed.");
-				save("quotesList.txt", quotesList);
+				save("quotesList"+channel+".txt", quotesList);
 			} catch (IOException e) {
 				send(channel, "Error deleting the quote.");
 				
@@ -708,21 +803,7 @@ public class ReceiverBot extends PircBot {
 		
 	    }
 	}
-	//getQuote
-	if (msg[0].equalsIgnoreCase(prefix + "getQuote")){
-	    log("RB: Matched command !getQuote");
-	    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
-		String quoteReceived1 = this.fuseArray(msg, 1);
-		quoteReceived1.trim();
-		int wantedQuote = Integer.parseInt(quoteReceived1);
-		if (wantedQuote < quotesList.size()){
-			send(channel, quotesList.get(wantedQuote));
-		}
-		else {
-			send(channel, "Parameter mismatch or no quote at requested index.");
-		}
-	    }
-	}
+	
 	
 
         // !status - All
@@ -783,7 +864,7 @@ public class ReceiverBot extends PircBot {
                 for (int i = 1; i < msg.length; i++) {
                     throwMessage += msg[i] + " ";
                 }
-                send(channel, "(╯°□°）╯︵" + throwMessage);
+                send(channel, "(╯°□°)╯" + throwMessage);
             }
             return;
         }

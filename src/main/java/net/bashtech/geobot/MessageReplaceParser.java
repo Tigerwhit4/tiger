@@ -63,19 +63,23 @@ public class MessageReplaceParser {
             String url = JSONUtil.shortenURL("https://twitter.com/intent/tweet?text=" + JSONUtil.urlEncode(MessageReplaceParser.parseMessage(channel, sender, ci.getClickToTweetFormat(), args)));
             message = message.replace("(_TWEET_URL_)", url);
         }
+        
         if (message.contains("(_QUOTE_)")){
 		try {
-			read("quotesList.txt");
+			read("quotesList" + channel+".txt");
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}
-		
-        	int randQuotes = (int) (Math.random()* quotesList.size());
-        	if (randQuotes >-1)
-        	message = message.replace("(_QUOTE_)", quotesList.get(randQuotes));
-        	else
-        		message = message.replace("(_QUOTE_)", "Error, whoops");
+		}			
+			
+				int randQuotes = (int) (Math.random()* quotesList.size());
+				
+				if (randQuotes >-1)
+					message = message.replace("(_QUOTE_)", quotesList.get(randQuotes));
+				else
+					message = message.replace("(_QUOTE_)", "Error, whoops");
+			
+			
         }
 
         if (args != null) {
