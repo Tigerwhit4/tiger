@@ -1021,17 +1021,17 @@ public class ReceiverBot extends PircBot {
         }
 
 		// !listcommands
-		if (msg[0].equalsIgnoreCase(prefix + "listcommands")) {
-            log("RB: Matched command !listcommands");
-            
-			send(channel, "There are " + commandList.size()/2 + " commands.");
-				for (int i = 0; i < commandList.size(); i+=2){
-					
-						send(channel, commandList.get(i) + " - " + commandList.get(i+1));
-						}
-		
-        }
-		
+//		if (msg[0].equalsIgnoreCase(prefix + "listcommands")) {
+//            log("RB: Matched command !listcommands");
+//            
+//			send(channel, "There are " + commandList.size()/2 + " commands.");
+//				for (int i = 0; i < commandList.size(); i+=2){
+//					
+//						send(channel, commandList.get(i) + " - " + commandList.get(i+1));
+//						}
+//		
+//        }
+//		
 						
 
                 
