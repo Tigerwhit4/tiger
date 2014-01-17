@@ -73,7 +73,7 @@ public class ReceiverBot extends PircBot {
         linkPatterns[2] = Pattern.compile(".*[-A-Za-z0-9]+\\s?(\\.|\\(dot\\))\\s?(ac|ad|ae|aero|af|ag|ai|al|am|an|ao|aq|ar|as|asia|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|biz|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cat|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|com|coop|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|info|int|io|iq|ir|is|it|je|jm|jo|jobs|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mo|mobi|mp|mq|mr|ms|mt|mu|museum|mv|mw|mx|my|mz|na|name|nc|ne|net|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|post|pr|pro|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|travel|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xxx|ye|yt|za|zm|zw)(\\W|$).*", Pattern.CASE_INSENSITIVE);
         linkPatterns[3] = Pattern.compile(".*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\s+|:|/|$).*");
 
-        symbolsPatterns[0] = Pattern.compile("(\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|ã�¤|Â°|àºˆ|â–‘|â–€|â–„|Ì°Ì¦Ì®Ì eÍ¦ÌšÍ¯Í¯Ì�Í®ÌŠÌ�ÍŒÌ‰Í‘Í¨ÌŠÍ�Í�Ì¨ÌŸÌ¹|UÌ¶Ì§Í©Í­Í§ÍŠÌ…ÌŠÍ¥Í©Ì¿Ì”Ì”Í¥ÍŒÍ¬ÍŠÍ‹Í¬Ò‰|á»ŒÌµÍ‡Ì–Ì–|AÌ´Í�Ì¥Ì³Ì ÌžÌ¹Í©Ì‹Ì†Í¤Í…|EÌ¡Ì›ÍšÌºÌ–ÌªÍˆÌ²Ì»Ì Ì°Ì³Ì�Ì¿)");
+        symbolsPatterns[0] = Pattern.compile("(\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|Ã£ï¿½Â¤|Ã‚Â°|Ã ÂºË†|Ã¢â€“â€˜|Ã¢â€“â‚¬|Ã¢â€“â€ž|ÃŒÂ°ÃŒÂ¦ÃŒÂ®ÃŒ eÃ�Â¦ÃŒÅ¡Ã�Â¯Ã�Â¯ÃŒï¿½Ã�Â®ÃŒÅ ÃŒï¿½Ã�Å’ÃŒâ€°Ã�â€˜Ã�Â¨ÃŒÅ Ã�ï¿½Ã�ï¿½ÃŒÂ¨ÃŒÅ¸ÃŒÂ¹|UÃŒÂ¶ÃŒÂ§Ã�Â©Ã�Â­Ã�Â§Ã�Å ÃŒâ€¦ÃŒÅ Ã�Â¥Ã�Â©ÃŒÂ¿ÃŒâ€�ÃŒâ€�Ã�Â¥Ã�Å’Ã�Â¬Ã�Å Ã�â€¹Ã�Â¬Ã’â€°|Ã¡Â»Å’ÃŒÂµÃ�â€¡ÃŒâ€“ÃŒâ€“|AÃŒÂ´Ã�ï¿½ÃŒÂ¥ÃŒÂ³ÃŒ ÃŒÅ¾ÃŒÂ¹Ã�Â©ÃŒâ€¹ÃŒâ€ Ã�Â¤Ã�â€¦|EÃŒÂ¡ÃŒâ€ºÃ�Å¡ÃŒÂºÃŒâ€“ÃŒÂªÃ�Ë†ÃŒÂ²ÃŒÂ»ÃŒ ÃŒÂ°ÃŒÂ³ÃŒï¿½ÃŒÂ¿)");
         symbolsPatterns[1] = Pattern.compile("[!-/:-@\\[-`{-~]");
 
         this.setName(BotManager.getInstance().getInstance().nick);
@@ -871,7 +871,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !commands - Op/Regular
-        if (msg[0].equalsIgnoreCase(prefix + "commands") && isOp) {
+        if ((msg[0].equalsIgnoreCase(prefix + "commands")|| msg[0].equalsIgnoreCase(prefix + "coemands")) && isOp) {
             log("RB: Matched command !commands");
             send(channel, "Commands: " + channelInfo.getCommandList());
             return;
@@ -885,7 +885,7 @@ public class ReceiverBot extends PircBot {
                 for (int i = 1; i < msg.length; i++) {
                     throwMessage += msg[i] + " ";
                 }
-                send(channel, "(╯°□°)╯" + throwMessage);
+                send(channel, "(â•¯Â°â–¡Â°)â•¯" + throwMessage);
             }
             return;
         }
@@ -1380,6 +1380,9 @@ public class ReceiverBot extends PircBot {
                 }
                 if (msg[0].equalsIgnoreCase("+k")) {
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase());
+                }
+                if (msg[0].equalsIgnoreCase("-k")) {
+                    sendCommand(channel, ".timeout " + msg[1].toLowerCase()+ " 1");
                 }
                 if (msg[0].equalsIgnoreCase("+p")) {
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
