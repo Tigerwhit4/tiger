@@ -1378,10 +1378,10 @@ public class ReceiverBot extends PircBot {
                     sendCommand(channel, ".unban " + msg[1].toLowerCase());
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
                 }
-                if (msg[0].equalsIgnoreCase("+k")) {
+                if (msg[0].equalsIgnoreCase("+t")) {
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase());
                 }
-                if (msg[0].equalsIgnoreCase("-k")) {
+                if (msg[0].equalsIgnoreCase("-t")) {
                 	sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
                 }
                 if (msg[0].equalsIgnoreCase("-k")) {
