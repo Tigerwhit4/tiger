@@ -92,6 +92,7 @@ public class Channel {
     String emoteSet;
     boolean subscriberRegulars;
     String lastSong = "";
+    long songUpdated = System.currentTimeMillis();
 
     private Map<String, Object> defaults = new HashMap<String, Object>();
 
@@ -1101,8 +1102,14 @@ public class Channel {
     	
     	}
     	else {
+    		long now = System.currentTimeMillis();
+    		if((now-songUpdated)>= 35000){
     		lastSong = newSong;
+    		songUpdated = now;
     		return true;
+    		}
+    		System.out.println("DEBUG: the song has updated but the stream has not caught up yet");
+    		return false;
     	}
     	
     }
