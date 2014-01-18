@@ -1096,7 +1096,7 @@ public class Channel {
     }
     public boolean updateSong(){
     	String newSong = JSONUtil.lastFM(getLastfm());
-    	if(newSong.equals(lastSong)){
+    	if(newSong.equals(lastSong)||newSong.equals("(Nothing)")){
     		return false;
     	
     	}
