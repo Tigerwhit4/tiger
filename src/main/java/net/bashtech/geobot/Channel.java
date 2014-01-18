@@ -91,6 +91,7 @@ public class Channel {
     String prefix;
     String emoteSet;
     boolean subscriberRegulars;
+    String lastSong = "";
 
     private Map<String, Object> defaults = new HashMap<String, Object>();
 
@@ -1092,6 +1093,18 @@ public class Channel {
     public void setLastfm(String string) {
         lastfm = string;
         config.setString("lastfm", lastfm);
+    }
+    public boolean updateSong(){
+    	String newSong = JSONUtil.lastFM(getLastfm());
+    	if(newSong.equals(lastSong)){
+    		return false;
+    	
+    	}
+    	else {
+    		lastSong = newSong;
+    		return true;
+    	}
+    	
     }
 
     // #################################################

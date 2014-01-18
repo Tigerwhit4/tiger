@@ -604,6 +604,10 @@ public class ReceiverBot extends PircBot {
             send(channel, "Now playing: " + JSONUtil.lastFM(channelInfo.getLastfm()));
 		
         }
+        //updates the song if it has changed
+        if(channelInfo.updateSong()){
+        	send(channel, "Now playing: " + JSONUtil.lastFM(channelInfo.getLastfm()));
+        }
 
 // !lastfm - All
         if (msg[0].equalsIgnoreCase(prefix + "lastfm")) {
