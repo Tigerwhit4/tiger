@@ -63,6 +63,10 @@ public class MessageReplaceParser {
             String url = JSONUtil.shortenURL("https://twitter.com/intent/tweet?text=" + JSONUtil.urlEncode(MessageReplaceParser.parseMessage(channel, sender, ci.getClickToTweetFormat(), args)));
             message = message.replace("(_TWEET_URL_)", url);
         }
+        if (message.contains("(_COMMERCIAL_)")){
+        	ci.runCommercial();
+        	message = "Running a commercial, thank you for supporting this channel";
+        }
         
         if (message.contains("(_QUOTE_)")){
 		try {

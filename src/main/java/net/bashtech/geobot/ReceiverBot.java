@@ -657,16 +657,20 @@ public class ReceiverBot extends PircBot {
                 
                 try {
                 	read("highlight"+channel+".txt", highlightList);
-                	
+                } catch (Exception e) {
+                    send(channel, "Error with the highlight list, it probably hasn't been created yet");
+                }
+                	try{
                     String uptime = this.getStreamList("up_time", channelInfo);
                     String timeStreaming = this.getTimeStreaming(uptime, mins);
-                    highlightList.add(timeStreaming);
+                    highlightList.add(timeStreaming + " - "+ description);
                     save("highlight" + channel+".txt", highlightList);
                     
-                    send(channel, "Highlight marked at " + timeStreaming);
-                } catch (Exception e) {
-                    send(channel, "Error accessing Twitch API.");
-                }
+                    send(channel, "Highlight marked at " + timeStreaming + " with description: "+description);
+                	} catch (Exception e){
+                		send(channel, "Error accessing Twitch API");
+                	}
+                
 
             }
             else if (isOp && msg.length > 2){
@@ -1002,8 +1006,9 @@ public class ReceiverBot extends PircBot {
             log("RB: Matched command !commercial");
             if (isOp) {
                 channelInfo.runCommercial();
-                //send(channel, "Running a 30 second commercial. Thank you for supporting the channel!");
+                send(channel, "Running a 30 second commercial. Thank you for supporting the channel!");
             }
+            send(channel, "Running a 30 second commercial. Thank you for supporting the channel!");
             return;
         }
 
