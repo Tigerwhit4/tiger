@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 
 public class ReceiverBot extends PircBot {
     private ArrayList<String> quotesList;
+    private ArrayList<String> highlightList;
     static ReceiverBot instance;
     Timer joinCheck;
     Random random = new Random();
@@ -67,7 +68,7 @@ public class ReceiverBot extends PircBot {
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
 	    quotesList = new ArrayList<String>();
-	   
+	    highlightList = new ArrayList<String>();
         linkPatterns[0] = Pattern.compile(".*http://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[1] = Pattern.compile(".*https://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[2] = Pattern.compile(".*[-A-Za-z0-9]+\\s?(\\.|\\(dot\\))\\s?(ac|ad|ae|aero|af|ag|ai|al|am|an|ao|aq|ar|as|asia|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|biz|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cat|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|com|coop|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|info|int|io|iq|ir|is|it|je|jm|jo|jobs|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mo|mobi|mp|mq|mr|ms|mt|mu|museum|mv|mw|mx|my|mz|na|name|nc|ne|net|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|post|pr|pro|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|travel|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xxx|ye|yt|za|zm|zw)(\\W|$).*", Pattern.CASE_INSENSITIVE);
@@ -590,7 +591,7 @@ public class ReceiverBot extends PircBot {
             log("RB: Matched command !uptime");
             try {
                 String uptime = this.getStreamList("up_time", channelInfo);
-                send(channel, "Streaming for " + this.getTimeStreaming(uptime) + " since " + uptime + " PST.");
+                send(channel, "Streaming for " + this.getTimeStreaming(uptime, 0) + " since " + uptime + " PST.");
             } catch (Exception e) {
                 send(channel, "Error accessing Twitch API.");
             }
@@ -646,6 +647,59 @@ public class ReceiverBot extends PircBot {
             }
             
         }
+        //highlight
+        if (msg[0].equalsIgnoreCase(prefix + "highlight") && BotManager.getInstance().twitchChannels) {
+            log("RB: Matched command !highlight");
+            if (isOp && msg.length > 3 && msg[1].equalsIgnoreCase("add")) {
+            	int mins = Integer.parseInt(msg[2]);
+                String description = this.fuseArray(msg, 3);
+                description.trim();
+                
+                try {
+                	read("highlight"+channel+".txt", highlightList);
+                	
+                    String uptime = this.getStreamList("up_time", channelInfo);
+                    String timeStreaming = this.getTimeStreaming(uptime, mins);
+                    highlightList.add(timeStreaming);
+                    save("highlight" + channel+".txt", highlightList);
+                    
+                    send(channel, "Highlight marked at " + timeStreaming);
+                } catch (Exception e) {
+                    send(channel, "Error accessing Twitch API.");
+                }
+
+            }
+            else if (isOp && msg.length > 2){
+            	if (msg[1].equalsIgnoreCase("delete")||msg[1].equalsIgnoreCase("remove")){
+            		int index = Integer.parseInt(msg[2]);
+            		try {
+                    	read("highlight"+channel+".txt", highlightList);
+                        highlightList.remove(index);
+                        save("highlight" + channel+".txt", highlightList);
+                        
+                        send(channel, "Highlight # "+index+ " removed");
+                    } catch (Exception e) {
+                        send(channel, "Error deleting highlight.");
+                    }
+            	}
+            	else if(msg[1].equalsIgnoreCase("get")){
+            		int index = Integer.parseInt(msg[2]);
+            		try {
+                    	read("highlight"+channel+".txt", highlightList);
+                        send(channel, "Highlight Start: "+ highlightList.get(index));
+                        
+                        
+                    } catch (Exception e) {
+                        send(channel, "Error getting highlight.");
+                    }
+            	}
+            }
+            else {
+            	send(channel, "Highlight syntax is \"!highlight <add> <minutes> <description>\" or \"!highlight <get/delete> <index>\"");
+            }
+            
+        }
+        
         // !game - All
         
         if (msg[0].equalsIgnoreCase(prefix + "game") && BotManager.getInstance().twitchChannels) {
@@ -684,7 +738,7 @@ public class ReceiverBot extends PircBot {
 				String quoteReceived1 = this.fuseArray(msg, 1);
 				quoteReceived1.trim();
 				try {
-					read("quotesList"+channel+".txt");
+					read("quotesList"+channel+".txt", quotesList);
 
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
@@ -710,7 +764,7 @@ public class ReceiverBot extends PircBot {
 			    if(isRegular && BotManager.getInstance().twitchChannels){
 				
 				try {
-					read("quotesList"+channel+".txt");
+					read("quotesList"+channel+".txt", quotesList);
 
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
@@ -754,7 +808,7 @@ public class ReceiverBot extends PircBot {
 		String quoteReceived = this.fuseArray(msg, 1);
 		quoteReceived.trim();
 		 try {
-				read("quotesList"+channel+".txt");
+				read("quotesList"+channel+".txt", quotesList);
 
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
@@ -778,7 +832,7 @@ public class ReceiverBot extends PircBot {
 			String quoteReceived3 = this.fuseArray(msg, 1);
 			quoteReceived3.trim();
 			try {
-				read("quotesList"+channel+".txt");
+				read("quotesList"+channel+".txt", quotesList);
 
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
@@ -801,7 +855,7 @@ public class ReceiverBot extends PircBot {
 		String quoteReceived2 = this.fuseArray(msg, 1);
 		quoteReceived2.trim();
 		try {
-			read("quotesList"+channel+".txt");
+			read("quotesList"+channel+".txt", quotesList);
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
@@ -980,14 +1034,7 @@ public class ReceiverBot extends PircBot {
                 } else if (msg[1].equalsIgnoreCase("delete") || msg[1].equalsIgnoreCase("remove")) {
                     String key = msg[2];
                     channelInfo.removeCommand(key);
-					int index = commandList.indexOf(key);
-					commandList.remove(index);
-					commandList.remove(index);
-					try{
-						save("commandList"+channel+".txt", commandList);
-						}catch (IOException e){
-						send(channel, "Error deleting command from command list");
-						}
+					
                     channelInfo.removeRepeatCommand(key);
                     channelInfo.removeScheduledCommand(key);
 
@@ -2553,12 +2600,14 @@ public class ReceiverBot extends PircBot {
         return "";
     }
 
-    public String getTimeStreaming(String uptime) {
+    public String getTimeStreaming(String uptime, int offset) {
         DateFormat format = new SimpleDateFormat("EEE MMMM dd HH:mm:ss yyyy");
         format.setTimeZone(java.util.TimeZone.getTimeZone("US/Pacific"));
         try {
+
             Date then = format.parse(uptime);
-            return this.getTimeTilNow(then);
+            Date newDate = new Date(then.getTime() + offset * 60 * 1000);
+            return this.getTimeTilNow(newDate);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -2643,10 +2692,10 @@ public class ReceiverBot extends PircBot {
 		fout.close();
 		}
     @SuppressWarnings("unchecked")
-	public void read(String fileName) throws Exception {
+	public void read(String fileName, ArrayList<String> arr) throws Exception {
 		FileInputStream fin= new FileInputStream (fileName);
 		ObjectInputStream ois = new ObjectInputStream(fin);
-		quotesList = (ArrayList<String>) ois.readObject();
+		arr = (ArrayList<String>) ois.readObject();
 		fin.close();
 		}
     
