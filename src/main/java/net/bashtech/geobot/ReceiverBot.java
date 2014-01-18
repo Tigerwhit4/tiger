@@ -1123,6 +1123,7 @@ public class ReceiverBot extends PircBot {
 
                 } else if (msg[1].equalsIgnoreCase("delete") || msg[1].equalsIgnoreCase("remove")) {
                     String key = msg[2];
+                    
                     channelInfo.removeRepeatCommand(key);
                     send(channel, "Command " + key + " will no longer repeat.");
 

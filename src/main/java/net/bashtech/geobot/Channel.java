@@ -254,6 +254,7 @@ public class Channel {
     }
 
     public void setRepeatCommand(String key, int delay, int diff) {
+    	key = key.toLowerCase();
         if (commandsRepeat.containsKey(key)) {
             commandsRepeat.get(key).timer.cancel();
             commandsRepeat.remove(key);
@@ -268,6 +269,7 @@ public class Channel {
     }
 
     public void removeRepeatCommand(String key) {
+    	key = key.toLowerCase();
         if (commandsRepeat.containsKey(key)) {
             commandsRepeat.get(key).timer.cancel();
             commandsRepeat.remove(key);
