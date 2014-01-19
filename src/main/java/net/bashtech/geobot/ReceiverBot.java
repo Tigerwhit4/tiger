@@ -616,19 +616,19 @@ public class ReceiverBot extends PircBot {
         }
 
         // !steam - All
-        if (msg[0].equalsIgnoreCase("!steam")) {
-            log("RB: Matched command !steam");
-            if (channelInfo.getSteam().length() > 1) {
-
-                if (channelInfo.getSteam().length() > 1) {
-                    send(channel, JSONUtil.steam(channelInfo.getSteam(), "all"));
-                }
-
-            } else {
-                send(channel, "Steam ID not set. Do \"!set steam [ID]\" to configure. ID must be in SteamID64 format and profile must be public.");
-            }
-            return;
-        }
+//        if (msg[0].equalsIgnoreCase(prefix + "steam")) {
+//            log("RB: Matched command !steam");
+//            if (channelInfo.getSteam().length() > 1) {
+//
+//                if (channelInfo.getSteam().length() > 1) {
+//                    send(channel, JSONUtil.steam(channelInfo.getSteam(), "all"));
+//                }
+//
+//            } else {
+//                send(channel, "Steam ID not set. Do \"!set steam [ID]\" to configure. ID must be in SteamID64 format and profile must be public.");
+//            }
+//            return;
+//        }
         //statusgame
         if (msg[0].equalsIgnoreCase(prefix + "statusgame") && BotManager.getInstance().twitchChannels) {
             log("RB: Matched command !statusgame");
@@ -737,7 +737,7 @@ public class ReceiverBot extends PircBot {
         
         long newQuoted = System.currentTimeMillis();
         
-		if ((newQuoted >= (lastQuoted + 30*1000)) || isOp){
+		if ((newQuoted >= (lastQuoted + 30*1000L)) || isOp){
 			
 			//getQuote
 			if (msg[0].equalsIgnoreCase(prefix + "getQuote")){
@@ -765,7 +765,7 @@ public class ReceiverBot extends PircBot {
 			
 		}
 		long newQuoted1 = System.currentTimeMillis();
-		if ((newQuoted1 >= (lastQuoted1 + 30*1000)) || isOp){
+		if ((newQuoted1 >= (lastQuoted1 + 30*1000L)) || isOp){
 			//randomquote
 			if (msg[0].equalsIgnoreCase(prefix + "randomquote")){
 			    log("RB: Matched command !randomquote");
@@ -1430,22 +1430,24 @@ public class ReceiverBot extends PircBot {
             if (msg.length > 0) {
                 if (msg[0].equalsIgnoreCase("+b")) {
                     sendCommand(channel, ".ban " + msg[1].toLowerCase());
+                    send(channel, msg[1].toLowerCase()+ " was banned.");
                 }
                 if (msg[0].equalsIgnoreCase("-b")) {
                     sendCommand(channel, ".unban " + msg[1].toLowerCase());
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
+                    send(channel, msg[1].toLowerCase()+ " was unbanned.");
                 }
                 if (msg[0].equalsIgnoreCase("+t")) {
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase());
+                    send(channel, msg[1].toLowerCase()+ " was timed out.");
                 }
                 if (msg[0].equalsIgnoreCase("-t")) {
                 	sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
-                }
-                if (msg[0].equalsIgnoreCase("-k")) {
-                    sendCommand(channel, ".timeout " + msg[1].toLowerCase()+ " 1");
+                	send(channel, msg[1].toLowerCase()+ " is no longer timed out.");
                 }
                 if (msg[0].equalsIgnoreCase("+p")) {
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
+                    send(channel, msg[1].toLowerCase()+ "'s chat history was purged.");
                 }
             }
 

@@ -1103,12 +1103,11 @@ public class Channel {
     	}
     	else {
     		long now = System.currentTimeMillis();
-    		if((now-songUpdated)>= 35000){
-    		lastSong = newSong;
-    		songUpdated = now;
-    		return true;
+    		if((now*1L) >= (songUpdated + 35000L)){
+    			lastSong = newSong;
+    			songUpdated = now + 5000;
+    			return true;
     		}
-    		System.out.println("DEBUG: the song has updated but the stream has not caught up yet");
     		return false;
     	}
     	
