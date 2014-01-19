@@ -64,11 +64,16 @@ public class ReceiverBot extends PircBot {
     long newQuoted = System.currentTimeMillis();
     long lastQuoted1 = 0;
     long newQuoted1 = System.currentTimeMillis();
+    private ArrayList<String>wpOn = new ArrayList<String>();
 	
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
 	    quotesList = new ArrayList<String>();
 	    highlightList = new ArrayList<String>();
+	    if(wpOn.size()<1){
+	    	wpOn.add("false");
+	    }
+	    
         linkPatterns[0] = Pattern.compile(".*http://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[1] = Pattern.compile(".*https://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[2] = Pattern.compile(".*[-A-Za-z0-9]+\\s?(\\.|\\(dot\\))\\s?(ac|ad|ae|aero|af|ag|ai|al|am|an|ao|aq|ar|as|asia|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|biz|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cat|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|com|coop|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|info|int|io|iq|ir|is|it|je|jm|jo|jobs|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mo|mobi|mp|mq|mr|ms|mt|mu|museum|mv|mw|mx|my|mz|na|name|nc|ne|net|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|post|pr|pro|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|travel|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xxx|ye|yt|za|zm|zw)(\\W|$).*", Pattern.CASE_INSENSITIVE);
@@ -606,14 +611,75 @@ public class ReceiverBot extends PircBot {
         }
         //updates the song if it has changed
         if(channelInfo.updateSong()){
-        	send(channel, "Now playing: " + JSONUtil.lastFM(channelInfo.getLastfm()));
+        	String currentSong = JSONUtil.lastFM(channelInfo.getLastfm());
+        	if (currentSong.equals("(Nothing)")){
+        		//do nothing
+        	}    		
+        	else{
+        	send(channel, "Now playing: " + currentSong);
+        	}
         }
+        
+        
+        String senderTriggered = "";
+        if(msg[0].equalsIgnoreCase(prefix+"whalepenis")){
+        	if(msg.length > 1 && isOp){
+        		senderTriggered = sender;
+        		if(msg[1].equalsIgnoreCase("on")){
+        			channelInfo.setWp(true);
+        			send(channel, "Whale penis timer has been turned on");
+    			
+        		}
+        		else if (msg[1].equalsIgnoreCase("off")){
+        			channelInfo.setWp(false);
+        			send(channel, "Whale penis timer has been turned off");
+        			
+        		}
+        		else
+        			send(channel, "Command syntax: "+prefix+"whalepenis <on/off>");
+        	}
+        }
+        String combined = this.fuseArray(msg, 0);
+        combined = combined.toLowerCase();
+        
+        if(((combined.indexOf("whalepenis")> -1) || (combined.indexOf("whale penis")> -1))
+        		&& channelInfo.getWp() 
+        		&& !sender.equalsIgnoreCase(getNick()) && !sender.equalsIgnoreCase(senderTriggered)){
+        	
+        	
+        	long timeSince = channelInfo.timeSinceSaid();
+        	int days = (int) (timeSince/86400);
+        	int hours = (int)((timeSince/3600)%3600);
+        	int mins = (int)((timeSince/60)%60);
+        	int seconds = (int)(timeSince%60);
+        	if(days>0){
+        	send(channel, "It has been "+ days + " days, "+ hours + " hours, "+ mins +
+        			" minutes, and " + seconds + " seconds since whale penis has last been mentioned");
+        	}
+        	else if(hours>0){
+        		send(channel, "It has been "+ hours + " hours, "+ mins +
+            			" minutes, and " + seconds + " seconds since whale penis has last been mentioned");
+        	}
+        	else if(mins > 0){
+        		send(channel, "It has been "+ mins +" minutes, and " + seconds + 
+        				" seconds since whale penis has last been mentioned");
+        	}
+        	else{
+        		send(channel, "It has been "+ seconds + " seconds since whale penis has last been mentioned");
+        	}
+            }
+        
+        
+        
+        
+        
 
 // !lastfm - All
         if (msg[0].equalsIgnoreCase(prefix + "lastfm")) {
             log("RB: Matched command !lastfm");
 		send(channel, "http://www.last.fm/user/"+ channelInfo.getLastfm());
         }
+        
 
         // !steam - All
 //        if (msg[0].equalsIgnoreCase(prefix + "steam")) {

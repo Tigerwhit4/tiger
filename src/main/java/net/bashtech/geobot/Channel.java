@@ -93,6 +93,8 @@ public class Channel {
     boolean subscriberRegulars;
     String lastSong = "";
     long songUpdated = System.currentTimeMillis();
+    private boolean wpOn;
+    private long sinceWp = System.currentTimeMillis();
 
     private Map<String, Object> defaults = new HashMap<String, Object>();
 
@@ -128,6 +130,19 @@ public class Channel {
         this.prefix = prefix.charAt(0) + "";
 
         config.setString("commandPrefix", this.prefix);
+    }
+    public boolean getWp(){
+    	return wpOn;
+    }
+    public void setWp(boolean state){
+    	wpOn = state;
+    	config.setBoolean("wpTimer", wpOn);
+    }
+    public long timeSinceSaid(){
+    	long now = System.currentTimeMillis();
+    	long differenceInSeconds = (now-sinceWp)/1000L;
+    	sinceWp = now;
+    	return (differenceInSeconds);
     }
 
     public String getEmoteSet() {
@@ -1103,7 +1118,7 @@ public class Channel {
     	}
     	else {
     		long now = System.currentTimeMillis();
-    		if((now*1L) >= (songUpdated + 45000L)){
+    		if((now*1L) >= (songUpdated + 60000L)){
     			lastSong = newSong;
     			songUpdated = now + 5000;
     			return true;
@@ -1270,6 +1285,7 @@ public class Channel {
         defaults.put("subMessage", "(_1_) has subscribed!");
         defaults.put("subscriberAlert", false);
         defaults.put("banPhraseSeverity", 99);
+        defaults.put("wpTimer", false);
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1292,7 +1308,7 @@ public class Channel {
         filterLinks = Boolean.parseBoolean(config.getString("filterLinks"));
         filterOffensive = Boolean.parseBoolean(config.getString("filterOffensive"));
         filterEmotes = Boolean.parseBoolean(config.getString("filterEmotes"));
-
+        wpOn = Boolean.parseBoolean(config.getString("wpTimer"));
         filterSymbols = Boolean.parseBoolean(config.getString("filterSymbols"));
         filterSymbolsPercent = Integer.parseInt(config.getString("filterSymbolsPercent"));
         filterSymbolsMin = Integer.parseInt(config.getString("filterSymbolsMin"));
