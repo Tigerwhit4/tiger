@@ -52,7 +52,7 @@ public class ReceiverBot extends PircBot {
     private Pattern[] linkPatterns = new Pattern[4];
     private Pattern[] symbolsPatterns = new Pattern[2];
     private int lastPing = -1;
-    private char bullet[] = {'>', '+', '-', '~'};
+    private String bullet[] = {"#!"};
     private int bulletPos = 0;
     private int countToNewColor = BotManager.getInstance().randomNickColorDiff;
     private Pattern twitchnotifySubscriberPattern = Pattern.compile("^([a-z_]+) just subscribed!$", Pattern.CASE_INSENSITIVE);
@@ -646,26 +646,32 @@ public class ReceiverBot extends PircBot {
         		&& channelInfo.getWp() 
         		&& !sender.equalsIgnoreCase(getNick()) && !sender.equalsIgnoreCase(senderTriggered)){
         	
-        	
+        	channelInfo.increaseWpCount();
         	long timeSince = channelInfo.timeSinceSaid();
         	int days = (int) (timeSince/86400);
         	int hours = (int)((timeSince/3600)%3600);
         	int mins = (int)((timeSince/60)%60);
         	int seconds = (int)(timeSince%60);
+        	
         	if(days>0){
-        	send(channel, "It has been "+ days + " days, "+ hours + " hours, "+ mins +
-        			" minutes, and " + seconds + " seconds since whale penis has last been mentioned");
+        		send(channel, "It has been "+ days + " days, "+ hours + " hours, "+ mins +
+        			" minutes, and " + seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
+        				channelInfo.getWpCount()+" times.");
         	}
         	else if(hours>0){
         		send(channel, "It has been "+ hours + " hours, "+ mins +
-            			" minutes, and " + seconds + " seconds since whale penis has last been mentioned");
+            			" minutes, and " + seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
+        				channelInfo.getWpCount()+" times.");
         	}
         	else if(mins > 0){
         		send(channel, "It has been "+ mins +" minutes, and " + seconds + 
-        				" seconds since whale penis has last been mentioned");
+        				" seconds since whale penis has last been mentioned. It has been mentioned "+
+        				channelInfo.getWpCount()+" times.");
+        		
         	}
         	else{
-        		send(channel, "It has been "+ seconds + " seconds since whale penis has last been mentioned");
+        		send(channel, "It has been "+ seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
+        				channelInfo.getWpCount()+" times.");
         	}
             }
         
@@ -2753,11 +2759,11 @@ public class ReceiverBot extends PircBot {
         }
     }
 
-    public char getBullet() {
+    public String getBullet() {
         if (bulletPos == bullet.length)
             bulletPos = 0;
 
-        char rt = bullet[bulletPos];
+        String rt = bullet[bulletPos];
         bulletPos++;
 
         return rt;
