@@ -947,7 +947,7 @@ public class ReceiverBot extends PircBot {
                 for (int i = 1; i < msg.length; i++) {
                     throwMessage += msg[i] + " ";
                 }
-                send(channel, "(â•¯Â°â–¡Â°)â•¯" + throwMessage);
+                send(channel, " (╯°□°)╯" + throwMessage);
             }
             return;
         }
