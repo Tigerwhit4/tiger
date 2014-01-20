@@ -77,7 +77,7 @@ public class ReceiverBot extends PircBot {
         linkPatterns[2] = Pattern.compile(".*[-A-Za-z0-9]+\\s?(\\.|\\(dot\\))\\s?(ac|ad|ae|aero|af|ag|ai|al|am|an|ao|aq|ar|as|asia|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|biz|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cat|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|com|coop|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|edu|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gov|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|info|int|io|iq|ir|is|it|je|jm|jo|jobs|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mil|mk|ml|mm|mn|mo|mobi|mp|mq|mr|ms|mt|mu|museum|mv|mw|mx|my|mz|na|name|nc|ne|net|nf|ng|ni|nl|no|np|nr|nu|nz|om|org|pa|pe|pf|pg|ph|pk|pl|pm|pn|post|pr|pro|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tel|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|travel|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|xxx|ye|yt|za|zm|zw)(\\W|$).*", Pattern.CASE_INSENSITIVE);
         linkPatterns[3] = Pattern.compile(".*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\s+|:|/|$).*");
 
-        symbolsPatterns[0] = Pattern.compile("(\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|Ã£ï¿½Â¤|Ã‚Â°|Ã ÂºË†|Ã¢â€“â€˜|Ã¢â€“â‚¬|Ã¢â€“â€ž|ÃŒÂ°ÃŒÂ¦ÃŒÂ®ÃŒ eÃ�Â¦ÃŒÅ¡Ã�Â¯Ã�Â¯ÃŒï¿½Ã�Â®ÃŒÅ ÃŒï¿½Ã�Å’ÃŒâ€°Ã�â€˜Ã�Â¨ÃŒÅ Ã�ï¿½Ã�ï¿½ÃŒÂ¨ÃŒÅ¸ÃŒÂ¹|UÃŒÂ¶ÃŒÂ§Ã�Â©Ã�Â­Ã�Â§Ã�Å ÃŒâ€¦ÃŒÅ Ã�Â¥Ã�Â©ÃŒÂ¿ÃŒâ€�ÃŒâ€�Ã�Â¥Ã�Å’Ã�Â¬Ã�Å Ã�â€¹Ã�Â¬Ã’â€°|Ã¡Â»Å’ÃŒÂµÃ�â€¡ÃŒâ€“ÃŒâ€“|AÃŒÂ´Ã�ï¿½ÃŒÂ¥ÃŒÂ³ÃŒ ÃŒÅ¾ÃŒÂ¹Ã�Â©ÃŒâ€¹ÃŒâ€ Ã�Â¤Ã�â€¦|EÃŒÂ¡ÃŒâ€ºÃ�Å¡ÃŒÂºÃŒâ€“ÃŒÂªÃ�Ë†ÃŒÂ²ÃŒÂ»ÃŒ ÃŒÂ°ÃŒÂ³ÃŒï¿½ÃŒÂ¿)");
+        symbolsPatterns[0] = Pattern.compile("(\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|ÃƒÂ£Ã¯Â¿Â½Ã‚Â¤|Ãƒâ€šÃ‚Â°|ÃƒÂ Ã‚ÂºÃ‹â€ |ÃƒÂ¢Ã¢â‚¬â€œÃ¢â‚¬Ëœ|ÃƒÂ¢Ã¢â‚¬â€œÃ¢â€šÂ¬|ÃƒÂ¢Ã¢â‚¬â€œÃ¢â‚¬Å¾|ÃƒÅ’Ã‚Â°ÃƒÅ’Ã‚Â¦ÃƒÅ’Ã‚Â®ÃƒÅ’ eÃƒï¿½Ã‚Â¦ÃƒÅ’Ã…Â¡Ãƒï¿½Ã‚Â¯Ãƒï¿½Ã‚Â¯ÃƒÅ’Ã¯Â¿Â½Ãƒï¿½Ã‚Â®ÃƒÅ’Ã…Â ÃƒÅ’Ã¯Â¿Â½Ãƒï¿½Ã…â€™ÃƒÅ’Ã¢â‚¬Â°Ãƒï¿½Ã¢â‚¬ËœÃƒï¿½Ã‚Â¨ÃƒÅ’Ã…Â Ãƒï¿½Ã¯Â¿Â½Ãƒï¿½Ã¯Â¿Â½ÃƒÅ’Ã‚Â¨ÃƒÅ’Ã…Â¸ÃƒÅ’Ã‚Â¹|UÃƒÅ’Ã‚Â¶ÃƒÅ’Ã‚Â§Ãƒï¿½Ã‚Â©Ãƒï¿½Ã‚Â­Ãƒï¿½Ã‚Â§Ãƒï¿½Ã…Â ÃƒÅ’Ã¢â‚¬Â¦ÃƒÅ’Ã…Â Ãƒï¿½Ã‚Â¥Ãƒï¿½Ã‚Â©ÃƒÅ’Ã‚Â¿ÃƒÅ’Ã¢â‚¬ï¿½ÃƒÅ’Ã¢â‚¬ï¿½Ãƒï¿½Ã‚Â¥Ãƒï¿½Ã…â€™Ãƒï¿½Ã‚Â¬Ãƒï¿½Ã…Â Ãƒï¿½Ã¢â‚¬Â¹Ãƒï¿½Ã‚Â¬Ãƒâ€™Ã¢â‚¬Â°|ÃƒÂ¡Ã‚Â»Ã…â€™ÃƒÅ’Ã‚ÂµÃƒï¿½Ã¢â‚¬Â¡ÃƒÅ’Ã¢â‚¬â€œÃƒÅ’Ã¢â‚¬â€œ|AÃƒÅ’Ã‚Â´Ãƒï¿½Ã¯Â¿Â½ÃƒÅ’Ã‚Â¥ÃƒÅ’Ã‚Â³ÃƒÅ’ ÃƒÅ’Ã…Â¾ÃƒÅ’Ã‚Â¹Ãƒï¿½Ã‚Â©ÃƒÅ’Ã¢â‚¬Â¹ÃƒÅ’Ã¢â‚¬Â Ãƒï¿½Ã‚Â¤Ãƒï¿½Ã¢â‚¬Â¦|EÃƒÅ’Ã‚Â¡ÃƒÅ’Ã¢â‚¬ÂºÃƒï¿½Ã…Â¡ÃƒÅ’Ã‚ÂºÃƒÅ’Ã¢â‚¬â€œÃƒÅ’Ã‚ÂªÃƒï¿½Ã‹â€ ÃƒÅ’Ã‚Â²ÃƒÅ’Ã‚Â»ÃƒÅ’ ÃƒÅ’Ã‚Â°ÃƒÅ’Ã‚Â³ÃƒÅ’Ã¯Â¿Â½ÃƒÅ’Ã‚Â¿)");
         symbolsPatterns[1] = Pattern.compile("[!-/:-@\\[-`{-~]");
 
         this.setName(BotManager.getInstance().getInstance().nick);
@@ -580,7 +580,8 @@ public class ReceiverBot extends PircBot {
         if(msg[0].equalsIgnoreCase(prefix + "viewerstats")){
         	log("RB: Matched command !viewerstats");
         	
-        	send(channel, "The all-time high viewer count for "+twitchName+" is "+ channelInfo.getViewerStats() + " viewers.");
+        	send(channel, "The all-time high viewer count for "+twitchName+" is "+ channelInfo.getViewerStats() +
+        			" viewers. The average viewer count per stream is "+ channelInfo.getAverage()+ " viewers.");
         	
         	
         }
@@ -618,6 +619,12 @@ public class ReceiverBot extends PircBot {
                 send(channel, "Error accessing Twitch API.");
             }
             return;
+        }
+        try {
+           getStreamList("up_time", channelInfo);
+           channelInfo.alive(twitchName);
+        } catch (Exception e) {
+            channelInfo.dead(twitchName);
         }
 
         // !music - All
@@ -1052,7 +1059,7 @@ public class ReceiverBot extends PircBot {
                             throwMessage += msg[i] + " ";
                             }
                      }
-                    send(channel, " (╯°□°)╯ " + throwMessage);
+                    send(channel, " (╯°□°）╯彡 " + throwMessage);
                 }
                 
             }

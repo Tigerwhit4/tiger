@@ -103,6 +103,10 @@ public class Channel {
 	private int cooldown = 0;
 
 	private int maxViewers = 0;
+	private boolean streamUp = false;
+	private int streamMax = 0;
+	private int streamNumber = 0;
+	private int runningMaxViewers = 0;
 
     public Channel(String name) {
         channel = name;
@@ -1158,6 +1162,33 @@ public class Channel {
     public int getViewerStats(){
     	return maxViewers;
     }
+    public void alive(String name){
+    	if(streamUp = false){
+    		streamNumber++;
+    	}
+    	streamUp = true;
+    	config.setBoolean("streamAlive", true);
+    	long curViewers = JSONUtil.krakenViewers(name);
+    	if(curViewers>streamMax){
+    		streamMax=(int) curViewers; 
+    		config.setInt("maxViewersStream",(int) curViewers);
+    	}
+    }
+    public void dead(String name){
+    	if(streamUp){
+    		runningMaxViewers += streamMax;
+    		config.setInt("runningMaxViewers",runningMaxViewers);
+    	}
+    	streamUp = false;
+    	config.setBoolean("streamAlive", false);
+    	streamMax = 0;
+    	config.setInt("maxViewersStream",0);
+    }
+    public double getAverage(){
+    	return runningMaxViewers/(1.0*streamNumber);
+    }
+    
+
 
     // #################################################
 
@@ -1321,6 +1352,11 @@ public class Channel {
         defaults.put("bullet", "#!");
         defaults.put("cooldown", 5);
         defaults.put("max viewers", maxViewers);
+        defaults.put("runningMaxViewers", 0);
+        defaults.put("streamCount", 0);
+        defaults.put("streamAlive", false);
+        defaults.put("maxViewersStream",0);
+        
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1336,8 +1372,13 @@ public class Channel {
         setDefaults();
 
         //channel = config.getString("channel");
+        runningMaxViewers = Integer.parseInt(config.getString("runningMaxViewers"));
+        streamUp = Boolean.parseBoolean(config.getString("streamAlive"));
+        
         maxViewers  = Integer.parseInt(config.getString("max viewers"));
         filterCaps = Boolean.parseBoolean(config.getString("filterCaps"));
+        streamNumber = Integer.parseInt(config.getString("streamCount"));
+        streamMax = Integer.parseInt(config.getString("maxViewersStream"));
         filterCapsPercent = Integer.parseInt(config.getString("filterCapsPercent"));
         filterCapsMinCharacters = Integer.parseInt(config.getString("filterCapsMinCharacters"));
         filterCapsMinCapitals = Integer.parseInt(config.getString("filterCapsMinCapitals"));
