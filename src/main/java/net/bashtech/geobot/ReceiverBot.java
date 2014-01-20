@@ -226,6 +226,12 @@ public class ReceiverBot extends PircBot {
         boolean isOp = false;
         boolean isRegular = false;
         int accessLevel = 0;
+        try {
+			read("quotesList"+channel+".txt", quotesList);
+		} catch (Exception e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 
         //Check for user level based on other factors.
         if (BotManager.getInstance().isAdmin(sender))
@@ -941,10 +947,12 @@ public class ReceiverBot extends PircBot {
 		}
 		int wantedQuote = Integer.parseInt(quoteReceived2);
 		if (wantedQuote < quotesList.size()){
+			
 			try {
+				
+				save("quotesList"+channel+".txt", quotesList);
 				quotesList.remove(wantedQuote);
 				send(channel, "Quote #" + wantedQuote + " removed.");
-				save("quotesList"+channel+".txt", quotesList);
 			} catch (IOException e) {
 				send(channel, "Error deleting the quote.");
 				
