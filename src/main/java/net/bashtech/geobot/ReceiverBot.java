@@ -573,6 +573,18 @@ public class ReceiverBot extends PircBot {
 
             return;
         }
+        
+        //viewerstats
+        channelInfo.checkViewerStats(twitchName);
+        //!viewerstats
+        if(msg[0].equalsIgnoreCase(prefix + "viewerstats")){
+        	log("RB: Matched command !viewerstats");
+        	
+        	send(channel, "The all-time high viewer count for "+twitchName+" is "+ channelInfo.getViewerStats() + " viewers.");
+        	
+        	
+        }
+        
 
         // !resolution - All
         if (msg[0].equalsIgnoreCase(prefix + "res") || msg[0].equalsIgnoreCase(prefix + "resolution")) {

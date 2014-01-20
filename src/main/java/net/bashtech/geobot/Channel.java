@@ -102,6 +102,8 @@ public class Channel {
 
 	private int cooldown = 0;
 
+	private int maxViewers = 0;
+
     public Channel(String name) {
         channel = name;
         config = new PropertiesFile(name + ".properties");
@@ -1144,6 +1146,18 @@ public class Channel {
     	}
     	
     }
+    
+    public void checkViewerStats(String name){
+    	long viewers = JSONUtil.krakenViewers(name);
+    	if(viewers > maxViewers){
+    		maxViewers = (int) viewers;
+    		config.setInt("max viewers", maxViewers);
+    	}
+    	
+    }
+    public int getViewerStats(){
+    	return maxViewers;
+    }
 
     // #################################################
 
@@ -1306,6 +1320,7 @@ public class Channel {
         defaults.put("wpCount", 0);
         defaults.put("bullet", "#!");
         defaults.put("cooldown", 5);
+        defaults.put("max viewers", maxViewers);
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1321,6 +1336,7 @@ public class Channel {
         setDefaults();
 
         //channel = config.getString("channel");
+        maxViewers  = Integer.parseInt(config.getString("max viewers"));
         filterCaps = Boolean.parseBoolean(config.getString("filterCaps"));
         filterCapsPercent = Integer.parseInt(config.getString("filterCapsPercent"));
         filterCapsMinCharacters = Integer.parseInt(config.getString("filterCapsMinCharacters"));
