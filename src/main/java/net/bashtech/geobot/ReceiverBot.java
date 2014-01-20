@@ -1024,14 +1024,21 @@ public class ReceiverBot extends PircBot {
         // !throw - All
         if (msg[0].equalsIgnoreCase(prefix + "throw") && (channelInfo.checkThrow() || isRegular)) {
             log("RB: Matched command !throw");
-            if (msg.length > 1) {
-                String throwMessage = "";
-                for (int i = 1; i < msg.length; i++) {
-                	if(msg[i].toLowerCase().contains("alef")||msg[i].toLowerCase().contains("ends")){
-                		throwMessage += sender+" ";
-                	}
-                	else
-                    throwMessage += msg[i] + " ";
+            if (msg.length > 1) 
+                {
+                    String throwMessage = "";
+                    {
+                        for (int i = 1; i < msg.length; i++) 
+                            {
+                	            if (!sender.equalsIgnoreCase() = "alefnull" && !sender.equalsIgnoreCase() = "endsgamer" && msg[i].toLowerCase().contains("alef") || msg[i].toLowerCase().contains("aief") || msg[i].toLowerCase().contains("ends"))
+                                {
+                		            throwMessage += sender+" ";
+                	            }
+                	        else
+                            throwMessage += msg[i] + " ";
+                            }
+                     }
+                        
                 }
                 send(channel, " (╯°□°)╯ " + throwMessage);
             }
