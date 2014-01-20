@@ -100,6 +100,8 @@ public class Channel {
 
     private Map<String, Object> defaults = new HashMap<String, Object>();
 
+	private int cooldown = 0;
+
     public Channel(String name) {
         channel = name;
         config = new PropertiesFile(name + ".properties");
@@ -115,7 +117,7 @@ public class Channel {
         this(name);
         setMode(mode);
     }
-
+    
     public String getChannel() {
         return channel;
     }
@@ -1303,6 +1305,7 @@ public class Channel {
         defaults.put("wpTimer", false);
         defaults.put("wpCount", 0);
         defaults.put("bullet", "#!");
+        defaults.put("cooldown", 5);
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1328,6 +1331,7 @@ public class Channel {
         wpOn = Boolean.parseBoolean(config.getString("wpTimer"));
         wpCount = Integer.parseInt(config.getString("wpCount"));
         bullet = config.getString("bullet");
+        cooldown  = Integer.parseInt(config.getString("cooldown"));
         filterSymbols = Boolean.parseBoolean(config.getString("filterSymbols"));
         filterSymbolsPercent = Integer.parseInt(config.getString("filterSymbolsPercent"));
         filterSymbolsMin = Integer.parseInt(config.getString("filterSymbolsMin"));
@@ -1513,4 +1517,12 @@ public class Channel {
             System.out.println(getChannel().substring(1) + " is not live. Skipping commercial.");
         }
     }
+    public void setCooldown(int newCooldown){
+    	cooldown=newCooldown;
+    	config.setInt("cooldown", newCooldown);
+    }
+	public long getCooldown() {
+		
+		return cooldown;
+	}
 }

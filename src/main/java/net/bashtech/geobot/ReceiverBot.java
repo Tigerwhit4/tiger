@@ -65,6 +65,7 @@ public class ReceiverBot extends PircBot {
     long lastQuoted1 = 0;
     long newQuoted1 = System.currentTimeMillis();
     private ArrayList<String>wpOn = new ArrayList<String>();
+    long lastCommand = System.currentTimeMillis();
 	
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
@@ -227,10 +228,10 @@ public class ReceiverBot extends PircBot {
         boolean isRegular = false;
         int accessLevel = 0;
         try {
-			read("quotesList"+channel+".txt", quotesList);
+			read("quotesList"+channel+".txt");
 		} catch (Exception e2) {
 			// TODO Auto-generated catch block
-			e2.printStackTrace();
+			
 		}
 
         //Check for user level based on other factors.
@@ -643,9 +644,11 @@ public class ReceiverBot extends PircBot {
         			send(channel, "Command syntax: "+prefix+"whalepenis <on/off>");
         	}
         }
+
+        //whale penis timer
+        
         String combined = this.fuseArray(msg, 0);
         combined = combined.toLowerCase();
-        
         
         if(((combined.indexOf("whalepenis")> -1) || (combined.indexOf("whale penis")> -1))
         		&& channelInfo.getWp() 
@@ -736,7 +739,7 @@ public class ReceiverBot extends PircBot {
                 description.trim();
                 
                 try {
-                	read("highlight"+channel+".txt", highlightList);
+                	readHighlights("highlight"+channel+".txt");
                 } catch (Exception e) {
                     send(channel, "Error with the highlight list, it probably hasn't been created yet");
                 }
@@ -757,7 +760,7 @@ public class ReceiverBot extends PircBot {
             	if (msg[1].equalsIgnoreCase("delete")||msg[1].equalsIgnoreCase("remove")){
             		int index = Integer.parseInt(msg[2]);
             		try {
-                    	read("highlight"+channel+".txt", highlightList);
+                    	readHighlights("highlight"+channel+".txt");
                         highlightList.remove(index);
                         save("highlight" + channel+".txt", highlightList);
                         
@@ -769,7 +772,7 @@ public class ReceiverBot extends PircBot {
             	else if(msg[1].equalsIgnoreCase("get")){
             		int index = Integer.parseInt(msg[2]);
             		try {
-                    	read("highlight"+channel+".txt", highlightList);
+                    	readHighlights("highlight"+channel+".txt");
                         send(channel, "Highlight Start: "+ highlightList.get(index));
                         
                         
@@ -822,11 +825,11 @@ public class ReceiverBot extends PircBot {
 				String quoteReceived1 = this.fuseArray(msg, 1);
 				quoteReceived1.trim();
 				try {
-					read("quotesList"+channel+".txt", quotesList);
+					read("quotesList"+channel+".txt");
 
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					
 				}
 				int wantedQuote = Integer.parseInt(quoteReceived1);
 				if (wantedQuote < quotesList.size()){
@@ -840,6 +843,7 @@ public class ReceiverBot extends PircBot {
 			}
 			
 		}
+		//randomquote
 		long newQuoted1 = System.currentTimeMillis();
 		if ((newQuoted1 >= (lastQuoted1 + 30*1000L)) || isOp){
 			//randomquote
@@ -848,11 +852,11 @@ public class ReceiverBot extends PircBot {
 			    if(isRegular && BotManager.getInstance().twitchChannels){
 				
 				try {
-					read("quotesList"+channel+".txt", quotesList);
+					read("quotesList"+channel+".txt");
 
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					
 				}
 				
 				int randQuotes = (int) (Math.random()* quotesList.size());
@@ -892,11 +896,11 @@ public class ReceiverBot extends PircBot {
 		String quoteReceived = this.fuseArray(msg, 1);
 		quoteReceived.trim();
 		 try {
-				read("quotesList"+channel+".txt", quotesList);
+			 read("quotesList"+channel+".txt");
 
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				
 			}
 		quotesList.add(quoteReceived);
 		try {
@@ -916,11 +920,11 @@ public class ReceiverBot extends PircBot {
 			String quoteReceived3 = this.fuseArray(msg, 1);
 			quoteReceived3.trim();
 			try {
-				read("quotesList"+channel+".txt", quotesList);
+				read("quotesList"+channel+".txt");
 
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				
 			}
 			int index = quotesList.indexOf(quoteReceived3);
 			if(index > -1){
@@ -939,11 +943,11 @@ public class ReceiverBot extends PircBot {
 		String quoteReceived2 = this.fuseArray(msg, 1);
 		quoteReceived2.trim();
 		try {
-			read("quotesList"+channel+".txt", quotesList);
+			read("quotesList"+channel+".txt");
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			
 		}
 		int wantedQuote = Integer.parseInt(quoteReceived2);
 		if (wantedQuote < quotesList.size()){
@@ -1023,9 +1027,13 @@ public class ReceiverBot extends PircBot {
             if (msg.length > 1) {
                 String throwMessage = "";
                 for (int i = 1; i < msg.length; i++) {
+                	if(msg[i].toLowerCase().contains("alef")||msg[i].toLowerCase().contains("ends")){
+                		throwMessage += sender+" ";
+                	}
+                	else
                     throwMessage += msg[i] + " ";
                 }
-                send(channel, " (╯°□°)╯" + throwMessage);
+                send(channel, " (╯°□°)╯ " + throwMessage);
             }
             return;
         }
@@ -1965,6 +1973,16 @@ public class ReceiverBot extends PircBot {
             	else
             		send(channel, "Usage is "+prefix+"setbullet <new bullet>");
             }
+            //set cooldown for custom commands
+            else if(msg[1].equalsIgnoreCase("cooldown")){
+            	if(msg.length > 2){
+            		int newCooldown = Integer.parseInt(msg[2]);
+            		channelInfo.setCooldown(newCooldown);
+            		send(channel, "Cooldown for custom commands is now "+ newCooldown +" seconds.");
+            	}
+            	else
+            		send(channel, "Usage is "+prefix+"setbullet <new bullet>");
+            }
             else if (msg[1].equalsIgnoreCase("throw")) {
                 if (msg[2].equalsIgnoreCase("on")) {
                     channelInfo.setThrow(true);
@@ -2212,6 +2230,8 @@ public class ReceiverBot extends PircBot {
         // ***************************** Info/Catch-all Command ***************************
         // ********************************************************************************
 
+      long cooldown=channelInfo.getCooldown()*1L;
+	
         if (msg[0].substring(0, 1).equalsIgnoreCase(prefix)) {
             String command = msg[0].substring(1);
             String value = channelInfo.getCommand(command);
@@ -2226,8 +2246,13 @@ public class ReceiverBot extends PircBot {
                         send(channel, "Command cannot contain double commas (\",,\").");
                     }
                 } else {
-                    if (channelInfo.checkCommandRestriction(command, accessLevel))
+                    if (channelInfo.checkCommandRestriction(command, accessLevel)){
+                    	long currentTime = System.currentTimeMillis();
+                    	if(currentTime>(lastCommand + cooldown*1000L)){
+                    		lastCommand = currentTime;
                         send(channel, sender, value);
+                    	}
+                    }
                 }
 
             }
@@ -2792,12 +2817,18 @@ public class ReceiverBot extends PircBot {
 		fout.close();
 		}
     @SuppressWarnings("unchecked")
-	public void read(String fileName, ArrayList<String> arr) throws Exception {
+	public void read(String fileName) throws Exception {
 		FileInputStream fin= new FileInputStream (fileName);
 		ObjectInputStream ois = new ObjectInputStream(fin);
-		arr = (ArrayList<String>) ois.readObject();
+		quotesList = (ArrayList<String>) ois.readObject();
 		fin.close();
 		}
+    public void readHighlights(String fileName) throws Exception{
+    	FileInputStream fin= new FileInputStream (fileName);
+		ObjectInputStream ois = new ObjectInputStream(fin);
+		highlightList = (ArrayList<String>) ois.readObject();
+		fin.close();
+    }
     
     private class giveawayTimer extends TimerTask {
         private Channel channelInfo;

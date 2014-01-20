@@ -162,7 +162,7 @@ public class JSONUtil {
 			return lastSong;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            
             return "(Error querying API)";
         }
 
