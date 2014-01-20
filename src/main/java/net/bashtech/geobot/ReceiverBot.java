@@ -70,9 +70,6 @@ public class ReceiverBot extends PircBot {
         ReceiverBot.setInstance(this);
 	    quotesList = new ArrayList<String>();
 	    highlightList = new ArrayList<String>();
-	    if(wpOn.size()<1){
-	    	wpOn.add("false");
-	    }
 	    
         linkPatterns[0] = Pattern.compile(".*http://.*", Pattern.CASE_INSENSITIVE);
         linkPatterns[1] = Pattern.compile(".*https://.*", Pattern.CASE_INSENSITIVE);
@@ -185,6 +182,7 @@ public class ReceiverBot extends PircBot {
         Channel channelInfo = getChannelObject(channel);
         String twitchName = channelInfo.getTwitchName();
         String prefix = channelInfo.getPrefix();
+        bullet[0] = channelInfo.getChannelBullet();
 
         if (!channelInfo.active) {
             System.out.println("DEBUG: Channel not active, message ignored.");
@@ -642,6 +640,7 @@ public class ReceiverBot extends PircBot {
         String combined = this.fuseArray(msg, 0);
         combined = combined.toLowerCase();
         
+        
         if(((combined.indexOf("whalepenis")> -1) || (combined.indexOf("whale penis")> -1))
         		&& channelInfo.getWp() 
         		&& !sender.equalsIgnoreCase(getNick()) && !sender.equalsIgnoreCase(senderTriggered)){
@@ -674,7 +673,6 @@ public class ReceiverBot extends PircBot {
         				channelInfo.getWpCount()+" times.");
         	}
             }
-        
         
         
         
@@ -867,7 +865,7 @@ public class ReceiverBot extends PircBot {
 	  //LMGTFY command
 		if (msg[0].equalsIgnoreCase(prefix + "google")){
 		    log("RB: Matched command !google");
-		    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
+		    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
 			String queryReceived = this.fuseArray(msg, 1);
 			queryReceived.trim();
 			queryReceived = queryReceived.replaceAll(" ", "+");
@@ -1949,7 +1947,17 @@ public class ReceiverBot extends PircBot {
                     send(channel, "Feature: Topic is off");
                 }
 
-            } else if (msg[1].equalsIgnoreCase("throw")) {
+            }//setbullet
+            else if(msg[1].equalsIgnoreCase("bullet")){
+            	if(msg.length > 2){
+            		bullet[0] = msg[2];
+            		channelInfo.setBullet(msg[2]);
+            		send(channel, "Bullet is now set to \""+bullet[0]+"\"");
+            	}
+            	else
+            		send(channel, "Usage is "+prefix+"setbullet <new bullet>");
+            }
+            else if (msg[1].equalsIgnoreCase("throw")) {
                 if (msg[2].equalsIgnoreCase("on")) {
                     channelInfo.setThrow(true);
                     send(channel, "Feature: !throw is on");

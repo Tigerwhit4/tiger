@@ -96,6 +96,7 @@ public class Channel {
     private boolean wpOn;
     private long sinceWp = System.currentTimeMillis();
     private int wpCount = 0;
+    private String bullet = "#!";
 
     private Map<String, Object> defaults = new HashMap<String, Object>();
 
@@ -144,6 +145,13 @@ public class Channel {
     	long differenceInSeconds = (now-sinceWp)/1000L;
     	sinceWp = now;
     	return (differenceInSeconds);
+    }
+    public void setBullet(String newBullet){
+    	bullet = newBullet;
+    	config.setString("bullet", newBullet);
+    }
+    public String getChannelBullet(){
+    	return bullet;
     }
     public void increaseWpCount(){
     	wpCount++;
@@ -1125,7 +1133,7 @@ public class Channel {
     	}
     	else {
     		long now = System.currentTimeMillis();
-    		if((now*1L) >= (songUpdated + 60000L)){
+    		if((now*1L) >= (songUpdated + 90000L)){
     			lastSong = newSong;
     			songUpdated = now + 5000;
     			return true;
@@ -1294,6 +1302,7 @@ public class Channel {
         defaults.put("banPhraseSeverity", 99);
         defaults.put("wpTimer", false);
         defaults.put("wpCount", 0);
+        defaults.put("bullet", "#!");
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1318,6 +1327,7 @@ public class Channel {
         filterEmotes = Boolean.parseBoolean(config.getString("filterEmotes"));
         wpOn = Boolean.parseBoolean(config.getString("wpTimer"));
         wpCount = Integer.parseInt(config.getString("wpCount"));
+        bullet = config.getString("bullet");
         filterSymbols = Boolean.parseBoolean(config.getString("filterSymbols"));
         filterSymbolsPercent = Integer.parseInt(config.getString("filterSymbolsPercent"));
         filterSymbolsMin = Integer.parseInt(config.getString("filterSymbolsMin"));
