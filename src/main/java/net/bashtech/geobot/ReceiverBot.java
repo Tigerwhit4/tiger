@@ -1030,7 +1030,7 @@ public class ReceiverBot extends PircBot {
                     {
                         for (int i = 1; i < msg.length; i++) 
                             {
-                	            if (!sender.equalsIgnoreCase() = "alefnull" && !sender.equalsIgnoreCase() = "endsgamer" && msg[i].toLowerCase().contains("alef") || msg[i].toLowerCase().contains("aief") || msg[i].toLowerCase().contains("ends"))
+                	            if (!sender.equalsIgnoreCase("alefnull") && !sender.equalsIgnoreCase("endsgamer") && msg[i].toLowerCase().contains("alef") || msg[i].toLowerCase().contains("aief") || msg[i].toLowerCase().contains("ends"))
                                 {
                 		            throwMessage += sender+" ";
                 	            }
@@ -1038,12 +1038,12 @@ public class ReceiverBot extends PircBot {
                             throwMessage += msg[i] + " ";
                             }
                      }
-                        
+                    send(channel, " (╯°□°)╯ " + throwMessage);
                 }
-                send(channel, " (╯°□°)╯ " + throwMessage);
+                
             }
-            return;
-        }
+            
+        
 
         // !topic
         if (msg[0].equalsIgnoreCase(prefix + "topic") && channelInfo.useTopic) {
