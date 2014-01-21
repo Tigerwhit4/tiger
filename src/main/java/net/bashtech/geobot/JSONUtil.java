@@ -143,6 +143,10 @@ public class JSONUtil {
             JSONObject jsonObject = (JSONObject) obj;
             JSONObject chatters = (JSONObject) jsonObject.get("chatters");
             JSONArray viewers = (JSONArray) chatters.get("viewers");
+            JSONArray moderators = (JSONArray)chatters.get("moderators");
+            for(int i = 0; i < moderators.size(); i++){
+            	viewers.add(moderators.get(i));
+            }
 //            int indexStart = jsonString.indexOf("\"viewers\": [");
 //            int indexEnd = jsonString.indexOf("]", indexStart);
 //            String viewers = jsonString.substring(indexStart,indexEnd);
