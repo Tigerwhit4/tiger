@@ -577,11 +577,18 @@ public class ReceiverBot extends PircBot {
         //viewerstats
         channelInfo.checkViewerStats(twitchName);
         //!viewerstats
-        if(msg[0].equalsIgnoreCase(prefix + "viewerstats")){
+        if(msg[0].equalsIgnoreCase(prefix + "viewerstats") && isOp){
         	log("RB: Matched command !viewerstats");
         	
         	send(channel, "The all-time high viewer count for "+twitchName+" is "+ channelInfo.getViewerStats() +
         			" viewers. The average viewer count per stream is "+ channelInfo.getAverage()+ " viewers.");
+        	
+        	
+        }
+        if(msg[0].equalsIgnoreCase(prefix + "setStreamCount") && isAdmin){
+        	log("RB: Matched command !setCount");
+        	channelInfo.setStreamCount(Integer.parseInt(msg[1]));
+        	send(channel, "Stream count has been adjusted");
         	
         	
         }
@@ -625,6 +632,7 @@ public class ReceiverBot extends PircBot {
            channelInfo.alive(twitchName);
         } catch (Exception e) {
             channelInfo.dead(twitchName);
+            log(channel+"marked as no longer streaming or not streaming");
         }
 
         // !music - All
@@ -1041,7 +1049,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !throw - All
-        if (msg[0].equalsIgnoreCase(prefix + "throw") && (channelInfo.checkThrow() || isRegular)) {
+        if (msg[0].equalsIgnoreCase(prefix + "throw") && (isRegular)) {
             log("RB: Matched command !throw");
             if (msg.length > 1) 
                 {
@@ -1369,7 +1377,7 @@ public class ReceiverBot extends PircBot {
         if (msg[0].equalsIgnoreCase(prefix + "poll") && isOp) {
             log("RB: Matched command !poll");
             if (msg.length < 2) {
-                send(channel, "Syntax: \"!poll create [option option ... option]\"");
+                send(channel, "Syntax: \""+prefix+"poll create [option option ... option]\"");
             } else if (msg.length >= 2) {
                 if (msg[1].equalsIgnoreCase("create")) {
                     String[] options = new String[msg.length - 2];
@@ -1379,14 +1387,14 @@ public class ReceiverBot extends PircBot {
                         oc++;
                     }
                     channelInfo.setPoll(new Poll(options));
-                    send(channel, "Poll created. Do '!poll start' to start voting.");
+                    send(channel, "Poll created. Do '"+prefix+"poll start' to start voting.");
                 } else if (msg[1].equalsIgnoreCase("start")) {
                     if (channelInfo.getPoll() != null) {
                         if (channelInfo.getPoll().getStatus()) {
                             send(channel, "Poll is alreay running.");
                         } else {
                             channelInfo.getPoll().setStatus(true);
-                            send(channel, "Poll started. Type: !vote <option> to start voting.");
+                            send(channel, "Poll started. Type: "+prefix+"vote <option> to start voting.");
                         }
                     }
                 } else if (msg[1].equalsIgnoreCase("stop")) {

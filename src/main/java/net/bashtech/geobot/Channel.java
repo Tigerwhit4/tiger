@@ -144,6 +144,10 @@ public class Channel {
     public boolean getWp(){
     	return wpOn;
     }
+    public void setStreamCount(int newCount){
+    	streamNumber=newCount;
+    	config.setInt("streamCount", streamNumber);
+    }
     public void setWp(boolean state){
     	wpOn = state;
     	config.setBoolean("wpTimer", wpOn);
@@ -1135,7 +1139,7 @@ public class Channel {
     }
     public boolean updateSong(){
     	String newSong = JSONUtil.lastFM(getLastfm());
-    	if(newSong.equals(lastSong)||newSong.equals("(Nothing)")){
+    	if(newSong.equals(lastSong)||newSong.equals("(Nothing)")||newSong.equalsIgnoreCase("(Error querying API)")){
     		return false;
     	
     	}
@@ -1165,12 +1169,13 @@ public class Channel {
     public void alive(String name){
     	if(streamUp = false){
     		streamNumber++;
+    		config.setInt("streamCount", streamNumber);
     	}
     	streamUp = true;
     	config.setBoolean("streamAlive", true);
     	long curViewers = JSONUtil.krakenViewers(name);
     	if(curViewers>streamMax){
-    		streamMax=(int) curViewers; 
+    		streamMax= (int) curViewers; 
     		config.setInt("maxViewersStream",(int) curViewers);
     	}
     }
@@ -1185,7 +1190,7 @@ public class Channel {
     	config.setInt("maxViewersStream",0);
     }
     public double getAverage(){
-    	return runningMaxViewers/(1.0*streamNumber);
+    	return (double)runningMaxViewers/(streamNumber);
     }
     
 
@@ -1301,6 +1306,7 @@ public class Channel {
         defaults.put("filterEmotes", false);
         defaults.put("filterSymbols", false);
         defaults.put("filterEmotesMax", 4);
+        
         defaults.put("topic", "");
         defaults.put("commandsKey", "");
         defaults.put("commandsValue", "");
@@ -1347,11 +1353,13 @@ public class Channel {
         defaults.put("subMessage", "(_1_) has subscribed!");
         defaults.put("subscriberAlert", false);
         defaults.put("banPhraseSeverity", 99);
+        
         defaults.put("wpTimer", false);
         defaults.put("wpCount", 0);
         defaults.put("bullet", "#!");
         defaults.put("cooldown", 5);
-        defaults.put("max viewers", maxViewers);
+        
+        defaults.put("max viewers", 0);
         defaults.put("runningMaxViewers", 0);
         defaults.put("streamCount", 0);
         defaults.put("streamAlive", false);
@@ -1372,27 +1380,30 @@ public class Channel {
         setDefaults();
 
         //channel = config.getString("channel");
-        runningMaxViewers = Integer.parseInt(config.getString("runningMaxViewers"));
+        
         streamUp = Boolean.parseBoolean(config.getString("streamAlive"));
         
-        maxViewers  = Integer.parseInt(config.getString("max viewers"));
-        filterCaps = Boolean.parseBoolean(config.getString("filterCaps"));
+        runningMaxViewers = Integer.parseInt(config.getString("runningMaxViewers"));
         streamNumber = Integer.parseInt(config.getString("streamCount"));
         streamMax = Integer.parseInt(config.getString("maxViewersStream"));
+        maxViewers  = Integer.parseInt(config.getString("max viewers"));
+        filterCaps = Boolean.parseBoolean(config.getString("filterCaps"));
+        
         filterCapsPercent = Integer.parseInt(config.getString("filterCapsPercent"));
         filterCapsMinCharacters = Integer.parseInt(config.getString("filterCapsMinCharacters"));
         filterCapsMinCapitals = Integer.parseInt(config.getString("filterCapsMinCapitals"));
         filterLinks = Boolean.parseBoolean(config.getString("filterLinks"));
         filterOffensive = Boolean.parseBoolean(config.getString("filterOffensive"));
         filterEmotes = Boolean.parseBoolean(config.getString("filterEmotes"));
+        
         wpOn = Boolean.parseBoolean(config.getString("wpTimer"));
         wpCount = Integer.parseInt(config.getString("wpCount"));
         bullet = config.getString("bullet");
         cooldown  = Integer.parseInt(config.getString("cooldown"));
+        
         filterSymbols = Boolean.parseBoolean(config.getString("filterSymbols"));
         filterSymbolsPercent = Integer.parseInt(config.getString("filterSymbolsPercent"));
         filterSymbolsMin = Integer.parseInt(config.getString("filterSymbolsMin"));
-
         filterEmotesMax = Integer.parseInt(config.getString("filterEmotesMax"));
         filterEmotesSingle = Boolean.parseBoolean(config.getString("filterEmotesSingle"));
         //announceJoinParts = Boolean.parseBoolean(config.getString("announceJoinParts"));
