@@ -632,7 +632,7 @@ public class ReceiverBot extends PircBot {
            channelInfo.alive(twitchName);
         } catch (Exception e) {
             channelInfo.dead(twitchName);
-            log(channel+"marked as no longer streaming or not streaming");
+           
         }
 
         // !music - All
@@ -1583,12 +1583,12 @@ public class ReceiverBot extends PircBot {
         if(msg[0].equalsIgnoreCase(prefix+"winner") && isOp){
         	log("RB: Matched command !winner");
 
-        	String[] chatters = JSONUtil.tmiChatters(twitchName);
+        	ArrayList<String> chatters = JSONUtil.tmiChatters(twitchName);
         	if(chatters != null){
-        	int randomNum = (int) (Math.random()* chatters.length);
+        	int randomNum = (int) (Math.random()* chatters.size());
 			
 				if(randomNum > -1){
-					send(channel, "And the winner is... "+chatters[randomNum]+"!");
+					send(channel, "And the winner is... "+chatters.get(randomNum)+"!");
 				}
         	}
 			else

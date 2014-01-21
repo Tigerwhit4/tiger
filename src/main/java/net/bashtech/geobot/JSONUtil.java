@@ -135,17 +135,21 @@ public class JSONUtil {
         }
 
     }
-    public static String[] tmiChatters(String channel){
+    public static ArrayList<String> tmiChatters(String channel){
     	try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(BotManager.getRemoteContent("https://tmi.twitch.tv/group/user/"+channel+"/chatters"));
             
-            String jsonString = (BotManager.getRemoteContent("https://tmi.twitch.tv/group/user/"+channel+"/chatters"));
-            
-            int indexStart = jsonString.indexOf("\"viewers\": [");
-            int indexEnd = jsonString.indexOf("]", indexStart);
-            String viewers = jsonString.substring(indexStart,indexEnd);
-            viewers = viewers.replaceAll("\"", "");
-            String[]viewerArray = viewers.split(",");
-            return viewerArray;
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONObject chatters = (JSONObject) jsonObject.get("chatters");
+            JSONArray viewers = (JSONArray) chatters.get("viewers");
+//            int indexStart = jsonString.indexOf("\"viewers\": [");
+//            int indexEnd = jsonString.indexOf("]", indexStart);
+//            String viewers = jsonString.substring(indexStart,indexEnd);
+//            viewers = viewers.replaceAll("\"", "");
+//            String[]viewerArray = viewers.split(",");
+//            return viewerArray;
+            return viewers;
             
         } catch (Exception ex) {
             ex.printStackTrace();
