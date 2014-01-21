@@ -1167,9 +1167,8 @@ public class Channel {
     	return maxViewers;
     }
     public void alive(String name){
-    	if(streamUp = false){
-    		streamNumber++;
-    		config.setInt("streamCount", streamNumber);
+    	if(!streamUp){
+    		
     	}
     	streamUp = true;
     	config.setBoolean("streamAlive", true);
@@ -1181,6 +1180,8 @@ public class Channel {
     }
     public void dead(String name){
     	if(streamUp){
+    		streamNumber++;
+    		config.setInt("streamCount", streamNumber);
     		runningMaxViewers += streamMax;
     		config.setInt("runningMaxViewers",runningMaxViewers);
     	}
