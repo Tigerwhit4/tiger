@@ -21,12 +21,14 @@ package net.bashtech.geobot;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 
 
 public class JSONUtil {
@@ -133,7 +135,23 @@ public class JSONUtil {
         }
 
     }
-
+    public static String[] tmiChatters(String channel){
+    	try {
+            
+            String jsonString = (BotManager.getRemoteContent("https://tmi.twitch.tv/group/user/"+channel+"/chatters"));
+            
+            int indexStart = jsonString.indexOf("\"viewers\": [");
+            int indexEnd = jsonString.indexOf("]", indexStart);
+            String viewers = jsonString.substring(indexStart,indexEnd);
+            viewers = viewers.replaceAll("\"", "");
+            String[]viewerArray = viewers.split(",");
+            return viewerArray;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
     public static String lastFM(String user) {
         String api_key = BotManager.getInstance().LastFMAPIKey;
 	String lastSong = null;

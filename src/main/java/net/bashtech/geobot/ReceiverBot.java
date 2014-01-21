@@ -1067,7 +1067,7 @@ public class ReceiverBot extends PircBot {
                             throwMessage += msg[i] + " ";
                             }
                      }
-                    send(channel, " (╯°□°）╯彡 " + throwMessage);
+                    send(channel, " (╯°□°）╯彡" + throwMessage);
                 }
                 
             }
@@ -1560,8 +1560,14 @@ public class ReceiverBot extends PircBot {
                     send(channel, msg[1].toLowerCase()+ " was unbanned.");
                 }
                 if (msg[0].equalsIgnoreCase("+t")) {
-                    sendCommand(channel, ".timeout " + msg[1].toLowerCase());
-                    send(channel, msg[1].toLowerCase()+ " was timed out.");
+                	if(msg.length>2){
+                    sendCommand(channel, ".timeout " + msg[1].toLowerCase()+ " "+msg[2]);
+                    send(channel, msg[1].toLowerCase()+ " was timed out for "+ msg[2]+" seconds.");
+                	}
+                	else{
+                		  sendCommand(channel, ".timeout " + msg[1].toLowerCase());
+                		  send(channel, msg[1].toLowerCase()+ " was timed out.");
+                	}
                 }
                 if (msg[0].equalsIgnoreCase("-t")) {
                 	sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
@@ -1574,7 +1580,23 @@ public class ReceiverBot extends PircBot {
             }
 
         }
+        if(msg[0].equalsIgnoreCase(prefix+"winner") && isOp){
+        	log("RB: Matched command !winner");
 
+        	String[] chatters = JSONUtil.tmiChatters(twitchName);
+        	if(chatters != null){
+        	int randomNum = (int) (Math.random()* chatters.length);
+			
+				if(randomNum > -1){
+					send(channel, "And the winner is... "+chatters[randomNum]+"!");
+				}
+        	}
+			else
+				send(channel, "Error, whoops");
+			
+		    
+        }
+        
         // !clear - Ops
         if (msg[0].equalsIgnoreCase(prefix + "clear") && isOp) {
             log("RB: Matched command !clear");

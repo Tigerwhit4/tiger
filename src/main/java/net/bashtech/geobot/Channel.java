@@ -1145,7 +1145,7 @@ public class Channel {
     	}
     	else {
     		long now = System.currentTimeMillis();
-    		if((now*1L) >= (songUpdated + 90000L)){
+    		if((now*1L) >= (songUpdated + 120000L)){
     			lastSong = newSong;
     			songUpdated = now + 5000;
     			return true;
