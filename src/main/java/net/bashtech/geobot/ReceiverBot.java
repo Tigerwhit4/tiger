@@ -1580,6 +1580,7 @@ public class ReceiverBot extends PircBot {
             }
 
         }
+        int tries = 0;
         if(msg[0].equalsIgnoreCase(prefix+"winner") && isOp){
         	log("RB: Matched command !winner");
 
@@ -1591,8 +1592,29 @@ public class ReceiverBot extends PircBot {
 					send(channel, "And the winner is... "+chatters.get(randomNum)+"!");
 				}
         	}
-			else
-				send(channel, "Error, whoops");
+			else{
+				ArrayList<String> chatters1 = JSONUtil.tmiChatters(twitchName);
+	        	if(chatters1 != null){
+	        	int randomNum = (int) (Math.random()* chatters1.size());
+				
+					if(randomNum > -1){
+						send(channel, "And the winner is... "+chatters1.get(randomNum)+"!");
+					}
+	        	}
+	        	else{
+	        		ArrayList<String> chatters2 = JSONUtil.tmiChatters(twitchName);
+	            	if(chatters2 != null){
+	            	int randomNum = (int) (Math.random()* chatters2.size());
+	    			
+	    				if(randomNum > -1){
+	    					send(channel, "And the winner is... "+chatters2.get(randomNum)+"!");
+	    				}
+	            	}
+	            	else
+	            		send(channel, "Error accessing API after 3 tries.");
+	        	}
+			}
+				
 			
 		    
         }
