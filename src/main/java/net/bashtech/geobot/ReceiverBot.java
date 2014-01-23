@@ -2391,25 +2391,32 @@ public class ReceiverBot extends PircBot {
         if (msg[0].substring(0, 1).equalsIgnoreCase(prefix)) {
             String command = msg[0].substring(1);
             String value = channelInfo.getCommand(command);
+            if(value.contains("(_PARAMETER_)")){
+             	value = value.replace("(_PARAMETER_)", fuseArray(msg, 1));
+             }
             if (value != null) {
                 log("RB: Matched command " + msg[0]);
-                if (msg.length > 1 && isOwner) {
-                    String updatedMessage = fuseArray(msg, 1);
-                    if (!updatedMessage.contains(",,")) {
-                        channelInfo.setCommand(command, updatedMessage);
-                        send(channel, "Command updated.");
-                    } else {
-                        send(channel, "Command cannot contain double commas (\",,\").");
-                    }
-                } else {
+//                if (msg.length > 1 && isOwner) {
+//                    String updatedMessage = fuseArray(msg, 1);
+//                    if (!updatedMessage.contains(",,")) {
+//                        channelInfo.setCommand(command, updatedMessage);
+//                        send(channel, "Command updated.");
+//                    } else {
+//                        send(channel, "Command cannot contain double commas (\",,\").");
+//                    }
+//                } else {
                     if (channelInfo.checkCommandRestriction(command, accessLevel)){
                     	long currentTime = System.currentTimeMillis();
                     	if(currentTime>(lastCommand + cooldown*1000L)){
                     		lastCommand = currentTime;
+                    		
+                    		 if(value.contains("(_PARAMETER_)")){
+                             	value = value.replace("(_PARAMETER_)", fuseArray(msg, 1));
+                             }
                         send(channel, sender, value);
                     	}
                     }
-                }
+               // }
 
             }
 
