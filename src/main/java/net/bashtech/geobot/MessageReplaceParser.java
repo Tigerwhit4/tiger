@@ -65,7 +65,7 @@ public class MessageReplaceParser {
         }
         if (message.contains("(_COMMERCIAL_)")){
         	ci.runCommercial();
-        	message = "Running a commercial, thank you for supporting this channel.";
+        	message = "Running a coe-mercial, thank you for supporting this channel.";
         }
         
         if (message.contains("(_QUOTE_)")){

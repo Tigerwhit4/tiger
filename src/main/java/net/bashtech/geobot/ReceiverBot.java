@@ -1169,13 +1169,13 @@ public class ReceiverBot extends PircBot {
         }
 
         // !commercial
-        if (msg[0].equalsIgnoreCase(prefix + "commercial") && BotManager.getInstance().twitchChannels) {
+        if ((msg[0].equalsIgnoreCase(prefix + "commercial") || msg[0].equalsIgnoreCase(prefix + "coemercial"))&& BotManager.getInstance().twitchChannels) {
             log("RB: Matched command !commercial");
             if (isOp) {
                 channelInfo.runCommercial();
-                send(channel, "Running a 30 second commercial. Thank you for supporting the channel!");
+                send(channel, "Running a 30 second coemercial. Thank you for supporting the channel!");
             }
-            send(channel, "Running a 30 second commercial. Thank you for supporting the channel!");
+            send(channel, "Running a 30 second coemercial. Thank you for supporting the channel!");
             return;
         }
 
