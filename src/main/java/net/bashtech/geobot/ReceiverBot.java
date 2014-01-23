@@ -1020,9 +1020,11 @@ public class ReceiverBot extends PircBot {
 			
 			try {
 				
-				save("quotesList"+channel+".txt", quotesList);
+				
 				quotesList.remove(wantedQuote);
+				save("quotesList"+channel+".txt", quotesList);
 				send(channel, "Quote #" + wantedQuote + " removed.");
+				
 			} catch (IOException e) {
 				send(channel, "Error deleting the quote.");
 				
