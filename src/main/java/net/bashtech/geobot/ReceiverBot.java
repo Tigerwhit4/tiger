@@ -352,9 +352,10 @@ public class ReceiverBot extends PircBot {
                     warningCount = channelInfo.getWarningCount(sender, FilterType.ME);
                     this.secondaryTO(channel, sender, this.getTODuration(warningCount, channelInfo), FilterType.ME, message);
 
-                    if (channelInfo.checkSignKicks())
+                    if (channelInfo.checkSignKicks()){
                         send(channel, sender + ", /me is not allowed in this channel - " + this.getTimeoutText(warningCount, channelInfo));
-
+                        channelInfo.increasePunCount();
+                    }
                     return;
 
                 }
@@ -373,9 +374,10 @@ public class ReceiverBot extends PircBot {
                     warningCount = channelInfo.getWarningCount(sender, FilterType.CAPS);
                     this.secondaryTO(channel, sender, this.getTODuration(warningCount, channelInfo), FilterType.CAPS, message);
 
-                    if (channelInfo.checkSignKicks())
+                    if (channelInfo.checkSignKicks()){
                         send(channel, sender + ", please don't shout or talk in all caps - " + this.getTimeoutText(warningCount, channelInfo));
-
+                    	channelInfo.increasePunCount();
+                    }
                     return;
                 }
             }
@@ -385,16 +387,18 @@ public class ReceiverBot extends PircBot {
                 boolean result = channelInfo.linkPermissionCheck(sender);
                 int warningCount = 0;
                 if (result) {
-                    send(channel, "Link permitted. (" + sender + ")");
+                    send(channel, "Link permitted. (" + sender + ")  i.imgur.com/P09uFKd.gif");
                 } else {
 
                     channelInfo.incWarningCount(sender, FilterType.LINK);
                     warningCount = channelInfo.getWarningCount(sender, FilterType.LINK);
                     this.secondaryTO(channel, sender, this.getTODuration(warningCount, channelInfo), FilterType.LINK, message);
 
-                    if (channelInfo.checkSignKicks())
+                    if (channelInfo.checkSignKicks()){
                         send(channel, sender + ", please ask a moderator before posting links - " + this.getTimeoutText(warningCount, channelInfo));
-                    return;
+                        channelInfo.increasePunCount();
+                    }
+                        return;
                 }
 
             }
@@ -407,8 +411,10 @@ public class ReceiverBot extends PircBot {
                 warningCount = channelInfo.getWarningCount(sender, FilterType.LENGTH);
                 this.secondaryTO(channel, sender, this.getTODuration(warningCount, channelInfo), FilterType.LENGTH, message);
 
-                if (channelInfo.checkSignKicks())
+                if (channelInfo.checkSignKicks()){
                     send(channel, sender + ", please don't spam long messages - " + this.getTimeoutText(warningCount, channelInfo));
+                    channelInfo.increasePunCount();   
+                }
 
                 return;
             }
@@ -425,10 +431,12 @@ public class ReceiverBot extends PircBot {
                     warningCount = channelInfo.getWarningCount(sender, FilterType.SYMBOLS);
                     this.secondaryTO(channel, sender, this.getTODuration(warningCount, channelInfo), FilterType.SYMBOLS, message);
 
-                    if (channelInfo.checkSignKicks())
+                    if (channelInfo.checkSignKicks()){
                         send(channel, sender + ", please don't spam symbols - " + this.getTimeoutText(warningCount, channelInfo));
-
-                    return;
+                        channelInfo.increasePunCount();
+                    }
+                        return;
+                    
                 }
             }
 
@@ -442,10 +450,11 @@ public class ReceiverBot extends PircBot {
                     warningCount = channelInfo.getWarningCount(sender, FilterType.OFFENSIVE);
                     this.secondaryTO(channel, sender, this.getTODuration(warningCount, channelInfo), FilterType.OFFENSIVE, message);
 
-                    if (channelInfo.checkSignKicks())
+                    if (channelInfo.checkSignKicks()){
                         send(channel, sender + ", disallowed word or phrase - " + this.getTimeoutText(warningCount, channelInfo));
-
-                    return;
+                        channelInfo.increasePunCount();
+                    }
+                        return;
                 }
             }
 
@@ -458,9 +467,10 @@ public class ReceiverBot extends PircBot {
                     warningCount = channelInfo.getWarningCount(sender, FilterType.EMOTES);
                     this.secondaryTO(channel, sender, this.getTODuration(warningCount, channelInfo), FilterType.EMOTES, message);
 
-                    if (channelInfo.checkSignKicks())
+                    if (channelInfo.checkSignKicks()){
                         send(channel, sender + ", please don't spam emotes - " + this.getTimeoutText(warningCount, channelInfo));
-
+                        channelInfo.increasePunCount();
+                    }
                     return;
 
                 }
@@ -472,9 +482,10 @@ public class ReceiverBot extends PircBot {
                     warningCount = channelInfo.getWarningCount(sender, FilterType.EMOTES);
                     this.secondaryTO(channel, sender, this.getTODuration(warningCount, channelInfo), FilterType.EMOTES, message);
 
-                    if (channelInfo.checkSignKicks())
+                    if (channelInfo.checkSignKicks()){
                         send(channel, sender + ", single emote messages are not allowed - " + this.getTimeoutText(warningCount, channelInfo));
-
+                        channelInfo.increasePunCount();
+                    }
                     return;
 
                 }
@@ -573,15 +584,18 @@ public class ReceiverBot extends PircBot {
 
             return;
         }
-        
+        if(msg[0].equalsIgnoreCase(prefix+"punishstats")&&isOp){
+        	log("RB: Matched command !punishstats");
+        	send(channel, "The number of punishments doled out is "+channelInfo.getPunCount()+".");
+        }
         //viewerstats
         channelInfo.checkViewerStats(twitchName);
         //!viewerstats
         if(msg[0].equalsIgnoreCase(prefix + "viewerstats") && isOp){
         	log("RB: Matched command !viewerstats");
-        	
+        	int average = (int) channelInfo.getAverage();
         	send(channel, "The all-time high viewer count for "+twitchName+" is "+ channelInfo.getViewerStats() +
-        			" viewers. The average viewer count per stream is "+ channelInfo.getAverage()+ " viewers.");
+        			" viewers. The average viewer count per stream is "+ average+ " viewers.");
         	
         	
         }
@@ -593,7 +607,15 @@ public class ReceiverBot extends PircBot {
         	
         }
         
-
+        //!hug
+        if(msg[0].equalsIgnoreCase(prefix+"hug") && isRegular){
+        	if(msg.length>1){
+        		send(channel, "(>ಠ_ಠ)> "+fuseArray(msg,1));
+        	}
+        	else
+        		send(channel, "Syntax is "+prefix+"hug <single word>");
+        }
+        
         // !resolution - All
         if (msg[0].equalsIgnoreCase(prefix + "res") || msg[0].equalsIgnoreCase(prefix + "resolution")) {
             log("RB: Matched command !resolution");
@@ -638,7 +660,10 @@ public class ReceiverBot extends PircBot {
         // !music - All
         if (msg[0].equalsIgnoreCase(prefix + "music")) {
             log("RB: Matched command !music");
+            String currBullet = bullet[0];
+    		bullet[0] = "♫";
             send(channel, "Now playing: " + JSONUtil.lastFM(channelInfo.getLastfm()));
+            bullet[0] = currBullet;
 		
         }
         //updates the song if it has changed
@@ -648,7 +673,10 @@ public class ReceiverBot extends PircBot {
         		//do nothing
         	}    		
         	else{
+        		String currBullet = bullet[0];
+        		bullet[0] = "♫";
         	send(channel, "Now playing: " + currentSong);
+        	bullet[0] = currBullet;
         	}
         }
         
@@ -757,6 +785,15 @@ public class ReceiverBot extends PircBot {
             }
             
         }
+        //!me
+        if(msg[0].equalsIgnoreCase(prefix+"me")&& isOp){
+        	if(msg.length>1){
+        		String rest = fuseArray(msg, 1);
+        		sendCommand(channel, ".me "+ rest);
+        	}
+        	else
+        		send(channel, "Useage is "+prefix+"me <string>");
+        }
         //highlight
         if (msg[0].equalsIgnoreCase(prefix + "highlight") && BotManager.getInstance().twitchChannels) {
             log("RB: Matched command !highlight");
@@ -773,10 +810,12 @@ public class ReceiverBot extends PircBot {
                 	try{
                     String uptime = this.getStreamList("up_time", channelInfo);
                     String timeStreaming = this.getTimeStreaming(uptime, mins);
-                    highlightList.add(timeStreaming + " - "+ description);
+                    String status = JSONUtil.krakenStatus(twitchName);
+                    highlightList.add(timeStreaming + " - "+ description + " in stream "+ status);
                     save("highlight" + channel+".txt", highlightList);
                     
-                    send(channel, "Highlight marked at " + timeStreaming + " with description: "+description);
+                    send(channel, "Highlight marked at " + timeStreaming + " with description: \""+description+ "\" in stream: \""
+                    		+status+"\"");
                 	} catch (Exception e){
                 		send(channel, "Error accessing Twitch API");
                 	}
@@ -1150,13 +1189,18 @@ public class ReceiverBot extends PircBot {
                     if (!value.contains(",,")) {
 						
                         channelInfo.setCommand(key, value);
-						commandList.add(key);
-						commandList.add(value);
+                        channelInfo.setCommandsRestriction(key, 1);
+//						if(channelInfo.checkCommandRestriction(key,3)){
+//							channelInfo.setCommandsRestriction(key, 3);
+//						}else if(channelInfo.checkCommandRestriction(key,2)){
+//							channelInfo.setCommandsRestriction(key, 2);
+//						}else if(channelInfo.checkCommandRestriction(key,1)){
+//						channelInfo.setCommandsRestriction(key, 1);
+//						}else
+//							channelInfo.setCommandsRestriction(key, 0);
+						
                         send(channel, "Command added/updated.");
-						try{
-						save("commandList"+channel+".txt", commandList);
-						}catch (IOException e){
-						}
+						
 						
                     } else {
                         send(channel, "Command cannot contain double commas (\",,\").");
@@ -1553,6 +1597,7 @@ public class ReceiverBot extends PircBot {
                 if (msg[0].equalsIgnoreCase("+b")) {
                     sendCommand(channel, ".ban " + msg[1].toLowerCase());
                     send(channel, msg[1].toLowerCase()+ " was banned.");
+                    channelInfo.increasePunCount();
                 }
                 if (msg[0].equalsIgnoreCase("-b")) {
                     sendCommand(channel, ".unban " + msg[1].toLowerCase());
@@ -1563,10 +1608,12 @@ public class ReceiverBot extends PircBot {
                 	if(msg.length>2){
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase()+ " "+msg[2]);
                     send(channel, msg[1].toLowerCase()+ " was timed out for "+ msg[2]+" seconds.");
+                    channelInfo.increasePunCount();
                 	}
                 	else{
                 		  sendCommand(channel, ".timeout " + msg[1].toLowerCase());
                 		  send(channel, msg[1].toLowerCase()+ " was timed out.");
+                		  channelInfo.increasePunCount();
                 	}
                 }
                 if (msg[0].equalsIgnoreCase("-t")) {
@@ -1576,6 +1623,7 @@ public class ReceiverBot extends PircBot {
                 if (msg[0].equalsIgnoreCase("+p")) {
                     sendCommand(channel, ".timeout " + msg[1].toLowerCase() + " 1");
                     send(channel, msg[1].toLowerCase()+ "'s chat history was purged.");
+                    channelInfo.increasePunCount();
                 }
             }
 

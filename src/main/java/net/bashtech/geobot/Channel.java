@@ -108,6 +108,8 @@ public class Channel {
 	private int streamNumber = 0;
 	private int runningMaxViewers = 0;
 
+	private int punishCount;
+
     public Channel(String name) {
         channel = name;
         config = new PropertiesFile(name + ".properties");
@@ -156,6 +158,7 @@ public class Channel {
     	long now = System.currentTimeMillis();
     	long differenceInSeconds = (now-sinceWp)/1000L;
     	sinceWp = now;
+    	config.setLong("sinceWp", sinceWp);
     	return (differenceInSeconds);
     }
     public void setBullet(String newBullet){
@@ -1166,6 +1169,13 @@ public class Channel {
     public int getViewerStats(){
     	return maxViewers;
     }
+    public void increasePunCount(){
+    	punishCount++;
+    	config.setInt("punishCount", punishCount);
+    }
+    public int getPunCount(){
+    	return punishCount;
+    }
     public void alive(String name){
     	if(!streamUp){
     		
@@ -1308,6 +1318,9 @@ public class Channel {
         defaults.put("filterSymbols", false);
         defaults.put("filterEmotesMax", 4);
         
+        defaults.put("punishCount", 0);
+        defaults.put("sinceWp", System.currentTimeMillis());
+        
         defaults.put("topic", "");
         defaults.put("commandsKey", "");
         defaults.put("commandsValue", "");
@@ -1381,8 +1394,9 @@ public class Channel {
         setDefaults();
 
         //channel = config.getString("channel");
-        
+        punishCount = Integer.parseInt(config.getString("punishCount"));
         streamUp = Boolean.parseBoolean(config.getString("streamAlive"));
+        sinceWp = Long.parseLong(config.getString("sinceWp"));
         
         runningMaxViewers = Integer.parseInt(config.getString("runningMaxViewers"));
         streamNumber = Integer.parseInt(config.getString("streamCount"));
