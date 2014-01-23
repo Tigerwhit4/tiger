@@ -671,12 +671,15 @@ public class ReceiverBot extends PircBot {
         	String currentSong = JSONUtil.lastFM(channelInfo.getLastfm());
         	if (currentSong.equals("(Nothing)")){
         		//do nothing
-        	}    		
+        	}
         	else{
         		String currBullet = bullet[0];
         		bullet[0] = "♫";
         	send(channel, "Now playing: " + currentSong);
         	bullet[0] = currBullet;
+        	 if(currentSong.equalsIgnoreCase("Credits (Rescue Girl) by Jake Kaufman")){
+         		sendCommand(channel, ".me dances");
+        	 }
         	}
         }
         
@@ -780,6 +783,29 @@ public class ReceiverBot extends PircBot {
                     send(channel, "Game and Status update sent.");
                 } catch (Exception ex) {
                     send(channel, "Error updating game and/or status. Did you add me as an editor?");
+                }
+
+            }
+            
+        }
+        //steamgame
+        if (msg[0].equalsIgnoreCase(prefix + "steamgame") && BotManager.getInstance().twitchChannels) {
+            log("RB: Matched command !steamgame");
+            if (isOp) {
+                
+                
+                try {
+                    
+                    if(JSONUtil.steam(channelInfo.getSteam(), "game").equals("(unavailable)")){
+                    	channelInfo.updateGame("");
+                    	send(channel, "Steam game unavailable, changed game to \"Not Playing\" status.");
+                    }
+                    else{
+                    	channelInfo.updateGame(JSONUtil.steam(channelInfo.getSteam(), "game"));
+                    	send(channel, "Steam game updated to "+JSONUtil.steam(channelInfo.getSteam(), "game"));
+                    }
+                } catch (Exception ex) {
+                    send(channel, "Error updating game. Did you add me as an editor?");
                 }
 
             }
@@ -1173,9 +1199,9 @@ public class ReceiverBot extends PircBot {
             log("RB: Matched command !commercial");
             if (isOp) {
                 channelInfo.runCommercial();
-                send(channel, "Running a 30 second coemercial. Thank you for supporting the channel!");
+                send(channel, "Running a 30 second coe-mercial. Thank you for supporting the channel!");
             }
-            send(channel, "Running a 30 second coemercial. Thank you for supporting the channel!");
+            send(channel, "Running a 30 second coe-mercial. Thank you for supporting the channel!");
             return;
         }
 
