@@ -111,6 +111,8 @@ public class Channel {
 	private int punishCount= 0;
 	private int updateDelay = 120;
 
+	private long sincePunish = System.currentTimeMillis();
+
     public Channel(String name) {
         channel = name;
         config = new PropertiesFile(name + ".properties");
@@ -160,6 +162,13 @@ public class Channel {
     	long differenceInSeconds = (now-sinceWp)/1000L;
     	sinceWp = now;
     	config.setLong("sinceWp", sinceWp);
+    	return (differenceInSeconds);
+    }
+    public long timeSincePunished(){
+    	long now = System.currentTimeMillis();
+    	long differenceInSeconds = (now-sincePunish)/1000L;
+    	
+    	
     	return (differenceInSeconds);
     }
     public void setBullet(String newBullet){
@@ -410,17 +419,19 @@ public class Channel {
         config.setString("commandsScheduleActive", commandsScheduleActive);
     }
 
-    public String getCommandList() {
-        String commandKeys = "";
+    public ArrayList<String> getCommandList() {
+        
 
         Iterator itr = commands.entrySet().iterator();
-
+        ArrayList<String> sorted = new ArrayList<String>();
+        
         while (itr.hasNext()) {
             Map.Entry pairs = (Map.Entry) itr.next();
-            commandKeys += pairs.getKey() + ", ";
+            sorted.add((String) pairs.getKey());
+            
         }
-
-        return commandKeys;
+        java.util.Collections.sort(sorted);
+        return sorted;
 
     }
 
@@ -1172,6 +1183,8 @@ public class Channel {
     }
     public void increasePunCount(){
     	punishCount++;
+    	sincePunish =System.currentTimeMillis();
+    	config.setLong("sincePunish", sincePunish);
     	config.setInt("punishCount", punishCount);
     }
     public int getPunCount(){
@@ -1324,6 +1337,7 @@ public class Channel {
         defaults.put("filterEmotesMax", 4);
         
         defaults.put("punishCount", 0);
+        defaults.put("sincePunish", sincePunish);
         defaults.put("sinceWp", System.currentTimeMillis());
         
         defaults.put("topic", "");
@@ -1423,6 +1437,7 @@ public class Channel {
         wpCount = Integer.parseInt(config.getString("wpCount"));
         bullet = config.getString("bullet");
         cooldown  = Integer.parseInt(config.getString("cooldown"));
+        sincePunish  = Long.parseLong(config.getString("sincePunish"));
         
         filterSymbols = Boolean.parseBoolean(config.getString("filterSymbols"));
         filterSymbolsPercent = Integer.parseInt(config.getString("filterSymbolsPercent"));

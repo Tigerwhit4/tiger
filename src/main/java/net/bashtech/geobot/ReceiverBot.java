@@ -586,7 +586,30 @@ public class ReceiverBot extends PircBot {
         }
         if(msg[0].equalsIgnoreCase(prefix+"punishstats")&&isOp){
         	log("RB: Matched command !punishstats");
-        	send(channel, "The number of punishments doled out is "+channelInfo.getPunCount()+".");
+        	
+        	long timeSince = channelInfo.timeSincePunished();
+        	int days = (int) (timeSince/86400);
+        	int hours = (int)((timeSince/3600)%3600);
+        	int mins = (int)((timeSince/60)%60);
+        	int seconds = (int)(timeSince%60);
+        	String parsedSince = "";
+        	if(days>0){
+        		parsedSince = "It has been "+ days + " days, "+ hours + " hours, "+ mins +
+        			" minutes, and " + seconds + " seconds since a punishment has been issued.";
+        	}
+        	else if(hours>0){
+        		parsedSince = "It has been "+ hours + " hours, "+ mins +
+            			" minutes, and " + seconds + " seconds since a punishment has been issued.";
+        	}
+        	else if(mins > 0){
+        		parsedSince = "It has been "+ mins +" minutes, and " + seconds + 
+        				" seconds since a punishment has been issued.";
+        		
+        	}
+        	else{
+        		parsedSince= "It has been "+ seconds + " seconds since a punishment has been issued.";
+        	}
+        	send(channel, "The number of punishments doled out is "+channelInfo.getPunCount()+". "+parsedSince);
         }
         //viewerstats
         channelInfo.checkViewerStats(twitchName);
@@ -595,7 +618,7 @@ public class ReceiverBot extends PircBot {
         	log("RB: Matched command !viewerstats");
         	int average = (int) channelInfo.getAverage();
         	send(channel, "The all-time high viewer count for "+twitchName+" is "+ channelInfo.getViewerStats() +
-        			" viewers. The average viewer count per stream is "+ average+ " viewers.");
+        			" viewers. The average viewer count per stream is "+ average+ " viewers. ");
         	
         	
         }
@@ -1111,7 +1134,18 @@ public class ReceiverBot extends PircBot {
         // !commands - Op/Regular
         if ((msg[0].equalsIgnoreCase(prefix + "commands")|| msg[0].equalsIgnoreCase(prefix + "coemands")) && isRegular) {
             log("RB: Matched command !commands");
-            send(channel, "Commands: " + channelInfo.getCommandList());
+            
+            ArrayList<String> sorted = channelInfo.getCommandList();
+            String sortedList = "";
+            for(int i =0; i<sorted.size(); i++){
+            	
+            	
+            	if(i == sorted.size()-1){
+            		sortedList += sorted.get(i);
+            	}else
+            		sortedList += sorted.get(i)+ ", ";
+            }
+            send(channel, "Commands: " + sortedList);
             return;
         }
 
