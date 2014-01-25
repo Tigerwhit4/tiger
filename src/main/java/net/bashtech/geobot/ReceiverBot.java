@@ -2127,7 +2127,16 @@ public class ReceiverBot extends PircBot {
             		send(channel, "Bullet is now set to \""+bullet[0]+"\"");
             	}
             	else
-            		send(channel, "Usage is "+prefix+"setbullet <new bullet>");
+            		send(channel, "Usage is "+prefix+"set bullet <new bullet>");
+            }//setupdateDelay
+            else if(msg[1].equalsIgnoreCase("updatedelay")){
+            	if(msg.length > 2){
+            		int newDelay = Integer.parseInt(msg[2]);
+            		channelInfo.setUpdateDelay(newDelay);
+            		send(channel, "Delay between the song updating is now "+newDelay +" seconds.");
+            	}
+            	else
+            		send(channel, "Usage is "+prefix+"set updatedelay <seconds>");
             }
             //set cooldown for custom commands
             else if(msg[1].equalsIgnoreCase("cooldown")){

@@ -108,7 +108,8 @@ public class Channel {
 	private int streamNumber = 0;
 	private int runningMaxViewers = 0;
 
-	private int punishCount;
+	private int punishCount= 0;
+	private int updateDelay = 120;
 
     public Channel(String name) {
         channel = name;
@@ -1148,7 +1149,7 @@ public class Channel {
     	}
     	else {
     		long now = System.currentTimeMillis();
-    		if((now*1L) >= (songUpdated + 120000L)){
+    		if((now*1L) >= (songUpdated + updateDelay*1000L)){
     			lastSong = newSong;
     			songUpdated = now + 5000;
     			return true;
@@ -1299,6 +1300,10 @@ public class Channel {
             return false;
         }
     }
+    public void setUpdateDelay(int newDelay){
+    	updateDelay = newDelay;
+    	config.setInt("updateDelay", newDelay);
+    }
 
     public void reload() {
         BotManager.getInstance().removeChannel(channel);
@@ -1379,6 +1384,8 @@ public class Channel {
         defaults.put("streamAlive", false);
         defaults.put("maxViewersStream",0);
         
+        defaults.put("updateDelay", 120);
+        
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1394,6 +1401,7 @@ public class Channel {
         setDefaults();
 
         //channel = config.getString("channel");
+        updateDelay = Integer.parseInt(config.getString("updateDelay"));
         punishCount = Integer.parseInt(config.getString("punishCount"));
         streamUp = Boolean.parseBoolean(config.getString("streamAlive"));
         sinceWp = Long.parseLong(config.getString("sinceWp"));
