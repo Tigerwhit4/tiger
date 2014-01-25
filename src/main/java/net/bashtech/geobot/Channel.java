@@ -422,14 +422,10 @@ public class Channel {
     public ArrayList<String> getCommandList() {
         
 
-        Iterator itr = commands.entrySet().iterator();
-        ArrayList<String> sorted = new ArrayList<String>();
+      
+        ArrayList<String> sorted = new ArrayList<String>(commands.keySet());
         
-        while (itr.hasNext()) {
-            Map.Entry pairs = (Map.Entry) itr.next();
-            sorted.add((String) pairs.getKey());
-            
-        }
+
         java.util.Collections.sort(sorted);
         return sorted;
 
