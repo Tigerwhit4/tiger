@@ -1148,7 +1148,35 @@ public class ReceiverBot extends PircBot {
             send(channel, "Commands: " + sortedList);
             return;
         }
-
+        String msgs = fuseArray(msg,0);
+        if(((msgs.indexOf("youtube.com/watch?v=")>-1)||msgs.indexOf("youtu.be/")>-1)&&isRegular){
+        	if(msgs.indexOf("youtube.com/watch?v=")>-1){
+        		int indexOfId =msgs.indexOf("=")+1;
+        		int indexOfSpace = msgs.indexOf(" ", indexOfId);
+        		String id ="";
+        		if(indexOfSpace >-1){
+        			id = msgs.substring(indexOfId, indexOfSpace);
+        		}else{
+        			id = msgs.substring(indexOfId);
+        		}
+        		log("youtube id  " + id);
+        		String title = JSONUtil.youtubeTitle(id);
+        		send(channel, "Linked Youtube Video: \""+title+"\"");
+        		
+        	}else{
+        		int indexOfId = msgs.indexOf(".be/")+4;
+        		int indexOfSpace = msgs.indexOf(" ", indexOfId);
+        		String id ="";
+        		if(indexOfSpace >-1){
+        			id = msgs.substring(indexOfId, indexOfSpace);
+        		}else{
+        			id = msgs.substring(indexOfId);
+        		}
+        		log("youtube id  " + id);
+        		String title = JSONUtil.youtubeTitle(id);
+        		send(channel, "Linked Youtube Video: \""+title+"\"");
+        	}
+        }
         // !throw - All
         if (msg[0].equalsIgnoreCase(prefix + "throw") && (isRegular)) {
             log("RB: Matched command !throw");

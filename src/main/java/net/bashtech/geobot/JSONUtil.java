@@ -147,13 +147,29 @@ public class JSONUtil {
             for(int i = 0; i < moderators.size(); i++){
             	viewers.add(moderators.get(i));
             }
-//            int indexStart = jsonString.indexOf("\"viewers\": [");
-//            int indexEnd = jsonString.indexOf("]", indexStart);
-//            String viewers = jsonString.substring(indexStart,indexEnd);
-//            viewers = viewers.replaceAll("\"", "");
-//            String[]viewerArray = viewers.split(",");
-//            return viewerArray;
+
             return viewers;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+    public static String youtubeTitle(String id){
+    	String api_key = BotManager.getInstance().YoutubeAPIKey;
+    	try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(BotManager.getRemoteContent("https://www.googleapis.com/youtube/v3/videos?id="+id
+            		+"&key="+api_key+"&part=snippet"));
+            
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray items = (JSONArray) jsonObject.get("items");
+            JSONObject items0 = (JSONObject) items.get(0);
+            JSONObject snippet = (JSONObject) items0.get("snippet");
+            String title = (String) snippet.get("title");
+            
+            
+            return title;
             
         } catch (Exception ex) {
             ex.printStackTrace();

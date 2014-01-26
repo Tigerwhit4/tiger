@@ -38,6 +38,7 @@ public class BotManager {
     public String SteamAPIKey;
     public String krakenOAuthToken;
     public String krakenClientID;
+    public String YoutubeAPIKey;
     String nick;
     String server;
     int port;
@@ -414,8 +415,11 @@ public class BotManager {
         if (!config.keyExists("eventFeedURL")) {
             config.setString("eventFeedURL", "");
         }
+        if (!config.keyExists("youtubeAPIKey")) {
+            config.setString("youtubeAPIKey", "");
+        }
         // ********
-
+        YoutubeAPIKey = config.getString("youtubeAPIKey");
         nick = config.getString("nick");
         server = config.getString("server");
         port = Integer.parseInt(config.getString("port"));
