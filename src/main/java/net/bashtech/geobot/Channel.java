@@ -112,6 +112,7 @@ public class Channel {
 	private int updateDelay = 120;
 
 	private long sincePunish = System.currentTimeMillis();
+	private String maxviewerDate =  new java.util.Date().toString();
 
     public Channel(String name) {
         channel = name;
@@ -1171,11 +1172,16 @@ public class Channel {
     	if(viewers > maxViewers){
     		maxViewers = (int) viewers;
     		config.setInt("max viewers", maxViewers);
+    		maxviewerDate = new java.util.Date().toString();
+    		config.setString("maxviewerDate", maxviewerDate);
     	}
     	
     }
     public int getViewerStats(){
     	return maxViewers;
+    }
+    public String getViewerStatsTime(){
+    	return maxviewerDate;
     }
     public void increasePunCount(){
     	punishCount++;
@@ -1335,6 +1341,7 @@ public class Channel {
         defaults.put("punishCount", 0);
         defaults.put("sincePunish", sincePunish);
         defaults.put("sinceWp", System.currentTimeMillis());
+        defaults.put("maxviewerDate", "");
         
         defaults.put("topic", "");
         defaults.put("commandsKey", "");
@@ -1415,7 +1422,7 @@ public class Channel {
         punishCount = Integer.parseInt(config.getString("punishCount"));
         streamUp = Boolean.parseBoolean(config.getString("streamAlive"));
         sinceWp = Long.parseLong(config.getString("sinceWp"));
-        
+        maxviewerDate = config.getString("maxviewerDate");
         runningMaxViewers = Integer.parseInt(config.getString("runningMaxViewers"));
         streamNumber = Integer.parseInt(config.getString("streamCount"));
         streamMax = Integer.parseInt(config.getString("maxViewersStream"));

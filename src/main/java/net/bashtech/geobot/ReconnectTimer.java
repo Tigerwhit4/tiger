@@ -40,7 +40,7 @@ public class ReconnectTimer extends TimerTask {
             try {
                 System.out.println("INFO: Attempting to reconnect receiver");
                 rb.disconnect();
-                Thread.currentThread().sleep(20000);
+                Thread.currentThread().sleep(15000);
                 if (!rb.isConnected())
                     rb.reconnect();
             } catch (NickAlreadyInUseException e) {

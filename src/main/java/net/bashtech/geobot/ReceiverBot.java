@@ -618,7 +618,8 @@ public class ReceiverBot extends PircBot {
         	log("RB: Matched command !viewerstats");
         	int average = (int) channelInfo.getAverage();
         	send(channel, "The all-time high viewer count for "+twitchName+" is "+ channelInfo.getViewerStats() +
-        			" viewers. The average viewer count per stream is "+ average+ " viewers. ");
+        			" viewers, achieved at: "+channelInfo.getViewerStatsTime()+
+        			". The average viewer count per stream is "+ average+ " viewers. ");
         	
         	
         }
