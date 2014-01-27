@@ -2096,8 +2096,16 @@ public class ReceiverBot extends PircBot {
                 }
             } else if (msg.length > 1 && msg[1].equalsIgnoreCase("list") && isOp) {
                 String tempList = "Regulars: ";
+                ArrayList<String> arrRegs = new ArrayList<String>();
                 for (String s : channelInfo.getRegulars()) {
-                    tempList += s + ", ";
+                    arrRegs.add(s);
+                }
+                java.util.Collections.sort(arrRegs);
+                for (int i = 0; i<arrRegs.size(); i++) {
+                    if(i == arrRegs.size()-1){
+                    	tempList += (arrRegs.get(i));
+                    }else
+                    	tempList += (arrRegs.get(i)+", ");
                 }
                 send(channel, tempList);
             }
@@ -2128,8 +2136,16 @@ public class ReceiverBot extends PircBot {
                 }
             } else if (msg.length > 1 && msg[1].equalsIgnoreCase("list") && isOwner) {
                 String tempList = "Moderators: ";
+                ArrayList<String> arrRegs = new ArrayList<String>();
                 for (String s : channelInfo.getModerators()) {
-                    tempList += s + ", ";
+                    arrRegs.add(s);
+                }
+                java.util.Collections.sort(arrRegs);
+                for (int i = 0; i<arrRegs.size(); i++) {
+                    if(i == arrRegs.size()-1){
+                    	tempList += (arrRegs.get(i));
+                    }else
+                    	tempList += (arrRegs.get(i)+", ");
                 }
                 send(channel, tempList);
             }
@@ -2160,8 +2176,16 @@ public class ReceiverBot extends PircBot {
                 }
             } else if (msg.length > 1 && msg[1].equalsIgnoreCase("list") && isOwner) {
                 String tempList = "Owners: ";
+                ArrayList<String> arrRegs = new ArrayList<String>();
                 for (String s : channelInfo.getOwners()) {
-                    tempList += s + ", ";
+                    arrRegs.add(s);
+                }
+                java.util.Collections.sort(arrRegs);
+                for (int i = 0; i<arrRegs.size(); i++) {
+                    if(i == arrRegs.size()-1){
+                    	tempList += (arrRegs.get(i));
+                    }else
+                    	tempList += (arrRegs.get(i)+", ");
                 }
                 send(channel, tempList);
             }
