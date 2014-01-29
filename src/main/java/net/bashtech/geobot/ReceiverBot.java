@@ -721,9 +721,36 @@ public class ReceiverBot extends PircBot {
         			channelInfo.setWp(false);
         			send(channel, "Whale penis timer has been turned off");
         			
+        		}else if(msg[1].equalsIgnoreCase("stats")){
+        			
+        			long timeSince = channelInfo.timeSinceNoUpdate();
+                	int days = (int) (timeSince/86400);
+                	int hours = (int)((timeSince/3600)%3600);
+                	int mins = (int)((timeSince/60)%60);
+                	int seconds = (int)(timeSince%60);
+                	
+                	if(days>0){
+                		send(channel, "It has been "+ days + " days, "+ hours + " hours, "+ mins +
+                			" minutes, and " + seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
+                				channelInfo.getWpCount()+" times.");
+                	}
+                	else if(hours>0){
+                		send(channel, "It has been "+ hours + " hours, "+ mins +
+                    			" minutes, and " + seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
+                				channelInfo.getWpCount()+" times.");
+                	}
+                	else if(mins > 0){
+                		send(channel, "It has been "+ mins +" minutes, and " + seconds + 
+                				" seconds since whale penis has last been mentioned. It has been mentioned "+
+                				channelInfo.getWpCount()+" times.");
+                	}
+                	else{
+                		send(channel, "It has been "+ seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
+                				channelInfo.getWpCount()+" times.");
+                	}
         		}
         		else
-        			send(channel, "Command syntax: "+prefix+"whalepenis <on/off>");
+        			send(channel, "Command syntax: "+prefix+"whalepenis <on/off/stats>");
         	}
         }
 
@@ -737,32 +764,8 @@ public class ReceiverBot extends PircBot {
         		&& !sender.equalsIgnoreCase(getNick()) && !sender.equalsIgnoreCase(senderTriggered)){
         	
         	channelInfo.increaseWpCount();
-        	long timeSince = channelInfo.timeSinceSaid();
-        	int days = (int) (timeSince/86400);
-        	int hours = (int)((timeSince/3600)%3600);
-        	int mins = (int)((timeSince/60)%60);
-        	int seconds = (int)(timeSince%60);
+        	long dummy = channelInfo.timeSinceSaid();
         	
-        	if(days>0){
-        		send(channel, "It has been "+ days + " days, "+ hours + " hours, "+ mins +
-        			" minutes, and " + seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
-        				channelInfo.getWpCount()+" times.");
-        	}
-        	else if(hours>0){
-        		send(channel, "It has been "+ hours + " hours, "+ mins +
-            			" minutes, and " + seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
-        				channelInfo.getWpCount()+" times.");
-        	}
-        	else if(mins > 0){
-        		send(channel, "It has been "+ mins +" minutes, and " + seconds + 
-        				" seconds since whale penis has last been mentioned. It has been mentioned "+
-        				channelInfo.getWpCount()+" times.");
-        		
-        	}
-        	else{
-        		send(channel, "It has been "+ seconds + " seconds since whale penis has last been mentioned. It has been mentioned "+
-        				channelInfo.getWpCount()+" times.");
-        	}
             }
         
         
@@ -1756,6 +1759,30 @@ public class ReceiverBot extends PircBot {
 				
 			
 		    
+        }
+        if (msg[0].equalsIgnoreCase(prefix + "define") && isRegular) {
+        	if(msg.length>1){
+            log("RB: Matched command !define");
+            String fused = fuseArray(msg,1);
+            fused = fused.replaceAll(" ", "+");
+            String result = JSONUtil.defineWord(fused);
+            send(channel, result);
+            if (result.equals("Couldn't find any results, sorry")){
+            }
+            else
+            	send(channel, "Definitions may or may not be accurate or as intended");
+        	}
+            
+        }
+        if (msg[0].equalsIgnoreCase(prefix + "urban") && isRegular) {
+        	if(msg.length>1){
+            log("RB: Matched command !define");
+            String fused = fuseArray(msg,1);
+            fused = fused.replaceAll(" ", "+");
+            String result = JSONUtil.defineUrban(fused);
+            send(channel, "\""+result+"\"");
+            
+        	}
         }
         
         // !clear - Ops

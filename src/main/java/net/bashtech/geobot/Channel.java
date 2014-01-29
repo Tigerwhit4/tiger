@@ -165,6 +165,12 @@ public class Channel {
     	config.setLong("sinceWp", sinceWp);
     	return (differenceInSeconds);
     }
+    public long timeSinceNoUpdate(){
+    	long now = System.currentTimeMillis();
+    	long differenceInSeconds = (now-sinceWp)/1000L;
+    	
+    	return (differenceInSeconds);
+    }
     public long timeSincePunished(){
     	long now = System.currentTimeMillis();
     	long differenceInSeconds = (now-sincePunish)/1000L;
@@ -722,6 +728,7 @@ public class Channel {
     public void addRegular(String name) {
         synchronized (regulars) {
             regulars.add(name.toLowerCase());
+            
         }
 
         String regularsString = "";

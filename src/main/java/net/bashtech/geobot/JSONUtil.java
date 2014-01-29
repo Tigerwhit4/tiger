@@ -58,7 +58,7 @@ public class JSONUtil {
             Long viewers = (Long) stream.get("viewers");
             return viewers;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Probably exceeded API call limit/second for viewers");
             return (long) 0;
         }
 
@@ -151,10 +151,57 @@ public class JSONUtil {
             return viewers;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Failed to get chatters");
             return null;
         }
     }
+    public static String defineWord(String word){
+    	String returned = BotManager.getRemoteContent("http://www.dictionaryapi.com/api/v1/references/collegiate/xml/"
+    +word+"?key=21f734f4-3d5f-4266-9c20-d6be5909c81a");
+    	int start = returned.indexOf(":");
+    	if(start > -1){
+    		int end = returned.indexOf("</",start+1);
+    		returned = "\""+returned.substring(start+1,end)+"\"";
+    		return returned;
+    	}
+    	else{
+    	    start = returned.indexOf("<suggestion>");
+    	    if (start> -1){
+    	    	int end = returned.indexOf("</",start);
+        	    returned = "Couldn't find a definition for that word, maybe try this one: \""+returned.substring(start+12,end)+"\"";
+        	    return returned;
+    	    }else
+    	    	return "Couldn't find any results, sorry";
+    	    
+    	}
+    	
+    	
+    }
+    
+    public static String defineUrban(String word){
+    	
+    	try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(BotManager.getRemoteContent("http://api.urbandictionary.com/v0/define?term="+word));
+            
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray items = (JSONArray) jsonObject.get("list");
+            JSONObject items0 = (JSONObject) items.get(0);
+            String title = (String) items0.get("definition");
+
+            
+            
+            return title;
+            
+        } catch (Exception ex) {
+            
+            return "Couldn't find any results, sorry";
+        }
+    	
+    	
+	}
+	
+  
     public static String youtubeTitle(String id){
     	String api_key = BotManager.getInstance().YoutubeAPIKey;
     	try {
@@ -244,7 +291,7 @@ public class JSONUtil {
                 return "Error querying API";
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Failed to query Steam API");
             return "Error querying API";
         }
     }
