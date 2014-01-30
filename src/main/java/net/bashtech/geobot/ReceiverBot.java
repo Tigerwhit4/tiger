@@ -230,7 +230,12 @@ public class ReceiverBot extends PircBot {
         try {
 			read("quotesList"+channel+".txt");
 		} catch (Exception e2) {
-			// TODO Auto-generated catch block
+			try {
+				save("quotesList"+channel+".txt", quotesList);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}
 
@@ -1018,9 +1023,10 @@ public class ReceiverBot extends PircBot {
 			 read("quotesList"+channel+".txt");
 
 			} catch (Exception e1) {
-				// TODO Auto-generated catch block
+				
 				
 			}
+		 
 		quotesList.add(quoteReceived);
 		try {
 			save("quotesList"+channel+".txt", quotesList);
