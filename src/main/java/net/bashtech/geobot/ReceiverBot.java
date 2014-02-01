@@ -227,17 +227,17 @@ public class ReceiverBot extends PircBot {
         boolean isOp = false;
         boolean isRegular = false;
         int accessLevel = 0;
-        try {
-			read("quotesList"+channel+".txt");
-		} catch (Exception e2) {
-			try {
-				save("quotesList"+channel+".txt", quotesList);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//        try {
+//			read("quotesList"+channel+".txt");
+//		} catch (Exception e2) {
+//			try {
+//				save("quotesList"+channel+".txt", quotesList);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			
-		}
+//		}
 
         //Check for user level based on other factors.
         if (BotManager.getInstance().isAdmin(sender))
@@ -589,6 +589,39 @@ public class ReceiverBot extends PircBot {
 
             return;
         }
+        if(msg[0].equalsIgnoreCase(prefix+"conch")&&isRegular){
+        	log("RB: Matched command !conch");
+        	int rand = (int) Math.round(Math.random()*13);
+        	switch(rand){
+        	case 0: send(channel, "It is certain.");
+        		break;
+        	case 1: send(channel, "It is decidedly so.");
+        		break;
+        	case 2: send(channel, "Better not to tell.");
+        		break;
+        	case 3: send(channel, "You may rely on it.");
+        		break;
+        	case 4: send(channel, "Don't count on it.");
+        		break;
+        	case 5: send(channel, "My reply is no.");
+        		break;
+        	case 6: send(channel, "Very doubtful.");
+        		break;
+        	case 7: send(channel, "My sources say no.");
+        		break;
+        	case 8: send(channel, "Most likely.");
+        		break;
+        	case 9: send(channel, "Signs point to yes.");
+        		break;
+        	case 10: send(channel, "Outlook doesn't look good");
+        		break;
+        	case 11: send(channel, "The future seems hazy on this.");
+        		break;
+        	case 12: send(channel, "Unable to discern.");
+        		break;
+        	}
+        	
+        }
         if(msg[0].equalsIgnoreCase(prefix+"punishstats")&&isOp){
         	log("RB: Matched command !punishstats");
         	
@@ -937,165 +970,7 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
-        
-        long newQuoted = System.currentTimeMillis();
-        
-		if ((newQuoted >= (lastQuoted + 30*1000L)) || isOp){
-			
-			//getQuote
-			if (msg[0].equalsIgnoreCase(prefix + "getQuote")){
-			    log("RB: Matched command !getQuote");
-			    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
-				String quoteReceived1 = this.fuseArray(msg, 1);
-				quoteReceived1.trim();
-				try {
-					read("quotesList"+channel+".txt");
 
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					
-				}
-				int wantedQuote = Integer.parseInt(quoteReceived1);
-				if (wantedQuote < quotesList.size()){
-					send(channel, quotesList.get(wantedQuote));
-					lastQuoted = newQuoted;
-				}
-				else {
-					send(channel, "Parameter mismatch or no quote at requested index.");
-				}
-			    }
-			}
-			
-		}
-		//randomquote
-		long newQuoted1 = System.currentTimeMillis();
-		if ((newQuoted1 >= (lastQuoted1 + 30*1000L)) || isOp){
-			//randomquote
-			if (msg[0].equalsIgnoreCase(prefix + "randomquote")){
-			    log("RB: Matched command !randomquote");
-			    if(isRegular && BotManager.getInstance().twitchChannels){
-				
-				try {
-					read("quotesList"+channel+".txt");
-
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					
-				}
-				
-				int randQuotes = (int) (Math.random()* quotesList.size());
-				
-				if (randQuotes >-1){
-					send(channel, quotesList.get(randQuotes));
-					lastQuoted1 = newQuoted1;
-				}
-				else
-					send(channel, "Error, whoops");
-				
-			    }
-			}
-		}
-	    
-	  //LMGTFY command
-		if (msg[0].equalsIgnoreCase(prefix + "google")){
-		    log("RB: Matched command !google");
-		    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
-			String queryReceived = this.fuseArray(msg, 1);
-			queryReceived.trim();
-			queryReceived = queryReceived.replaceAll(" ", "+");
-			String queryLink = "http://www.lmgtfy.com/?q=" + queryReceived;
-			try {
-				send(channel, "Here, let me google that for you: " + queryLink);
-			} catch (Exception e) {
-				send(channel, "Error building URL");
-				
-			}
-		 }
-		}
-
-	// !addQuote
-	if (msg[0].equalsIgnoreCase(prefix + "addQuote")){
-	    log("RB: Matched command !addQuote");
-	    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
-		String quoteReceived = this.fuseArray(msg, 1);
-		quoteReceived.trim();
-		 try {
-			 read("quotesList"+channel+".txt");
-
-			} catch (Exception e1) {
-				
-				
-			}
-		 
-		quotesList.add(quoteReceived);
-		try {
-			save("quotesList"+channel+".txt", quotesList);
-			int index = quotesList.size()-1;
-			send(channel, quoteReceived + " added, this is quote #" + index);
-		} catch (IOException e) {
-			send(channel, "Error saving the quote");
-			
-		}
-	    }
-	}
-	// !getQuoteIndex
-		if (msg[0].equalsIgnoreCase(prefix + "getQuoteIndex")){
-		    log("RB: Matched command !getQuoteIndex");
-		    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
-			String quoteReceived3 = this.fuseArray(msg, 1);
-			quoteReceived3.trim();
-			try {
-				read("quotesList"+channel+".txt");
-
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				
-			}
-			int index = quotesList.indexOf(quoteReceived3);
-			if(index > -1){
-			send(channel, "This quote's index is "+ index);
-			}
-			else{
-				send(channel, "Quote not found, make sure you have the EXACT quote");
-			}
-			
-		    }
-		}
-	//delQuote
-	if (msg[0].equalsIgnoreCase(prefix + "delQuote")){
-	    log("RB: Matched command !delQuote");
-	    if(isOp && msg.length> 1 && BotManager.getInstance().twitchChannels){
-		String quoteReceived2 = this.fuseArray(msg, 1);
-		quoteReceived2.trim();
-		try {
-			read("quotesList"+channel+".txt");
-
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			
-		}
-		int wantedQuote = Integer.parseInt(quoteReceived2);
-		if (wantedQuote < quotesList.size()){
-			
-			try {
-				
-				
-				quotesList.remove(wantedQuote);
-				save("quotesList"+channel+".txt", quotesList);
-				send(channel, "Quote #" + wantedQuote + " removed.");
-				
-			} catch (IOException e) {
-				send(channel, "Error deleting the quote.");
-				
-			}
-		}
-		else {
-			send(channel, "Parameter mismatch or no quote at requested index.");
-		}
-		
-	    }
-	}
-	
 	
 
         // !status - All
@@ -1125,6 +1000,23 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
+
+        //LMGTFY command
+  		if (msg[0].equalsIgnoreCase(prefix + "google")){
+  		    log("RB: Matched command !google");
+  		    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
+  			String queryReceived = this.fuseArray(msg, 1);
+  			queryReceived.trim();
+  			queryReceived = queryReceived.replaceAll(" ", "+");
+  			String queryLink = "http://www.lmgtfy.com/?q=" + queryReceived;
+  			try {
+  				send(channel, "Here, let me google that for you: " + queryLink);
+  			} catch (Exception e) {
+  				send(channel, "Error building URL");
+  				
+  			}
+  		 }
+  		}
 
         // !followme - Owner
         if (msg[0].equalsIgnoreCase(prefix + "followme") && isOwner && BotManager.getInstance().twitchChannels) {
@@ -1674,6 +1566,94 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
+      //##########################QUOTES##############################
+  		if(msg[0].equalsIgnoreCase(prefix+"quote")&& isRegular){
+  			if(msg.length>1){
+  		
+  			long newQuoted = System.currentTimeMillis();
+    
+  			if ((newQuoted >= (lastQuoted + 30*1000L)) || isOp){
+		
+  				//getQuote
+  				if (msg[1].equalsIgnoreCase("get")){
+  					log("RB: Matched command !getQuote");
+  					if(isRegular && msg.length > 2){
+  						int index = Integer.parseInt(msg[2]);
+  						send(channel, channelInfo.getQuote(index));
+  					}
+  					else{
+  						send(channel, "Syntax is "+prefix+"quote get <index>");
+  					}
+  				}
+		
+  			}
+  			//randomquote
+  			long newQuoted1 = System.currentTimeMillis();
+  			if ((newQuoted1 >= (lastQuoted1 + 30*1000L)) || isOp){
+  				//randomquote
+  				if (msg[1].equalsIgnoreCase("random")){
+  					log("RB: Matched command !randomquote");
+  					if(msg.length > 1){
+  						int randQuotes = (int) (Math.random()* channelInfo.addQuote(""));
+  						if (randQuotes >-1){
+  							send(channel, channelInfo.getQuote(randQuotes));
+  						}
+  						else
+  							send(channel, "Error, whoops");
+  					}
+  					else{
+  						send(channel, "Syntax is "+prefix+"quote random");
+  					}
+  				}
+  			}
+    
+  			// !addQuote
+  			if (msg[1].equalsIgnoreCase("add")){
+  				log("RB: Matched command !addQuote");
+  				if(isOp && msg.length > 2){
+  					String quoteReceived = this.fuseArray(msg, 2);
+  					quoteReceived.trim();
+  					int numQuote = channelInfo.addQuote(quoteReceived);
+  					if(numQuote > -1)
+  						send(channel, quoteReceived + " added, this is quote #" + numQuote);
+  					else
+  						send(channel, "Quote already exists.");
+  				}
+  			}
+
+  			// !getQuoteIndex
+  			if (msg[1].equalsIgnoreCase("getindex")){
+  				log("RB: Matched command !getQuoteIndex");
+  				if(isRegular && msg.length> 2 && BotManager.getInstance().twitchChannels){
+  					String quoteReceived = this.fuseArray(msg, 2);
+  					quoteReceived.trim();
+  					int index = channelInfo.getQuoteIndex(quoteReceived);
+  					if(index > -1){
+  						send(channel, "This quote's index is "+ index);
+  					}
+  					else{
+  						send(channel, "Quote not found, make sure you have the EXACT quote");
+  					}
+  				}
+  			}
+  			//delQuote
+  			if (msg[1].equalsIgnoreCase("delete")||msg[1].equals("remove")){
+  				log("RB: Matched command !delQuote");
+  				if(isOp && msg.length> 2){
+  					int index = Integer.parseInt(msg[2]);
+  					if(channelInfo.deleteQuote(index)){
+  						send(channel, "Quote #"+index+" deleted successfully.");
+  					}
+  					else{
+  						send(channel, "Error deleting quote");
+  					}
+  				}
+  			}
+  			}
+  			else {
+  				send(channel, "Your syntax is incorrect, please check the documentation.");
+  			}
+  		}
 
         // ********************************************************************************
         // ***************************** Moderation Commands ******************************
@@ -1766,6 +1746,24 @@ public class ReceiverBot extends PircBot {
 			
 		    
         }
+//        if(msg[0].equalsIgnoreCase(prefix+"fixquotes")&&isAdmin){
+//        	try{
+//        		read("quotesList"+channel+".txt");
+//        		for (int i = 0; i<quotesList.size();i++){
+//        			String quoteReceived = quotesList.get(i);
+//        			int numQuote = channelInfo.addQuote(quoteReceived);
+//    				if(numQuote > -1)
+//    					send(channel, quoteReceived + " added, this is quote #" + numQuote);
+//    				else
+//    					send(channel, "Quote already exists.");
+//        			
+//        		}
+//        	}catch(Exception e){
+//        		send(channel, "failed");
+//        	}
+//        	
+//			}
+        
         if (msg[0].equalsIgnoreCase(prefix + "define") && isRegular) {
         	if(msg.length>1){
             log("RB: Matched command !define");
@@ -3106,18 +3104,20 @@ public class ReceiverBot extends PircBot {
 		fout.close();
 		}
     @SuppressWarnings("unchecked")
-	public void read(String fileName) throws Exception {
-		FileInputStream fin= new FileInputStream (fileName);
-		ObjectInputStream ois = new ObjectInputStream(fin);
-		quotesList = (ArrayList<String>) ois.readObject();
-		fin.close();
-		}
+//	public void read(String fileName) throws Exception {
+//		FileInputStream fin= new FileInputStream (fileName);
+//		ObjectInputStream ois = new ObjectInputStream(fin);
+//		quotesList = (ArrayList<String>) ois.readObject();
+//		fin.close();
+//		}
     public void readHighlights(String fileName) throws Exception{
     	FileInputStream fin= new FileInputStream (fileName);
 		ObjectInputStream ois = new ObjectInputStream(fin);
 		highlightList = (ArrayList<String>) ois.readObject();
 		fin.close();
     }
+
+    
     
     private class giveawayTimer extends TimerTask {
         private Channel channelInfo;

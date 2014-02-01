@@ -36,6 +36,7 @@ public class Channel {
     boolean staticChannel;
     private HashMap<String, String> commands = new HashMap<String, String>();
     private HashMap<String, Integer> commandsRestrictions = new HashMap<String, Integer>();
+    private ArrayList<String> quotes = new ArrayList<String>();
     HashMap<String, RepeatCommand> commandsRepeat = new HashMap<String, RepeatCommand>();
     HashMap<String, ScheduledCommand> commandsSchedule = new HashMap<String, ScheduledCommand>();
     List<Pattern> autoReplyTrigger = new ArrayList<Pattern>();
@@ -214,7 +215,48 @@ public class Channel {
     }
 
     //##############################################################
-
+    public int addQuote(String quote){
+    	quote = quote.replaceAll("&&&", "");
+    	if (quote.length()<1)
+    		return quotes.size();
+    	if(quotes.contains(quote)){
+    		return -1;
+    	}else{
+    	quotes.add(quote);
+    	String quotesString="";
+    	for(int i = 0; i<quotes.size(); i++){
+    		quotesString += quotes.get(i)+"&&&";
+    	}
+    	config.setString("quotes",quotesString);
+    	return quotes.indexOf(quote);
+    	}
+    }
+    public String getQuote(int index){
+    	if(index<quotes.size())
+    		return quotes.get(index);
+    	else
+    		return "No quote at requested index.";
+    }
+    public boolean deleteQuote(int index){
+    	if(index>quotes.size()-1)
+    		return false;
+    	else{
+    		quotes.remove(index);
+    		String quotesString="";
+        	for(int i = 0; i<quotes.size(); i++){
+        		quotesString += quotes.get(i)+"&&&";
+        	}
+        	config.setString("quotes",quotesString);
+    		return true;
+    	}	
+    }
+    public int getQuoteIndex(String quote){
+    	if(quotes.contains(quote))
+    		return quotes.indexOf(quote)-1;
+    	else
+    		return -1;
+    }
+    //################################################################
     public String getCommand(String key) {
         key = key.toLowerCase();
 
@@ -224,7 +266,7 @@ public class Channel {
             return null;
         }
     }
-
+    
     public void setCommand(String key, String command) {
         key = key.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
         System.out.println("Key: " + key);
@@ -1409,6 +1451,7 @@ public class Channel {
         defaults.put("maxViewersStream",0);
         
         defaults.put("updateDelay", 120);
+        defaults.put("quotes","");
         
 
         Iterator it = defaults.entrySet().iterator();
@@ -1425,6 +1468,7 @@ public class Channel {
         setDefaults();
 
         //channel = config.getString("channel");
+        
         updateDelay = Integer.parseInt(config.getString("updateDelay"));
         punishCount = Integer.parseInt(config.getString("punishCount"));
         streamUp = Boolean.parseBoolean(config.getString("streamAlive"));
@@ -1478,6 +1522,12 @@ public class Channel {
         prefix = config.getString("commandPrefix").charAt(0) + "";
         emoteSet = config.getString("emoteSet");
         subscriberRegulars = config.getBoolean("subscriberRegulars");
+        
+        String[] quotesArray = config.getString("quotes").split("&&&");
+        
+        for (int i = 0; i<quotesArray.length; i++){
+        	quotes.add(quotesArray[i]);
+        }
 
         String[] commandsKey = config.getString("commandsKey").split(",");
         String[] commandsValue = config.getString("commandsValue").split(",,");
@@ -1495,7 +1545,7 @@ public class Channel {
                 commandsRestrictions.put(parts[0], Integer.parseInt(parts[1]));
             }
         }
-
+        
         String[] commandsRepeatKey = config.getString("commandsRepeatKey").split(",");
         String[] commandsRepeatDelay = config.getString("commandsRepeatDelay").split(",");
         String[] commandsRepeatDiff = config.getString("commandsRepeatDiff").split(",");
