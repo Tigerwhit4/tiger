@@ -613,12 +613,13 @@ public class ReceiverBot extends PircBot {
         		break;
         	case 9: send(channel, "Signs point to yes.");
         		break;
-        	case 10: send(channel, "Outlook doesn't look good");
+        	case 10: send(channel, "Outlook doesn't look good.");
         		break;
         	case 11: send(channel, "The future seems hazy on this.");
         		break;
-        	case 12: send(channel, "Unable to discern.");
+        	default: send(channel, "Unable to discern.");
         		break;
+        	
         	}
         	
         }
