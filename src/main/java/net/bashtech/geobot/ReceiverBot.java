@@ -1053,14 +1053,25 @@ public class ReceiverBot extends PircBot {
         }
         String msgs = fuseArray(msg,0);
         if(((msgs.indexOf("youtube.com/watch?v=")>-1)||msgs.indexOf("youtu.be/")>-1)&&isRegular){
+        	msgs.trim();
         	if(msgs.indexOf("youtube.com/watch?v=")>-1){
         		int indexOfId =msgs.indexOf("=")+1;
+        		
         		int indexOfSpace = msgs.indexOf(" ", indexOfId);
+        		int indexOfPound = msgs.indexOf("#",indexOfId);
         		String id ="";
+        		
         		if(indexOfSpace >-1){
-        			id = msgs.substring(indexOfId, indexOfSpace);
+        			if(indexOfPound > -1 && indexOfPound <= indexOfSpace){
+            			id = msgs.substring(indexOfId, indexOfPound);
+            		}else{
+            			id = msgs.substring(indexOfId, indexOfSpace);
+            		}
         		}else{
-        			id = msgs.substring(indexOfId);
+        			if(indexOfPound>-1)
+        				id = msgs.substring(indexOfId, indexOfPound);
+        			else
+        				id = msgs.substring(indexOfId);
         		}
         		log("youtube id  " + id);
         		String title = JSONUtil.youtubeTitle(id);
@@ -1518,7 +1529,7 @@ public class ReceiverBot extends PircBot {
                     }
                     channelInfo.raffle.setEnabled(true);
 
-                    send(channel, "Raffle enabled.");
+                    send(channel, "Raffle enabled. Use \""+prefix+"raffle\" to enter!");
                 } else if (msg[1].equalsIgnoreCase("disable")) {
                     if (channelInfo.raffle != null) {
                         channelInfo.raffle.setEnabled(false);
@@ -2534,7 +2545,13 @@ public class ReceiverBot extends PircBot {
                     	long currentTime = System.currentTimeMillis();
                     	if(currentTime>(lastCommand + cooldown*1000L)){
                     		lastCommand = currentTime;
-                    		
+                    		if(value.contains("(_QUOTE_)")){
+                    			int randQuotes = (int) (Math.random()* channelInfo.addQuote(""));
+          						if (randQuotes >-1){
+          							value = value.replace("(_QUOTE_)",channelInfo.getQuote(randQuotes));
+          						}
+          						
+                    		}
                     		 if(value.contains("(_PARAMETER_)")){
                              	value = value.replace("(_PARAMETER_)", fuseArray(msg, 1));
                              }

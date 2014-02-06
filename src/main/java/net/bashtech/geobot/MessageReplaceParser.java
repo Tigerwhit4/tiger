@@ -69,23 +69,7 @@ public class MessageReplaceParser {
         }
                
         
-        if (message.contains("(_QUOTE_)")){
-		try {
-			read("quotesList" + channel+".txt");
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}			
-			
-				int randQuotes = (int) (Math.random()* quotesList.size());
-				
-				if (randQuotes >-1)
-					message = message.replace("(_QUOTE_)", quotesList.get(randQuotes));
-				else
-					message = message.replace("(_QUOTE_)", "Error, whoops");
-			
-			
-        }
+        
 
         if (args != null) {
             int argCounter = 1;
