@@ -24,7 +24,6 @@ import java.util.ArrayList;
 
 
 public class MessageReplaceParser {
-	private static ArrayList<String>quotesList = new ArrayList<String>();
 
     public static String parseMessage(String channel, String sender, String message, String[] args) {
         Channel ci = BotManager.getInstance().getChannel(channel);
@@ -67,7 +66,13 @@ public class MessageReplaceParser {
         	ci.runCommercial();
         	message = "Running a coe-mercial, thank you for supporting this channel.";
         }
-               
+        if(message.contains("(_QUOTE_)")){
+        	int randQuotes = (int) (Math.random()* ci.getQuoteSize());
+        	String quote = ci.getQuote(randQuotes);
+					message = message.replace("(_QUOTE_)", quote);
+				
+
+        }
         
         
 
@@ -82,11 +87,5 @@ public class MessageReplaceParser {
 
         return message;
     }
-    @SuppressWarnings("unchecked")
-	public static void read(String fileName) throws Exception {
-		FileInputStream fin= new FileInputStream (fileName);
-		ObjectInputStream ois = new ObjectInputStream(fin);
-		quotesList = (ArrayList<String>)ois.readObject();
-		fin.close();
-		}
+   
 }

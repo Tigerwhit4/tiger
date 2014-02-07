@@ -231,6 +231,9 @@ public class Channel {
     	return quotes.indexOf(quote);
     	}
     }
+    public int getQuoteSize(){
+    	return quotes.size();
+    }
     public String getQuote(int index){
     	if(index<quotes.size())
     		return quotes.get(index);

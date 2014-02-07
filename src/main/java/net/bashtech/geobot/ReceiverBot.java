@@ -2545,13 +2545,7 @@ public class ReceiverBot extends PircBot {
                     	long currentTime = System.currentTimeMillis();
                     	if(currentTime>(lastCommand + cooldown*1000L)){
                     		lastCommand = currentTime;
-                    		if(value.contains("(_QUOTE_)")){
-                    			int randQuotes = (int) (Math.random()* channelInfo.addQuote(""));
-          						if (randQuotes >-1){
-          							value = value.replace("(_QUOTE_)",channelInfo.getQuote(randQuotes));
-          						}
-          						
-                    		}
+                    		
                     		 if(value.contains("(_PARAMETER_)")){
                              	value = value.replace("(_PARAMETER_)", fuseArray(msg, 1));
                              }
