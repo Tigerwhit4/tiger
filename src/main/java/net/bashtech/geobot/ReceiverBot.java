@@ -66,6 +66,7 @@ public class ReceiverBot extends PircBot {
     long newQuoted1 = System.currentTimeMillis();
     private ArrayList<String>wpOn = new ArrayList<String>();
     long lastCommand = System.currentTimeMillis();
+    private boolean privMsgSub = false;
 	
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
@@ -184,7 +185,11 @@ public class ReceiverBot extends PircBot {
         String twitchName = channelInfo.getTwitchName();
         String prefix = channelInfo.getPrefix();
         bullet[0] = channelInfo.getChannelBullet();
-
+        if(privMsgSub){
+        	channelInfo.addSubscriber(sender);
+        	
+        	privMsgSub = false;
+        }
         if (!channelInfo.active) {
             System.out.println("DEBUG: Channel not active, message ignored.");
             return;
@@ -226,6 +231,7 @@ public class ReceiverBot extends PircBot {
         boolean isOwner = false;
         boolean isOp = false;
         boolean isRegular = false;
+        boolean isSub = false;
         int accessLevel = 0;
 //        try {
 //			read("quotesList"+channel+".txt");
@@ -252,28 +258,33 @@ public class ReceiverBot extends PircBot {
             isOwner = true;
         if (channelInfo.isRegular(sender) || (channelInfo.subscriberRegulars && channelInfo.isSubscriber(sender)))
             isRegular = true;
-
-        if (channelInfo.isSubscriber(sender))
-            System.out.println("Subscriber");
-
+        if (channelInfo.isSubscriber(sender)&&channelInfo.subsRegsMinusLinks){
+        	log("RB: "+sender +" is a subscriber");
+        	accessLevel = 1;
+            isSub = true;
+        }
         //Give users all the ranks below them
         if (isAdmin) {
             log("RB: " + sender + " is admin.");
             isOwner = true;
             isOp = true;
             isRegular = true;
+            isSub = true;
             accessLevel = 99;
         } else if (isOwner) {
             log("RB: " + sender + " is owner.");
             isOp = true;
             isRegular = true;
+            isSub = true;
             accessLevel = 3;
         } else if (isOp) {
             log("RB: " + sender + " is op.");
             isRegular = true;
+            isSub = true;
             accessLevel = 2;
         } else if (isRegular) {
             log("RB: " + sender + " is regular.");
+            isSub = true;
             accessLevel = 1;
         }
 
@@ -349,7 +360,7 @@ public class ReceiverBot extends PircBot {
 //            }
 
             //Me filter
-            if (channelInfo.getFilterMe() && !isRegular) {
+            if (channelInfo.getFilterMe() && !isSub) {
                 if (msg[0].equalsIgnoreCase("/me") || message.startsWith("\u0001ACTION")) {
                     int warningCount = 0;
 
@@ -368,11 +379,11 @@ public class ReceiverBot extends PircBot {
             }
 
             // Cap filter
-            if (channelInfo.getFilterCaps() && !isRegular) {
+            if (channelInfo.getFilterCaps() && !isSub) {
                 String messageNoWS = message.replaceAll("\\s", "");
                 int capsNumber = getCapsNumber(messageNoWS);
                 double capsPercent = ((double) capsNumber / messageNoWS.length()) * 100;
-                if (channelInfo.getFilterCaps() && !(isRegular) && message.length() >= channelInfo.getfilterCapsMinCharacters() && capsPercent >= channelInfo.getfilterCapsPercent() && capsNumber >= channelInfo.getfilterCapsMinCapitals()) {
+                if (message.length() >= channelInfo.getfilterCapsMinCharacters() && capsPercent >= channelInfo.getfilterCapsPercent() && capsNumber >= channelInfo.getfilterCapsMinCapitals()) {
                     int warningCount = 0;
 
                     channelInfo.incWarningCount(sender, FilterType.CAPS);
@@ -409,7 +420,7 @@ public class ReceiverBot extends PircBot {
             }
 
             // Length filter
-            if (!(isRegular) && (message.length() > channelInfo.getFilterMax())) {
+            if (!(isSub) && (message.length() > channelInfo.getFilterMax())) {
                 int warningCount = 0;
 
                 channelInfo.incWarningCount(sender, FilterType.LENGTH);
@@ -425,7 +436,7 @@ public class ReceiverBot extends PircBot {
             }
 
             // Symbols filter
-            if (channelInfo.getFilterSymbols() && !(isRegular)) {
+            if (channelInfo.getFilterSymbols() && !(isSub)) {
                 String messageNoWS = message.replaceAll("\\s", "");
                 int count = getSymbolsNumber(messageNoWS);
                 double percent = (double) count / messageNoWS.length();
@@ -446,7 +457,7 @@ public class ReceiverBot extends PircBot {
             }
 
             //Offensive filter
-            if (!isRegular && channelInfo.getFilterOffensive()) {
+            if (!isSub && channelInfo.getFilterOffensive()) {
                 boolean isOffensive = channelInfo.isOffensive(message);
                 if (isOffensive) {
                     int warningCount = 0;
@@ -464,7 +475,7 @@ public class ReceiverBot extends PircBot {
             }
 
             //Emote filter
-            if (!isRegular && channelInfo.getFilterEmotes()) {
+            if (!isSub && channelInfo.getFilterEmotes()) {
                 if (countEmotes(message) > channelInfo.getFilterEmotesMax()) {
                     int warningCount = 0;
 
@@ -589,7 +600,7 @@ public class ReceiverBot extends PircBot {
 
             return;
         }
-        if(msg[0].equalsIgnoreCase(prefix+"conch")&&isRegular){
+        if(msg[0].equalsIgnoreCase(prefix+"conch")&&isSub){
         	log("RB: Matched command !conch");
         	int rand = (int) Math.round(Math.random()*13);
         	switch(rand){
@@ -671,7 +682,7 @@ public class ReceiverBot extends PircBot {
         }
         
         //!hug
-        if(msg[0].equalsIgnoreCase(prefix+"hug") && isRegular){
+        if(msg[0].equalsIgnoreCase(prefix+"hug") && isSub){
         	if(msg.length>1){
         		send(channel, "(>ಠ_ಠ)> "+fuseArray(msg,1));
         	}
@@ -1005,7 +1016,7 @@ public class ReceiverBot extends PircBot {
         //LMGTFY command
   		if (msg[0].equalsIgnoreCase(prefix + "google")){
   		    log("RB: Matched command !google");
-  		    if(isRegular && msg.length> 1 && BotManager.getInstance().twitchChannels){
+  		    if(isSub && msg.length> 1 && BotManager.getInstance().twitchChannels){
   			String queryReceived = this.fuseArray(msg, 1);
   			queryReceived.trim();
   			queryReceived = queryReceived.replaceAll(" ", "+");
@@ -1035,7 +1046,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !commands - Op/Regular
-        if ((msg[0].equalsIgnoreCase(prefix + "commands")|| msg[0].equalsIgnoreCase(prefix + "coemands")) && isRegular) {
+        if ((msg[0].equalsIgnoreCase(prefix + "commands")|| msg[0].equalsIgnoreCase(prefix + "coemands")) && isSub) {
             log("RB: Matched command !commands");
             
             ArrayList<String> sorted = channelInfo.getCommandList();
@@ -1092,7 +1103,7 @@ public class ReceiverBot extends PircBot {
         	}
         }
         // !throw - All
-        if (msg[0].equalsIgnoreCase(prefix + "throw") && (isRegular)) {
+        if (msg[0].equalsIgnoreCase(prefix + "throw") && (isSub)) {
             log("RB: Matched command !throw");
             if (msg.length > 1) 
                 {
@@ -1564,7 +1575,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !random - Ops
-        if (msg[0].equalsIgnoreCase(prefix + "random") && isRegular) {
+        if (msg[0].equalsIgnoreCase(prefix + "random") && isSub) {
             log("RB: Matched command !random");
             if (msg.length >= 2) {
                 if (msg[1].equalsIgnoreCase("coin")) {
@@ -1579,7 +1590,7 @@ public class ReceiverBot extends PircBot {
             return;
         }
       //##########################QUOTES##############################
-  		if(msg[0].equalsIgnoreCase(prefix+"quote")&& isRegular){
+  		if(msg[0].equalsIgnoreCase(prefix+"quote")&& isSub){
   			if(msg.length>1){
   		
   			long newQuoted = System.currentTimeMillis();
@@ -1589,9 +1600,9 @@ public class ReceiverBot extends PircBot {
   				//getQuote
   				if (msg[1].equalsIgnoreCase("get")){
   					log("RB: Matched command !getQuote");
-  					if(isRegular && msg.length > 2){
+  					if(isSub && msg.length > 2){
   						int index = Integer.parseInt(msg[2]);
-  						send(channel, channelInfo.getQuote(index));
+  						send(channel, "Quote #"+index+": "+channelInfo.getQuote(index));
   					}
   					else{
   						send(channel, "Syntax is "+prefix+"quote get <index>");
@@ -1608,7 +1619,7 @@ public class ReceiverBot extends PircBot {
   					if(msg.length > 1){
   						int randQuotes = (int) (Math.random()* channelInfo.addQuote(""));
   						if (randQuotes >-1){
-  							send(channel, channelInfo.getQuote(randQuotes));
+  							send(channel, "Quote #"+randQuotes+": "+channelInfo.getQuote(randQuotes));
   						}
   						else
   							send(channel, "Error, whoops");
@@ -1636,7 +1647,7 @@ public class ReceiverBot extends PircBot {
   			// !getQuoteIndex
   			if (msg[1].equalsIgnoreCase("getindex")){
   				log("RB: Matched command !getQuoteIndex");
-  				if(isRegular && msg.length> 2 && BotManager.getInstance().twitchChannels){
+  				if(isSub&& msg.length> 2 && BotManager.getInstance().twitchChannels){
   					String quoteReceived = this.fuseArray(msg, 2);
   					quoteReceived.trim();
   					int index = channelInfo.getQuoteIndex(quoteReceived);
@@ -1776,7 +1787,7 @@ public class ReceiverBot extends PircBot {
 //        	
 //			}
         
-        if (msg[0].equalsIgnoreCase(prefix + "define") && isRegular) {
+        if (msg[0].equalsIgnoreCase(prefix + "define") && isSub) {
         	if(msg.length>1){
             log("RB: Matched command !define");
             String fused = fuseArray(msg,1);
@@ -2258,7 +2269,23 @@ public class ReceiverBot extends PircBot {
             	}
             	else
             		send(channel, "Usage is "+prefix+"set bullet <new bullet>");
-            }//setupdateDelay
+            }//setSubsRegsMinusLinks
+            else if(msg[1].equalsIgnoreCase("subsRegsMinusLinks")){
+            	if(msg.length>2){
+            		if(msg[2].equalsIgnoreCase("on")){
+            			channelInfo.setSubsRegsMinusLinks(true);
+            			send(channel, "Subscribers are now considered regulars except for the ability to post links.");
+            		}
+            		else if(msg[2].equalsIgnoreCase("off")){
+            			channelInfo.setSubsRegsMinusLinks(false);
+            			send(channel, "Subscribers are now considered non-regulars.");
+            		}
+            		else
+            			send(channel, "Syntax is "+prefix+"set subsRegsMinusLinks <on/off>");
+            	}else
+            		send(channel, "Syntax is "+prefix+"set subsRegsMinusLinks <on/off>");
+            }
+            //setupdateDelay
             else if(msg[1].equalsIgnoreCase("updatedelay")){
             	if(msg.length > 2){
             		int newDelay = Integer.parseInt(msg[2]);
@@ -2571,7 +2598,7 @@ public class ReceiverBot extends PircBot {
         }
     }
 
-    protected void onAdministrativeMessage(String message, Channel channelinfo) {
+    protected void onAdministrativeMessage(String message, Channel channelInfo) {
         String[] msg = message.trim().split(" ");
 
         if (msg.length > 0) {
@@ -2583,8 +2610,11 @@ public class ReceiverBot extends PircBot {
                     BotManager.getInstance().addTagAdmin(user);
                 if (tag.equalsIgnoreCase("staff"))
                     BotManager.getInstance().addTagStaff(user);
-//				if(tag.equalsIgnoreCase("subscriber") && channelinfo != null)
-//                    channelinfo.addSubscriber(user);
+				if(tag.equalsIgnoreCase("subscriber")&&channelInfo != null)
+                    channelInfo.addSubscriber(user);
+				if(tag.equalsIgnoreCase("subscriber")&&channelInfo == null){
+					privMsgSub = true;
+				}
             } else if (msg[0].equalsIgnoreCase("USERCOLOR")) {
                 String user = msg[1];
                 String color = msg[2];

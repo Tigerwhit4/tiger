@@ -115,6 +115,8 @@ public class Channel {
 	private long sincePunish = System.currentTimeMillis();
 	private String maxviewerDate =  new java.util.Date().toString();
 
+	public boolean subsRegsMinusLinks;
+
     public Channel(String name) {
         channel = name;
         config = new PropertiesFile(name + ".properties");
@@ -202,12 +204,24 @@ public class Channel {
 
         config.setString("emoteSet", emoteSet);
     }
-
+    public boolean getSubsRegsMinusLinks(){
+    	return subsRegsMinusLinks;
+    }
+    public void setSubsRegsMinusLinks(boolean on){
+    	
+    		
+    		subscribers.clear();
+    	
+    		subsRegsMinusLinks = on;
+    		config.setBoolean("subsRegsMinusLinks",subsRegsMinusLinks);
+    	
+    }
     public boolean getSubscriberRegulars() {
         return subscriberRegulars;
     }
 
     public void setSubscriberRegulars(boolean subscriberRegulars) {
+    	
         subscribers.clear();
 
         this.subscriberRegulars = subscriberRegulars;
@@ -846,6 +860,12 @@ public class Channel {
 
     public void addSubscriber(String name) {
         subscribers.add(name.toLowerCase());
+        
+        String subsString="";
+        for (String s : subscribers) {
+            subsString += s + "&&&";
+        }
+    	config.setString("subscribers",subsString);
     }
 
     //###################################################
@@ -1380,6 +1400,7 @@ public class Channel {
     private void setDefaults() {
 
         //defaults.put("channel", channel);
+    	defaults.put("subsRegsMinusLinks", false);
         defaults.put("filterCaps", false);
         defaults.put("filterOffensive", true);
         defaults.put("filterCapsPercent", 50);
@@ -1455,7 +1476,7 @@ public class Channel {
         
         defaults.put("updateDelay", 120);
         defaults.put("quotes","");
-        
+        defaults.put("subscribers", "");
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1471,7 +1492,7 @@ public class Channel {
         setDefaults();
 
         //channel = config.getString("channel");
-        
+        subsRegsMinusLinks = Boolean.parseBoolean(config.getString("subsRegsMinusLinks"));
         updateDelay = Integer.parseInt(config.getString("updateDelay"));
         punishCount = Integer.parseInt(config.getString("punishCount"));
         streamUp = Boolean.parseBoolean(config.getString("streamAlive"));
@@ -1530,6 +1551,11 @@ public class Channel {
         
         for (int i = 0; i<quotesArray.length; i++){
         	quotes.add(quotesArray[i]);
+        }
+        String[] subsArray = config.getString("subscribers").split("&&&");
+        
+        for (int i = 0; i<subsArray.length; i++){
+        	subscribers.add(subsArray[i]);
         }
 
         String[] commandsKey = config.getString("commandsKey").split(",");
