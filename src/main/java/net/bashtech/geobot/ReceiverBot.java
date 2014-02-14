@@ -259,7 +259,6 @@ public class ReceiverBot extends PircBot {
         if (channelInfo.isRegular(sender) || (channelInfo.subscriberRegulars && channelInfo.isSubscriber(sender)))
             isRegular = true;
         if (channelInfo.isSubscriber(sender)&&channelInfo.subsRegsMinusLinks){
-        	log("RB: "+sender +" is a subscriber");
         	accessLevel = 1;
             isSub = true;
         }
@@ -286,6 +285,8 @@ public class ReceiverBot extends PircBot {
             log("RB: " + sender + " is regular.");
             isSub = true;
             accessLevel = 1;
+        }else if(isSub){
+        	log("RB: "+sender +" is a subscriber");
         }
 
 
@@ -1070,7 +1071,7 @@ public class ReceiverBot extends PircBot {
   					}
   				}
   				if(found)
-  					send(channel, "CoeHorts! Go raid "+whitelisted.get(rand)+"! http://twitch.tv/"+whitelisted.get(rand));
+  					send(channel, "Go raid "+whitelisted.get(rand)+"! http://twitch.tv/"+whitelisted.get(rand));
   				else
   					send(channel, "None of the whitelisted channels are streaming right now.");
   			}else if(isOwner&&msg[1].equalsIgnoreCase("list")){
@@ -1084,7 +1085,7 @@ public class ReceiverBot extends PircBot {
 	            }
 				send(channel, raidList.substring(2));
 			}else
-				send(channel, "CoeHorts! Go raid "+msg[1]+"! http://twitch.tv/"+msg[1]);
+				send(channel, "Go raid "+msg[1]+"! http://twitch.tv/"+msg[1]);
   		}else
   			send(channel, "Syntax is "+prefix+"raid whitelist <add/delete> <channelName> or "+prefix+"raid <list/random/channelName>");
   		}
@@ -2182,7 +2183,12 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
-
+        if(msg[0].equalsIgnoreCase(prefix+"amIReg")){
+        	if(isRegular)
+        		send(channel, sender+" is a regular.");
+        	else
+        		send(channel, sender+" is not a regular.");
+        }
         // !regular - Owner
         if (msg[0].equalsIgnoreCase(prefix + "regular") && isOp) {
             log("RB: Matched command !regular");
