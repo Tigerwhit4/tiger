@@ -1029,7 +1029,65 @@ public class ReceiverBot extends PircBot {
   			}
   		 }
   		}
-
+  		//raid commands
+  		if(msg[0].equalsIgnoreCase(prefix+"raid")){
+  			if(isOwner&&msg.length>3){
+  				if(msg[1].equalsIgnoreCase("whitelist")){
+  					if(msg[2].equalsIgnoreCase("add")){
+  						String channelname = msg[3].toLowerCase();
+  						if(!channelInfo.getRaidWhitelist().contains(channelname)){
+  						channelInfo.addRaidWhitelist(msg[3]);
+  						send(channel, msg[3]+" has been added to the raid whitelist.");
+  						}else
+  							send(channel, channelname+" is already in the raid whitelist");
+  						
+  					}else if((msg[2].equalsIgnoreCase("delete")||msg[2].equalsIgnoreCase("remove"))){
+  						String channelname = msg[3].toLowerCase();
+  						if(channelInfo.getRaidWhitelist().contains(channelname)){
+  							channelInfo.deleteRaidWhitelist(msg[3]);
+  							send(channel, msg[3]+" has been removed from the raid whitelist.");
+  						}else
+  							send(channel, channelname+" wasn't in the raid whitelist.");
+  						
+  					}else
+  						send(channel, "Syntax is "+prefix+"raid whitelist <add/remove> <channelName>");
+  				}
+  				
+  			}else if(isOwner&&msg.length>1){
+  				if(isOwner && msg[1].equalsIgnoreCase("random")){
+  			
+  				ArrayList<String>whitelisted =channelInfo.getRaidWhitelist();
+  				int rand = (int) (Math.random()*whitelisted.size()-1);
+  				boolean found = false;
+  				
+  				while(whitelisted.size()>0){
+  					if(!JSONUtil.krakenIsLive(whitelisted.get(rand))){
+  						whitelisted.remove(rand);
+  						rand = (int) (Math.random()*whitelisted.size()-1);
+  					}else{
+  						found = true;
+  						break;
+  					}
+  				}
+  				if(found)
+  					send(channel, "CoeHorts! Go raid "+whitelisted.get(rand)+"! http://twitch.tv/"+whitelisted.get(rand));
+  				else
+  					send(channel, "None of the whitelisted channels are streaming right now.");
+  			}else if(isOwner&&msg[1].equalsIgnoreCase("list")){
+				ArrayList<String> list = channelInfo.getRaidWhitelist();
+				String raidList = "";
+				for(int i =0; i<list.size(); i++){
+	            	if(i == list.size()-1){
+	            		raidList += list.get(i);
+	            	}else
+	            		raidList += list.get(i)+ ", ";
+	            }
+				send(channel, raidList.substring(2));
+			}else
+				send(channel, "CoeHorts! Go raid "+msg[1]+"! http://twitch.tv/"+msg[1]);
+  		}else
+  			send(channel, "Syntax is "+prefix+"raid whitelist <add/delete> <channelName> or "+prefix+"raid <list/random/channelName>");
+  		}
         // !followme - Owner
         if (msg[0].equalsIgnoreCase(prefix + "followme") && isOwner && BotManager.getInstance().twitchChannels) {
             log("RB: Matched command !followme");
@@ -1052,8 +1110,6 @@ public class ReceiverBot extends PircBot {
             ArrayList<String> sorted = channelInfo.getCommandList();
             String sortedList = "";
             for(int i =0; i<sorted.size(); i++){
-            	
-            	
             	if(i == sorted.size()-1){
             		sortedList += sorted.get(i);
             	}else

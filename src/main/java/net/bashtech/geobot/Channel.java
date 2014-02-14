@@ -61,6 +61,7 @@ public class Channel {
     private Set<String> moderators = new HashSet<String>();
     Set<String> tagModerators = new HashSet<String>();
     private Set<String> owners = new HashSet<String>();
+    private Set<String> raidWhitelist = new HashSet<String>();
     private Set<String> permittedUsers = new HashSet<String>();
     private ArrayList<String> permittedDomains = new ArrayList<String>();
     public boolean useTopic = true;
@@ -857,7 +858,30 @@ public class Channel {
                 return true;
         return false;
     }
-
+    public void addRaidWhitelist(String name){
+    	raidWhitelist.add(name.toLowerCase());
+    	String raidWhitelistString="";
+        for (String s : raidWhitelist) {
+            raidWhitelistString += s + "&&&";
+        }
+    	config.setString("raidWhitelist",raidWhitelistString);
+    }
+    public void deleteRaidWhitelist(String name){
+    	raidWhitelist.remove(name);
+    	String raidWhitelistString="";
+        for (String s : raidWhitelist) {
+            raidWhitelistString += s + "&&&";
+        }
+    	config.setString("raidWhitelist",raidWhitelistString);
+    }
+    public ArrayList<String> getRaidWhitelist(){
+    	ArrayList<String> list = new ArrayList<String>();
+        for (String s : raidWhitelist) {
+            list.add(s);
+        }
+        java.util.Collections.sort(list);
+    	return list;
+    }
     public void addSubscriber(String name) {
         subscribers.add(name.toLowerCase());
         
@@ -1477,6 +1501,7 @@ public class Channel {
         defaults.put("updateDelay", 120);
         defaults.put("quotes","");
         defaults.put("subscribers", "");
+        defaults.put("raidWhitelist", "");
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1552,6 +1577,13 @@ public class Channel {
         for (int i = 0; i<quotesArray.length; i++){
         	quotes.add(quotesArray[i]);
         }
+        
+        String[] raidWhitelistArray = config.getString("raidWhitelist").split("&&&");
+        
+        for (int i = 0; i<raidWhitelistArray.length; i++){
+        	raidWhitelist.add(raidWhitelistArray[i]);
+        }
+        
         String[] subsArray = config.getString("subscribers").split("&&&");
         
         for (int i = 0; i<subsArray.length; i++){
