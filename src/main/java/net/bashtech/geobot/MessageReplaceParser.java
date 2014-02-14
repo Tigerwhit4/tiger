@@ -73,6 +73,9 @@ public class MessageReplaceParser {
 				
 
         }
+        if(message.contains("(_NUMCHANNELS_)")){
+        	message = message.replace("(_NUMCHANNELS_)", BotManager.getInstance().channelList.size()+"");
+        }
         
         
 
