@@ -67,6 +67,10 @@ public class ReceiverBot extends PircBot {
     private ArrayList<String>wpOn = new ArrayList<String>();
     long lastCommand = System.currentTimeMillis();
     private boolean privMsgSub = false;
+    private ArrayList<Long> msgTimer = new ArrayList<Long>();
+    private ArrayList<QueuedMessage>queuedMessages = new ArrayList<QueuedMessage>();
+	private boolean tried;
+	private boolean delete;
 	
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
@@ -185,11 +189,11 @@ public class ReceiverBot extends PircBot {
         String twitchName = channelInfo.getTwitchName();
         String prefix = channelInfo.getPrefix();
         bullet[0] = channelInfo.getChannelBullet();
-        if(privMsgSub){
-        	channelInfo.addSubscriber(sender);
-        	
-        	privMsgSub = false;
-        }
+//        if(privMsgSub){
+//        	channelInfo.addSubscriber(sender);
+//        	
+//        	privMsgSub = false;
+//        }
         if (!channelInfo.active) {
             System.out.println("DEBUG: Channel not active, message ignored.");
             return;
@@ -256,11 +260,14 @@ public class ReceiverBot extends PircBot {
             isOp = true;
         if (channelInfo.isOwner(sender))
             isOwner = true;
-        if (channelInfo.isRegular(sender) || (channelInfo.subscriberRegulars && channelInfo.isSubscriber(sender)))
+        if (channelInfo.isRegular(sender) || (channelInfo.subscriberRegulars && privMsgSub)){
             isRegular = true;
-        if (channelInfo.isSubscriber(sender)&&channelInfo.subsRegsMinusLinks){
+            privMsgSub = false;
+        }
+        if (privMsgSub&&channelInfo.subsRegsMinusLinks){
         	accessLevel = 1;
             isSub = true;
+            privMsgSub = false;
         }
         //Give users all the ranks below them
         if (isAdmin) {
@@ -289,7 +296,7 @@ public class ReceiverBot extends PircBot {
         	log("RB: "+sender +" is a subscriber");
         }
 
-
+        checkQueued();
         //!{botname} command
         if (msg[0].equalsIgnoreCase(prefix + this.getName())) {
             if (msg.length >= 2) {
@@ -2307,6 +2314,10 @@ public class ReceiverBot extends PircBot {
             }
             return;
         }
+        //test
+        if(msg[0].equalsIgnoreCase(prefix+"test")&&isAdmin){
+        	send('#'+sender, "Test.");
+        }
 
         // !set - Owner
         if (msg[0].equalsIgnoreCase(prefix + "set") && isOp) {
@@ -2673,7 +2684,7 @@ public class ReceiverBot extends PircBot {
                 if (tag.equalsIgnoreCase("staff"))
                     BotManager.getInstance().addTagStaff(user);
 				if(tag.equalsIgnoreCase("subscriber")&&channelInfo != null)
-                    channelInfo.addSubscriber(user);
+                    privMsgSub = true;
 				if(tag.equalsIgnoreCase("subscriber")&&channelInfo == null){
 					privMsgSub = true;
 				}
@@ -2800,31 +2811,122 @@ public class ReceiverBot extends PircBot {
     }
 
     public void send(String target, String sender, String message, String[] args) {
-        Channel channelInfo = getChannelObject(target);
+    	if(msgTimer.size()>19){
+    		
+			msgTimer.add(System.currentTimeMillis());
+    		long diff = msgTimer.get(20) - msgTimer.get(0);
+    		log("RB: There are "+msgTimer.size()+" times in msgTimer. Diff = "+diff);
+    		if(diff > 30*1000L){
+    			
+    			msgTimer.remove(0);
+    			Channel channelInfo = getChannelObject(target);
 
-        if (!BotManager.getInstance().verboseLogging)
-            logMain("SEND: " + target + " " + getNick() + " : " + message);
+    			if (!BotManager.getInstance().verboseLogging)
+    				logMain("SEND: " + target + " " + getNick() + " : " + message);
 
-        message = MessageReplaceParser.parseMessage(target, sender, message, args);
-        boolean useBullet = true;
+    			message = MessageReplaceParser.parseMessage(target, sender, message, args);
+    			boolean useBullet = true;
 
-        if (message.startsWith("/me "))
-            useBullet = false;
+    			if (message.startsWith("/me "))
+    				useBullet = false;
 
-        //Split if message > X characters
-        List<String> chunks = Main.splitEqually(message, 500);
-        int c = 1;
-        for (String chunk : chunks) {
-            sendMessage(target, (useBullet ? getBullet() + " " : "") + (chunks.size() > 1 ? "[" + c + "] " : "") + chunk);
-            c++;
-            useBullet = true;
-        }
+    			//Split if message > X characters
+    			List<String> chunks = Main.splitEqually(message, 500);
+    			int c = 1;
+    			for (String chunk : chunks) {
+    				sendMessage(target, (useBullet ? getBullet() + " " : "") + (chunks.size() > 1 ? "[" + c + "] " : "") + chunk);
+    				c++;
+    				useBullet = true;
+    			}
 
-        setRandomNickColor();
+    			setRandomNickColor();
+    			if(tried){
+    				delete = true;
+    				tried = false;
+    			}
+    			checkQueued();
+    		}else{
+    			msgTimer.remove(20);
+    			log("RB: Prevented overflow of messages that would result in a ban.");
+    			QueuedMessage qm = new QueuedMessage(target,sender,message,args);
+    			boolean matchesAny = false;
+    			for(int i = 0; i<queuedMessages.size(); i++){
+    				if(queuedMessages.get(i).getMessage().equals(message)&&queuedMessages.get(i).getTarget().equals(target))
+    					matchesAny = true;
+    			}
+    			if(!matchesAny){
+    				queuedMessages.add(qm);
+    			}
+    			
+    		}
+    	}else{
+    		log("RB: seeding msgTimer list");
+    		for(int i = 0; i<(20); i++){
+    			msgTimer.add(System.currentTimeMillis()-31000L);
+    		}
+    		QueuedMessage qm = new QueuedMessage(target,sender,message,args);
+    		queuedMessages.add(qm);
+    	}
+    		
     }
-
+    public void checkQueued(){
+    	log("There are "+queuedMessages.size()+" queued messages");
+    	if(delete){
+    		queuedMessages.remove(0);
+    		delete = false;
+    	}
+    		if(queuedMessages.size()>0){   
+    			tried = true;
+    			QueuedMessage qm = queuedMessages.get(0);
+    			if(qm.isCommand()){
+    				
+    				sendCommand(qm.getTarget(),qm.getMessage());
+    			}else{
+    				send(qm.getTarget(),qm.getSender(),qm.getMessage(),qm.getArgs());
+    				
+    			}
+    		}
+    		
+    	}
+    		
+    	
+    
     public void sendCommand(String target, String message) {
-        sendMessage(target, message);
+        if(msgTimer.size()>19){
+        	msgTimer.add(System.currentTimeMillis());
+        	long diff = msgTimer.get(19) - msgTimer.get(0);
+        	log("RB: There are "+msgTimer.size()+" times in msgTimer. Diff = "+diff);
+		
+        	if(diff > 30*1000L){
+        		msgTimer.remove(0);
+    			
+    			sendMessage(target,message);
+    			if(tried){
+    				delete = true;
+    				tried = false;
+    			}
+    			checkQueued();
+    			
+        	}else{
+        		msgTimer.remove(20);
+        		log("RB: Prevented overflow of messages that would result in a ban.");
+    			QueuedMessage qm = new QueuedMessage(target,message,true);
+    			boolean matchesAny = false;
+    			for(int i = 0; i<queuedMessages.size(); i++){
+    				if(queuedMessages.get(i).getMessage().equals(message)&&queuedMessages.get(i).getTarget().equals(target))
+    					matchesAny = true;
+    			}
+    			if(!matchesAny)
+    				queuedMessages.add(qm);
+    			
+    		}
+    	}else{
+    		log("RB: seeding msgTimer list");
+    		for(int i = 0; i<(20); i++){
+    			msgTimer.add(System.currentTimeMillis()-31000L);
+    		}
+    		
+    	}
     }
 
     @Override

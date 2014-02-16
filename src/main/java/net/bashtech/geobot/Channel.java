@@ -849,15 +849,15 @@ public class Channel {
         return false;
     }
 
-    public boolean isSubscriber(String name) {
-        if (subscribers.contains(name.toLowerCase()))
-            return true;
-
-        if (emoteSet.length() > 0)
-            if (BotManager.getInstance().checkEmoteSetMapping(name, emoteSet))
-                return true;
-        return false;
-    }
+//    public boolean isSubscriber(String name) {
+//        if (subscribers.contains(name.toLowerCase()))
+//            return true;
+//
+//        if (emoteSet.length() > 0)
+//            if (BotManager.getInstance().checkEmoteSetMapping(name, emoteSet))
+//                return true;
+//        return false;
+//    }
     public void addRaidWhitelist(String name){
     	raidWhitelist.add(name.toLowerCase());
     	String raidWhitelistString="";
@@ -882,15 +882,15 @@ public class Channel {
         java.util.Collections.sort(list);
     	return list;
     }
-    public void addSubscriber(String name) {
-        subscribers.add(name.toLowerCase());
-        
-        String subsString="";
-        for (String s : subscribers) {
-            subsString += s + "&&&";
-        }
-    	config.setString("subscribers",subsString);
-    }
+//    public void addSubscriber(String name) {
+//        subscribers.add(name.toLowerCase());
+//        
+//        String subsString="";
+//        for (String s : subscribers) {
+//            subsString += s + "&&&";
+//        }
+//    	config.setString("subscribers",subsString);
+//    }
 
     //###################################################
 
