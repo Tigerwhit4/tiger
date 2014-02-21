@@ -1022,23 +1022,23 @@ public class ReceiverBot extends PircBot {
         }
 
         //LMGTFY command
-  		if (msg[0].equalsIgnoreCase(prefix + "google")){
+  		if (msg[0].equalsIgnoreCase(prefix + "google")&&isSub){
   		    log("RB: Matched command !google");
-  		    if(isSub && msg.length> 1 && BotManager.getInstance().twitchChannels){
-  			String queryReceived = this.fuseArray(msg, 1);
-  			queryReceived.trim();
-  			queryReceived = queryReceived.replaceAll(" ", "+");
-  			String queryLink = "http://www.lmgtfy.com/?q=" + queryReceived;
-  			try {
-  				send(channel, "Here, let me google that for you: " + queryLink);
-  			} catch (Exception e) {
-  				send(channel, "Error building URL");
-  				
-  			}
-  		 }
+  		  if (msg.length > 1) {
+              String rawQuery = fuseArray(msg,1);
+              String encodedQuery = "";
+              try {
+                  encodedQuery = URLEncoder.encode(rawQuery, "UTF-8");
+              } catch (UnsupportedEncodingException e) {
+                 
+                  e.printStackTrace();
+              }
+              String url = "http://google.com/#q=" + encodedQuery;
+              send(channel, JSONUtil.shortenURL(url));
+          }
   		}
   		//raid commands
-  		if(msg[0].equalsIgnoreCase(prefix+"raid")){
+  		if(msg[0].equalsIgnoreCase(prefix+"raid")&&isOwner){
   			if(isOwner&&msg.length>3){
   				if(msg[1].equalsIgnoreCase("whitelist")){
   					if(msg[2].equalsIgnoreCase("add")){
@@ -1228,7 +1228,7 @@ public class ReceiverBot extends PircBot {
         }
 
         // !link
-        if (msg[0].equalsIgnoreCase(prefix + "link") && isRegular) {
+        if (msg[0].equalsIgnoreCase(prefix + "link") && isSub) {
             log("RB: Matched command !link");
             if (msg.length > 1) {
                 String rawQuery = message.substring(6);
@@ -2683,11 +2683,18 @@ public class ReceiverBot extends PircBot {
                     BotManager.getInstance().addTagAdmin(user);
                 if (tag.equalsIgnoreCase("staff"))
                     BotManager.getInstance().addTagStaff(user);
-				if(tag.equalsIgnoreCase("subscriber")&&channelInfo != null)
-                    privMsgSub = true;
-				if(tag.equalsIgnoreCase("subscriber")&&channelInfo == null){
-					privMsgSub = true;
+				if(tag.equalsIgnoreCase("subscriber")&&channelInfo != null){
+					if(!user.equalsIgnoreCase("Coebot")){
+						privMsgSub = true;
+					}
+                    
 				}
+				if(tag.equalsIgnoreCase("subscriber")&&channelInfo == null){
+					if(!user.equalsIgnoreCase("Coebot")){
+						privMsgSub = true;
+					}
+				}
+				
             } else if (msg[0].equalsIgnoreCase("USERCOLOR")) {
                 String user = msg[1];
                 String color = msg[2];
