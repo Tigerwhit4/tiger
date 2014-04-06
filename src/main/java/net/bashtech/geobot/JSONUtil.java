@@ -136,6 +136,61 @@ public class JSONUtil {
         }
 
     }
+    public static String getRace(String channel){
+    	String raceID ="";
+    	
+    	Set<String>entrantSet = new HashSet<String>();
+    	try {
+            JSONParser parser = new JSONParser();
+            Object obj = parser.parse(BotManager.getRemoteContent("http://api.speedrunslive.com:81/races"));
+            
+            JSONObject jsonObject = (JSONObject) obj;
+            int count = Integer.parseInt((String)jsonObject.get("count"));
+            JSONArray raceList = (JSONArray) jsonObject.get("races");
+//            JSONObject[] raceArr= (JSONObject[]) raceList.toArray();
+//           BotManager.getInstance().log(raceList.toJSONString());
+            
+            for (int i = 0;i<count;i++){
+            	JSONObject races = (JSONObject) raceList.get(i);
+            	String id = (String)races.get("id");
+            	
+            	JSONObject entrants = (JSONObject)races.get("entrants");
+            	Set<String> entrantNames = entrants.keySet();
+            	String entrantsString =entrants.toJSONString();
+            	if(entrantsString.contains(channel)){
+            		raceID = id;
+            		entrantSet.add(channel);
+            		for(String s: entrantNames){
+                		
+                		JSONObject entrant = (JSONObject)entrants.get(s);
+                		String entranttwitch = (String) entrant.get("twitch");
+                    	if(entrantSet.size()<5){
+                    		entrantSet.add(entranttwitch);
+                    	}
+                    	
+                	}
+            	}
+            	
+               
+            	
+            }
+            if(entrantSet.size()>0){
+            	String raceLink = "http://speedrun.tv/race:"+raceID;
+            	for(String s:entrantSet){
+            		raceLink = raceLink+"/"+s;
+            	}
+            	return raceLink;
+            }else
+            {
+            	return null;
+            }
+            
+            
+        } catch (Exception ex) {
+            System.out.println("Failed to get races.");
+            return null;
+        }
+    }
     public static ArrayList<String> tmiChatters(String channel){
     	try {
             JSONParser parser = new JSONParser();

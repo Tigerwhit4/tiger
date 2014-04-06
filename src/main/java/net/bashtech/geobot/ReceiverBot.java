@@ -71,6 +71,7 @@ public class ReceiverBot extends PircBot {
     private ArrayList<QueuedMessage>queuedMessages = new ArrayList<QueuedMessage>();
 	private boolean tried;
 	private boolean delete;
+	private boolean permitted;
 	
     public ReceiverBot(String server, int port) {
         ReceiverBot.setInstance(this);
@@ -408,9 +409,9 @@ public class ReceiverBot extends PircBot {
 
             // Link filter
             if (channelInfo.getFilterLinks() && !(isRegular) && this.containsLink(message, channelInfo)) {
-                boolean result = channelInfo.linkPermissionCheck(sender);
+                permitted = channelInfo.linkPermissionCheck(sender);
                 int warningCount = 0;
-                if (result) {
+                if (permitted) {
                     send(channel, "Link permitted. (" + sender + ")  i.imgur.com/P09uFKd.gif");
                 } else {
 
@@ -608,9 +609,10 @@ public class ReceiverBot extends PircBot {
 
             return;
         }
-        if(msg[0].equalsIgnoreCase(prefix+"conch")&&isSub){
+        if((msg[0].equalsIgnoreCase(prefix+"conch")||msg[0].equalsIgnoreCase(prefix+"helix"))&&isSub){
         	log("RB: Matched command !conch");
         	int rand = (int) Math.round(Math.random()*13);
+        	
         	switch(rand){
         	case 0: send(channel, "It is certain.");
         		break;
@@ -1127,7 +1129,8 @@ public class ReceiverBot extends PircBot {
             return;
         }
         String msgs = fuseArray(msg,0);
-        if(((msgs.indexOf("youtube.com/watch?v=")>-1)||msgs.indexOf("youtu.be/")>-1)&&isRegular){
+        if((((msgs.indexOf("youtube.com/watch?v=")>-1)||msgs.indexOf("youtu.be/")>-1)
+        		&&(permitted||isRegular)) && !msgs.contains("--ignore")){
         	msgs.trim();
         	if(msgs.indexOf("youtube.com/watch?v=")>-1){
         		int indexOfId =msgs.indexOf("=")+1;
@@ -1850,7 +1853,13 @@ public class ReceiverBot extends PircBot {
 //        	}
 //        	
 //			}
-        
+        if(msg[0].equalsIgnoreCase(prefix+"race")&&isOwner){
+        	String result = JSONUtil.getRace(channel.substring(1));
+        	if(result != null)
+        	send(channel,"You can find the race "+channel.substring(1)+" is currently in at "+result);
+        	else
+        		send(channel,channel.substring(1)+" is not currently in a race.");
+        }
         if (msg[0].equalsIgnoreCase(prefix + "define") && isSub) {
         	if(msg.length>1){
             log("RB: Matched command !define");
@@ -1867,10 +1876,12 @@ public class ReceiverBot extends PircBot {
         }
         if (msg[0].equalsIgnoreCase(prefix + "urban") && isRegular) {
         	if(msg.length>1){
-            log("RB: Matched command !define");
+            log("RB: Matched command !urban");
             String fused = fuseArray(msg,1);
             fused = fused.replaceAll(" ", "+");
             String result = JSONUtil.defineUrban(fused);
+            if(result.length()>140)
+            	result = result.substring(0,140);
             send(channel, "\""+result+"\"");
             
         	}
@@ -2841,7 +2852,7 @@ public class ReceiverBot extends PircBot {
     			List<String> chunks = Main.splitEqually(message, 500);
     			int c = 1;
     			for (String chunk : chunks) {
-    				sendMessage(target, (useBullet ? getBullet() + " " : "") + (chunks.size() > 1 ? "[" + c + "] " : "") + chunk);
+    				sendMessage(target, (useBullet ? channelInfo.getChannelBullet() + " " : "") + (chunks.size() > 1 ? "[" + c + "] " : "") + chunk);
     				c++;
     				useBullet = true;
     			}
