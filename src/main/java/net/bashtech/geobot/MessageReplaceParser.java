@@ -44,8 +44,7 @@ public class MessageReplaceParser {
 //            message = message.replace("(_CHATTERS_)", "" + ReceiverBot.getInstance().getUsers(channel).length);
         if (message.contains("(_SONG_)"))
             message = message.replace("(_SONG_)", JSONUtil.lastFM(ci.getLastfm()));
-        if (message.contains("(_SONG_)"))
-            message = message.replace("(_SONG_)", JSONUtil.lastFM(ci.getLastfm()));
+       
         if (message.contains("(_STEAM_PROFILE_)"))
             message = message.replace("(_STEAM_PROFILE_)", JSONUtil.steam(ci.getSteam(), "profile"));
         if (message.contains("(_STEAM_GAME_)"))
@@ -63,8 +62,15 @@ public class MessageReplaceParser {
             message = message.replace("(_TWEET_URL_)", url);
         }
         if (message.contains("(_COMMERCIAL_)")){
-        	ci.runCommercial();
-        	message = "Running a coe-mercial, thank you for supporting this channel.";
+        	if(JSONUtil.krakenIsLive(channel.substring(1))){
+        		ci.runCommercial();
+        		message = "Running a commercial, thank you for supporting this channel.";
+        	}else{
+        		message = "";
+        	}
+        }
+        if(message.contains("(_SONG_URL_)")){
+        	 message = message.replace("(_SONG_URL_)", JSONUtil.lastFMURL(ci.getLastfm()));
         }
         if(message.contains("(_QUOTE_)")){
         	int randQuotes = (int) (Math.random()* ci.getQuoteSize());
@@ -76,7 +82,21 @@ public class MessageReplaceParser {
         if(message.contains("(_NUMCHANNELS_)")){
         	message = message.replace("(_NUMCHANNELS_)", BotManager.getInstance().channelList.size()+"");
         }
-        
+        if(message.contains("(_XBOX_GAME_)")){
+        	String gamerTag = ci.getGamerTag();
+        	String lastGame = JSONUtil.xboxLastGame(gamerTag);
+        	message = message.replace("(_XBOX_GAME_)", lastGame);
+        }
+        if(message.contains("(_XBOX_GAMERSCORE_)")){
+        	String gamerTag = ci.getGamerTag();
+        	String gamerScore = JSONUtil.xboxGamerScore(gamerTag);
+        	message = message.replace("(_XBOX_GAMERSCORE_)", gamerScore);
+        }
+        if(message.contains("(_XBOX_PROGRESS_)")){
+        	String gamerTag = ci.getGamerTag();
+        	String progress = JSONUtil.xboxLastGameProgress(gamerTag);
+        	message = message.replace("(_XBOX_PROGRESS_)", progress);
+        }
         
 
         if (args != null) {

@@ -32,7 +32,7 @@ public class Channel {
 
     private String channel;
     private String twitchname;
-    boolean active;
+    
     boolean staticChannel;
     private HashMap<String, String> commands = new HashMap<String, String>();
     private HashMap<String, Integer> commandsRestrictions = new HashMap<String, Integer>();
@@ -99,6 +99,7 @@ public class Channel {
     private long sinceWp = System.currentTimeMillis();
     private int wpCount = 0;
     private String bullet = "#!";
+    private String gamerTag;
 
     private Map<String, Object> defaults = new HashMap<String, Object>();
 
@@ -866,6 +867,13 @@ public class Channel {
         }
     	config.setString("raidWhitelist",raidWhitelistString);
     }
+    public void setGamertag(String gamerTag){
+    	this.gamerTag =gamerTag.replaceAll(" ","+");
+    	config.setString("gamerTag", this.gamerTag);
+    }
+    public String getGamerTag(){
+    	return (gamerTag);
+    }
     public void deleteRaidWhitelist(String name){
     	raidWhitelist.remove(name);
     	String raidWhitelistString="";
@@ -1502,6 +1510,7 @@ public class Channel {
         defaults.put("quotes","");
         defaults.put("subscribers", "");
         defaults.put("raidWhitelist", "");
+        defaults.put("gamerTag","");
 
         Iterator it = defaults.entrySet().iterator();
         while (it.hasNext()) {
@@ -1516,6 +1525,8 @@ public class Channel {
     private void loadProperties(String name) {
         setDefaults();
 
+        
+        gamerTag = config.getString("gamerTag");
         //channel = config.getString("channel");
         subsRegsMinusLinks = Boolean.parseBoolean(config.getString("subsRegsMinusLinks"));
         updateDelay = Integer.parseInt(config.getString("updateDelay"));
