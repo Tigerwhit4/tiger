@@ -131,14 +131,14 @@ public class ReceiverBot extends PircBot {
     @Override
     protected void onDeop(String channel, String sourceNick, String sourceLogin, String sourceHostname, String recipient) {
         recipient = recipient.replace(":", "");
-        System.out.println("DEBUG: Got DEOP for " + recipient);
-        this.getChannelObject(channel).tagModerators.remove(recipient);
+        System.out.println("DEBUG: Got DEOP for " + recipient+" in channel: "+channel);
+        //this.getChannelObject(channel).tagModerators.remove(recipient);
     }
 
     @Override
     protected void onOp(String channel, String sourceNick, String sourceLogin, String sourceHostname, String recipient) {
         recipient = recipient.replace(":", "");
-        System.out.println("DEBUG: Got OP for " + recipient);
+        System.out.println("DEBUG: Got OP for " + recipient+" in channel: "+channel);
         this.getChannelObject(channel).tagModerators.add(recipient);
     }
 
@@ -151,7 +151,7 @@ public class ReceiverBot extends PircBot {
     @Override
     protected void onPrivateMessage(String sender, String login, String hostname, String message) {
         if (!message.startsWith("USERCOLOR") && !message.startsWith("EMOTESET") && !message.startsWith("SPECIALUSER") && !message.startsWith("HISTORYEND") && !message.startsWith("CLEARCHAT") && !message.startsWith("Your color"))
-            BotManager.getInstance().log("RB PM: " + sender + " " + message);
+        	BotManager.getInstance().log("RB PM: " + sender + " " + message);
 
         Matcher m = banNoticePattern.matcher(message);
         if (m.matches()) {
@@ -183,8 +183,10 @@ public class ReceiverBot extends PircBot {
     }
 
     protected void onChannelMessage(String channel, String sender, String message) {
-        if (!BotManager.getInstance().verboseLogging)
-            logMain("MSG: " + channel + " " + sender + " : " + message);
+    	if (!BotManager.getInstance().verboseLogging&&!message.startsWith("USERCOLOR") && !message.startsWith("EMOTESET") && !message.startsWith("SPECIALUSER") && !message.startsWith("HISTORYEND") && !message.startsWith("CLEARCHAT") && !message.startsWith("Your color"))
+    		logMain("MSG: " + channel + " " + sender + " : " + message);
+   
+            
 
         Channel channelInfo = getChannelObject(channel);
         String twitchName = channelInfo.getTwitchName();
@@ -210,7 +212,7 @@ public class ReceiverBot extends PircBot {
         }
 
         //Handle future administrative messages from JTV
-        if (sender.equals("jtv")) {
+        if (sender.equalsIgnoreCase("jtv")) {
             onAdministrativeMessage(message, channelInfo);
             return;
         }

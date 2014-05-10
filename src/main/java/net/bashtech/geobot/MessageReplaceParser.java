@@ -69,6 +69,13 @@ public class MessageReplaceParser {
         		message = "";
         	}
         }
+        if(message.contains("(_ONLINE_CHECK_)")){
+        	if(!JSONUtil.krakenIsLive(channel.substring(1))){
+        		message = "";
+        	}else{
+        		message = message.replace("(_ONLINE_CHECK_)", "");
+        	}
+        }
         if(message.contains("(_SONG_URL_)")){
         	 message = message.replace("(_SONG_URL_)", JSONUtil.lastFMURL(ci.getLastfm()));
         }

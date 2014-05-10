@@ -283,8 +283,7 @@ public class BotManager {
             while (inStream.hasNextLine())
                 response += (inStream.nextLine());
 
-            System.out.println(conn.getResponseCode());
-            System.out.println(response);
+            
             return response;
 
         } catch (MalformedURLException ex) {
