@@ -28,6 +28,8 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JSONUtil {
 
@@ -46,8 +48,9 @@ public class JSONUtil {
 	public static Long krakenViewers(String channel) {
 		try {
 			JSONParser parser = new JSONParser();
-			Object obj = parser.parse(BotManager.getRemoteContentTwitch(
-					"https://api.twitch.tv/kraken/streams/" + channel, 2));
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("https://api.twitch.tv/kraken/streams/"
+							+ channel));
 
 			JSONObject jsonObject = (JSONObject) obj;
 
@@ -58,8 +61,7 @@ public class JSONUtil {
 			Long viewers = (Long) stream.get("viewers");
 			return viewers;
 		} catch (Exception ex) {
-			System.out
-					.println("Probably exceeded API call limit/second for viewers");
+			System.out.println("Kraken Viewers isn't working");
 			return (long) 0;
 		}
 
@@ -83,7 +85,34 @@ public class JSONUtil {
 		}
 
 	}
+	public static String getGameChannel(String gameName){
+		gameName =gameName.replaceAll(" ", "+");
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser
+					.parse(BotManager
+							.getRemoteContent("https://api.twitch.tv/kraken/search/streams?q="+gameName));
 
+			JSONObject jsonObject = (JSONObject) obj;
+			Long total = (Long) jsonObject.get("_total");
+			if (total>0){
+			JSONArray streams = (JSONArray) jsonObject.get("streams");
+			int numStreams = streams.size();
+			int randomChannel = (int)(Math.random()*(numStreams-1));
+			JSONObject stream = (JSONObject) streams.get(randomChannel);
+			JSONObject channel = (JSONObject) stream.get("channel");
+			String url = (String) channel.get("display_name");
+			
+			return url;
+			}else
+				return "No other channels playing this game";
+				
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return "Error Querying API";
+		}
+	}
 	public static String xboxGamerScore(String gamertag) {
 		try {
 			JSONParser parser = new JSONParser();
@@ -145,6 +174,85 @@ public class JSONUtil {
 			return "(unavailable)";
 		}
 
+	}
+
+	public static String getWiki(String query,int tries) {
+		try {
+			query = query.replaceAll(" ", "_");
+			JSONParser parser = new JSONParser();
+			Object obj = parser
+					.parse(BotManager.getRemoteContent("http://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvsection=0&titles="
+							+ query + "&format=json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			JSONObject jsonquery = (JSONObject) jsonObject.get("query");
+			JSONObject pages = (JSONObject) jsonquery.get("pages");
+			Set<String> keys = (Set<String>) pages.keySet();
+			ArrayList<String> keyList = new ArrayList<String>();
+			for (String s : keys)
+				keyList.add(s);
+
+			JSONObject id = (JSONObject) pages.get(keyList.get(0));
+			JSONArray revisions = (JSONArray) id.get("revisions");
+			JSONObject index0 = (JSONObject) revisions.get(0);
+
+			String content = (String) index0.get("*");
+			if (content.contains("#REDIRECT")&&tries<3) {
+				String newSearch = content.substring(content.indexOf("[") + 2,
+						content.indexOf("]"));
+
+				return getWiki(newSearch,tries++);
+			}
+
+			// content = content.replaceAll("\\[", "");
+			// content = content.replaceAll("\\]", "");
+			// content = content.replaceAll("\\|", "");
+			content = content.replaceAll("\\\\", "");
+			content = content.replaceAll("\\{", "");
+			content = content.replaceAll("\\}", "");
+			int start = content.indexOf("'''");
+			content = content.substring(start + 3);
+			content = content.replaceAll("'''", "");
+			int refIndex = content.indexOf("<ref");
+			int refEndIndex = content.indexOf("</ref>");
+			int commentIndex = content.indexOf("<!--");
+			int commentEndIndex = content.indexOf("-->");
+			String firstPart;
+			String lastPart;
+
+			while (refIndex > 0) {
+
+				firstPart = content.substring(0, refIndex);
+				lastPart = content.substring(refEndIndex + 6);
+				content = firstPart + lastPart;
+				refIndex = content.indexOf("<ref");
+				refEndIndex = content.indexOf("</ref>", refEndIndex + 1);
+			}
+			while (commentIndex > 0) {
+
+				firstPart = content.substring(0, commentIndex);
+				lastPart = content.substring(commentEndIndex + 3);
+				content = firstPart + lastPart;
+				commentIndex = content.indexOf("<!--");
+				commentEndIndex = content.indexOf("-->");
+			}
+			Pattern r = Pattern
+					.compile("\\[\\[(?:[^\\|\\]]*\\|)?([^\\]]+)\\]\\]");
+			Matcher m = r.matcher(content);
+			while (m.find()) {
+				String match = m.group(1);
+				String match0 = m.group();
+				// System.out.println(match0);
+				// System.out.println(match);
+				content = content.replace(match0, match);
+
+			}
+			return content;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return "Unable to find that article.";
+		}
 	}
 
 	public static String jtvStatus(String channel) {
@@ -429,6 +537,41 @@ public class JSONUtil {
 		}
 
 	}
+
+	public static String whatShouldIPlay(String userID) {
+		String api_key = BotManager.getInstance().SteamAPIKey;
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser
+					.parse(BotManager
+							.getRemoteContent("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key="
+									+ api_key
+									+ "&steamid="
+									+ userID
+									+ "&format=json&include_appinfo=1"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			JSONObject response = (JSONObject) (jsonObject.get("response"));
+			JSONArray games = (JSONArray) response.get("games");
+
+			if (games.size() > 0) {
+				int randomGame = (int) (Math.random() * games.size() - 1);
+				JSONObject index0 = (JSONObject) games.get(randomGame);
+				String randomGameName = (String) index0.get("name");
+				return randomGameName;
+			} else {
+				return "User has no games";
+
+			}
+
+		} catch (Exception ex) {
+			System.out.println("Failed to query Steam API");
+			return "Error querying API";
+		}
+	}
+
 	public static String steam(String userID, String retValues) {
 		String api_key = BotManager.getInstance().SteamAPIKey;
 

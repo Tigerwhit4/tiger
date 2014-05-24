@@ -145,7 +145,7 @@ public class ReceiverBot extends PircBot {
     @Override
     protected void onConnect() {
         //Force TMI to send USERCOLOR AND SPECIALUSER messages.
-        this.sendRawLine("TWITCHCLIENT 3");
+        this.sendRawLine("TWITCHCLIENT 2");
     }
 
     @Override
@@ -692,6 +692,14 @@ public class ReceiverBot extends PircBot {
         	
         	
         }
+        if(msg[0].equalsIgnoreCase(prefix+"resetMaxViewers")&isOwner){
+        	if(msg.length>1){
+        		int newMax = Integer.parseInt(msg[1]);
+        		channelInfo.resetMaxViewers(newMax);
+        		
+        		send(channel, "The maximum viewer count has been reset to: "+channelInfo.getViewerStats());
+        	}
+        }
         
         if(msg[0].equalsIgnoreCase(prefix+"coetime")){
         	String time = Calendar.getInstance().getTime().toString();
@@ -890,6 +898,18 @@ public class ReceiverBot extends PircBot {
 
             }
             
+        }
+        if(msg[0].equalsIgnoreCase(prefix+"wiki")&&isRegular){
+        	if(msg.length>1){
+        		String searchTerm = fuseArray(msg,1);
+        		String response =JSONUtil.getWiki(searchTerm,1);
+        		if(response.length()>256){
+        			response = response.substring(0,256);
+        		}
+        		send(channel, response);
+        	}else{
+        		send(channel, "Usage is "+prefix+"wiki <article name>");
+        	}
         }
         //steamgame
         if (msg[0].equalsIgnoreCase(prefix + "steamgame") && BotManager.getInstance().twitchChannels) {
@@ -1109,6 +1129,16 @@ public class ReceiverBot extends PircBot {
 	            		raidList += list.get(i)+ ", ";
 	            }
 				send(channel, raidList.substring(2));
+			}else if (msg[1].equalsIgnoreCase("samegame")&&isOwner){
+				String response = JSONUtil.getGameChannel(JSONUtil.krakenGame(twitchName));
+				if(response.equalsIgnoreCase("No other channels playing this game")||response.equalsIgnoreCase("Error Querying API")){
+					send(channel,response);
+				}
+				else{
+					send(channel, "Go raid "+response+"! http://twitch.tv/"+response);
+				}
+				
+				
 			}else
 				send(channel, "Go raid "+msg[1]+"! http://twitch.tv/"+msg[1]);
   		}else
@@ -1265,16 +1295,24 @@ public class ReceiverBot extends PircBot {
         }
 
         // !commercial
-        if ((msg[0].equalsIgnoreCase(prefix + "commercial") || msg[0].equalsIgnoreCase(prefix + "coemercial"))&& BotManager.getInstance().twitchChannels) {
+        if ((msg[0].equalsIgnoreCase(prefix + "commercial") || msg[0].equalsIgnoreCase(prefix + "coemercial"))&& BotManager.getInstance().twitchChannels&&isOp) {
             log("RB: Matched command !commercial");
             if (isOp) {
-                channelInfo.runCommercial();
-                send(channel, "Running a 30 second coe-mercial. Thank you for supporting the channel!");
+                channelInfo.scheduleCommercial();
+                send(channel, "A commercial will be run in 15 seconds. Thank you for supporting the channel!");
             }
-            send(channel, "Running a 30 second coe-mercial. Thank you for supporting the channel!");
+            
             return;
         }
-
+        if (msg[0].equalsIgnoreCase(prefix + "cancel")&&isOp) {
+            log("RB: Matched command !cancel");
+            if (isOp) {
+                channelInfo.cancelCommercial();
+                send(channel, "The commercial has been cancelled.");
+            }
+            
+            return;
+        }
         // !command - Ops
         if ((msg[0].equalsIgnoreCase(prefix + "command") || (msg[0].equalsIgnoreCase(prefix + "coemand"))) && isOp) {
             log("RB: Matched command !command");
@@ -1869,7 +1907,12 @@ public class ReceiverBot extends PircBot {
 //        	}
 //        	
 //			}
-        if(msg[0].equalsIgnoreCase(prefix+"race")&&isOp){
+        
+        if(msg[0].equalsIgnoreCase(prefix+"whatshouldiplay")&&isOwner){
+        	String result = JSONUtil.whatShouldIPlay(channelInfo.getSteam());
+        	send(channel, "You could always play: "+result);
+        }
+        if(msg[0].equalsIgnoreCase(prefix+"race")){
         	String result = JSONUtil.getRace(channel.substring(1));
         	if(result != null)
         	send(channel,"You can find the race "+channel.substring(1)+" is currently in at "+result);
@@ -2760,12 +2803,12 @@ public class ReceiverBot extends PircBot {
                         System.out.println("RAW: CLEARCHAT");
                 }
             }
-//            else if (msg[0].equalsIgnoreCase("HISTORYEND")) {
-//                String channel = msg[1];
-//                Channel ci = BotManager.getInstance().getChannel("#" + channel);
-//                ci.active = true;
-//                System.out.println("DEBUG: Channel " + ci.getChannel() + " marked active.");
-//            } 
+            else if (msg[0].equalsIgnoreCase("HISTORYEND")) {
+                String channel = msg[1];
+                Channel ci = BotManager.getInstance().getChannel("#" + channel);
+                ci.active = true;
+                System.out.println("DEBUG: Channel " + ci.getChannel() + " marked active.");
+            } 
             else if (msg[0].equalsIgnoreCase("EMOTESET")) {
                 String user = msg[1];
                 String setsList = msg[2].replaceAll("(\\[|\\])", "");
@@ -2849,10 +2892,10 @@ public class ReceiverBot extends PircBot {
 
         if (this.getNick().equalsIgnoreCase(sender)) {
             log("RB: Got self join for " + channel);
-//            if (BotManager.getInstance().ignoreHistory) {
-//                System.out.println("DEBUG: Marking " + channel + " as inactive.");
-//                channelInfo.active = false;
-//            }
+            if (BotManager.getInstance().ignoreHistory) {
+                System.out.println("DEBUG: Marking " + channel + " as inactive.");
+                channelInfo.active = false;
+            }
         }
     }
 
