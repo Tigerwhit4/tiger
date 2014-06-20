@@ -64,7 +64,7 @@ public class MessageReplaceParser {
         if (message.contains("(_COMMERCIAL_)")){
         	if(JSONUtil.krakenIsLive(channel.substring(1))){
         		ci.scheduleCommercial();
-        		message = "A commercial will be run in 15 seconds.";
+        		message = "A commercial will be run in 45 seconds.";
         	}else{
         		message = "";
         	}

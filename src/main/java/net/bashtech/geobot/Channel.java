@@ -121,6 +121,7 @@ public class Channel {
 
 	public boolean active;
 	private Timer commercial;
+	private int lastStrawpoll;
 
 	public Channel(String name) {
 		channel = name;
@@ -155,7 +156,12 @@ public class Channel {
 
 		config.setString("commandPrefix", this.prefix);
 	}
-
+	public void setLastStrawpoll(int newId){
+		lastStrawpoll = newId;
+	}
+	public int getLastStrawpoll(){
+		return lastStrawpoll;
+	}
 	public boolean getWp() {
 		return wpOn;
 	}
@@ -1350,18 +1356,18 @@ public class Channel {
 		return punishCount;
 	}
 
-	public void alive(String name) {
-		if (!streamUp) {
-
-		}
-		streamUp = true;
-		config.setBoolean("streamAlive", true);
-		long curViewers = JSONUtil.krakenViewers(name);
-		if (curViewers > streamMax) {
-			streamMax = (int) curViewers;
-			config.setInt("maxViewersStream", (int) curViewers);
-		}
-	}
+//	public void alive(String name) {
+//		if (!streamUp) {
+//
+//		}
+//		streamUp = true;
+//		config.setBoolean("streamAlive", true);
+//		long curViewers = JSONUtil.krakenViewers(name);
+//		if (curViewers > streamMax) {
+//			streamMax = (int) curViewers;
+//			config.setInt("maxViewersStream", (int) curViewers);
+//		}
+//	}
 
 	public void dead(String name) {
 		if (streamUp) {
@@ -1850,7 +1856,7 @@ public class Channel {
 			public void run() {
 				runCommercial();
 			}
-		}, 15000);
+		}, 45000);
 	}
 
 	public void runCommercial() {
