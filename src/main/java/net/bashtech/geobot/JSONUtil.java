@@ -85,34 +85,36 @@ public class JSONUtil {
 		}
 
 	}
-	public static String getGameChannel(String gameName){
-		gameName =gameName.replaceAll(" ", "+");
+
+	public static String getGameChannel(String gameName) {
+		gameName = gameName.replaceAll(" ", "+");
 		try {
 			JSONParser parser = new JSONParser();
 			Object obj = parser
 					.parse(BotManager
-							.getRemoteContent("https://api.twitch.tv/kraken/search/streams?q="+gameName));
+							.getRemoteContent("https://api.twitch.tv/kraken/search/streams?q="
+									+ gameName));
 
 			JSONObject jsonObject = (JSONObject) obj;
 			Long total = (Long) jsonObject.get("_total");
-			if (total>0){
-			JSONArray streams = (JSONArray) jsonObject.get("streams");
-			int numStreams = streams.size();
-			int randomChannel = (int)(Math.random()*(numStreams-1));
-			JSONObject stream = (JSONObject) streams.get(randomChannel);
-			JSONObject channel = (JSONObject) stream.get("channel");
-			String url = (String) channel.get("display_name");
-			
-			return url;
-			}else
+			if (total > 0) {
+				JSONArray streams = (JSONArray) jsonObject.get("streams");
+				int numStreams = streams.size();
+				int randomChannel = (int) (Math.random() * (numStreams - 1));
+				JSONObject stream = (JSONObject) streams.get(randomChannel);
+				JSONObject channel = (JSONObject) stream.get("channel");
+				String url = (String) channel.get("display_name");
+
+				return url;
+			} else
 				return "No other channels playing this game";
-				
-			
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return "Error Querying API";
 		}
 	}
+
 	public static String xboxGamerScore(String gamertag) {
 		try {
 			JSONParser parser = new JSONParser();
@@ -176,13 +178,14 @@ public class JSONUtil {
 
 	}
 
-	public static String getWiki(String query,int tries) {
+	public static String getWiki(String query, int tries) {
 		try {
 			query = query.replaceAll(" ", "_");
 			JSONParser parser = new JSONParser();
 			Object obj = parser
-					.parse(BotManager.getRemoteContent("http://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvsection=0&titles="
-							+ query + "&format=json"));
+					.parse(BotManager
+							.getRemoteContent("http://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvsection=0&titles="
+									+ query + "&format=json"));
 
 			JSONObject jsonObject = (JSONObject) obj;
 
@@ -198,11 +201,11 @@ public class JSONUtil {
 			JSONObject index0 = (JSONObject) revisions.get(0);
 
 			String content = (String) index0.get("*");
-			if (content.contains("#REDIRECT")&&tries<3) {
+			if (content.contains("#REDIRECT") && tries < 3) {
 				String newSearch = content.substring(content.indexOf("[") + 2,
 						content.indexOf("]"));
 
-				return getWiki(newSearch,tries++);
+				return getWiki(newSearch, tries++);
 			}
 
 			// content = content.replaceAll("\\[", "");
@@ -797,6 +800,17 @@ public class JSONUtil {
 			ex.printStackTrace();
 			return new Long(-1);
 		}
+
+	}
+
+	public static String highlightThat(String url) {
+		
+			String result = BotManager.getRemoteContent(url);
+
+			return result;
+
+			
+		
 
 	}
 

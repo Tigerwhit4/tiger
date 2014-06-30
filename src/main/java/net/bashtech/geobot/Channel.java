@@ -120,7 +120,7 @@ public class Channel {
 	public boolean subsRegsMinusLinks;
 
 	public boolean active;
-	private Timer commercial;
+	private static Timer commercial;
 	private int lastStrawpoll;
 
 	public Channel(String name) {
@@ -156,12 +156,15 @@ public class Channel {
 
 		config.setString("commandPrefix", this.prefix);
 	}
-	public void setLastStrawpoll(int newId){
+
+	public void setLastStrawpoll(int newId) {
 		lastStrawpoll = newId;
 	}
-	public int getLastStrawpoll(){
+
+	public int getLastStrawpoll() {
 		return lastStrawpoll;
 	}
+
 	public boolean getWp() {
 		return wpOn;
 	}
@@ -1356,18 +1359,18 @@ public class Channel {
 		return punishCount;
 	}
 
-//	public void alive(String name) {
-//		if (!streamUp) {
-//
-//		}
-//		streamUp = true;
-//		config.setBoolean("streamAlive", true);
-//		long curViewers = JSONUtil.krakenViewers(name);
-//		if (curViewers > streamMax) {
-//			streamMax = (int) curViewers;
-//			config.setInt("maxViewersStream", (int) curViewers);
-//		}
-//	}
+	// public void alive(String name) {
+	// if (!streamUp) {
+	//
+	// }
+	// streamUp = true;
+	// config.setBoolean("streamAlive", true);
+	// long curViewers = JSONUtil.krakenViewers(name);
+	// if (curViewers > streamMax) {
+	// streamMax = (int) curViewers;
+	// config.setInt("maxViewersStream", (int) curViewers);
+	// }
+	// }
 
 	public void dead(String name) {
 		if (streamUp) {
@@ -1846,10 +1849,15 @@ public class Channel {
 	private long getTime() {
 		return (System.currentTimeMillis() / 1000L);
 	}
-	public void cancelCommercial(){
+
+	public void cancelCommercial() {
 		commercial.cancel();
 	}
+
 	public void scheduleCommercial() {
+		BotManager.getInstance().receiverBot
+				.send(getChannel(),
+						"A commercial will be run in 45 seconds. Thank you for supporting the channel!");
 		commercial = new java.util.Timer();
 		commercial.schedule(new java.util.TimerTask() {
 			@Override
@@ -1857,6 +1865,22 @@ public class Channel {
 				runCommercial();
 			}
 		}, 45000);
+	}
+
+	public void snoozeCommercial() {
+		if (commercial != null) {
+			commercial.cancel();
+			commercial.schedule(new java.util.TimerTask() {
+				@Override
+				public void run() {
+					scheduleCommercial();
+				}
+			}, 300000);
+		}
+	}
+
+	public void testChannelSend() {
+		BotManager.getInstance().receiverBot.send(getChannel(), "Success!");
 	}
 
 	public void runCommercial() {
@@ -1868,7 +1892,6 @@ public class Channel {
 							+ getChannel().substring(1) + "/commercial",
 					"length=" + commercialLength, 2);
 
-			System.out.println(dataIn);
 		} else {
 			System.out.println(getChannel().substring(1)
 					+ " is not live. Skipping commercial.");

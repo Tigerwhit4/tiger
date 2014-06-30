@@ -19,6 +19,7 @@
 package net.bashtech.geobot;
 
 import net.bashtech.geobot.modules.BotModule;
+
 import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.NickAlreadyInUseException;
 import org.jibble.pircbot.PircBot;
@@ -30,6 +31,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
@@ -1517,69 +1519,85 @@ public class ReceiverBot extends PircBot {
 			log("RB: Matched command !commercial");
 			if (isOp) {
 				channelInfo.scheduleCommercial();
-				send(channel,
-						"A commercial will be run in 45 seconds. Thank you for supporting the channel!");
+				// send(channel,
+				// "A commercial will be run in 45 seconds. Thank you for supporting the channel!");
 			}
 
-			return;
 		}
 		if (msg[0].equalsIgnoreCase(prefix + "cancel") && isOp) {
 			log("RB: Matched command !cancel");
-			if (isOp) {
-				channelInfo.cancelCommercial();
-				send(channel, "The commercial has been cancelled.");
-			}
 
-			return;
+			channelInfo.cancelCommercial();
+			send(channel, "The commercial has been cancelled.");
+
+		}
+		if (msg[0].equalsIgnoreCase(prefix + "snooze") && isOp) {
+			log("RB: Matched command !snooze");
+
+			channelInfo.snoozeCommercial();
+			send(channel, "The commercial has been delayed by five minutes.");
+
+		}
+		
+		if (msg[0].equalsIgnoreCase(prefix + "testChannelSend") && isOp) {
+			log("RB: Matched command !testChannelSend");
+
+			channelInfo.testChannelSend();
+
 		}
 		if ((msg[0].equalsIgnoreCase(prefix + "strawpoll") && isOp && msg.length > 1)) {
-			if (msg.length > 5) {
-				String newString = fuseArray(msg,1);
+			if (msg.length > 3) {
+				String newString = fuseArray(msg, 1);
 				String[] params = newString.split(";");
 				String[] options = params[1].split(",");
-				String title = "title="+URLEncoder.encode(params[0]);
-				String multi = "&multi="+(params[2]);
-				String permissive = "&permissive="+(params[3]);
+				String title = "title=" + URLEncoder.encode(params[0]);
+				String multi = "&multi=" + false;
+				String permissive = "&permissive=" + false;
 				String optionsStr = "";
-				
-				for(String s:options){
-					optionsStr += "&options[]="+URLEncoder.encode(s);
+
+				for (String s : options) {
+					optionsStr += "&options[]=" + URLEncoder.encode(s);
 				}
-				String urlTestString =title+optionsStr+multi+permissive;
-				
-				
-				
+				String urlTestString = title + optionsStr + multi + permissive;
 
 				String id = BotManager.postRemoteDataStrawpoll(urlTestString);
 				if (id != null) {
 					channelInfo.setLastStrawpoll(Integer.parseInt(id));
 					send(channel, "Strawpoll.me/" + id);
 				}
-			}else if(msg[1].equalsIgnoreCase("results")){
-				
-				 String strawpollHtml = BotManager.getRemoteContent("http://strawpoll.me/"+channelInfo.getLastStrawpoll()+"/r");
-				 
-				 int pollOptionName = strawpollHtml.indexOf("pollOptionName");
-				 int end = strawpollHtml.indexOf("<",pollOptionName+1);
-				 ArrayList<String> options = new ArrayList<String>();
-				 int pollOptionStanding = strawpollHtml.indexOf("<span>",end);
-				 int standingEnd = strawpollHtml.indexOf("vote",pollOptionStanding);
-				 ArrayList<String> votes = new ArrayList<String>();
-				 System.out.println(pollOptionName+" "+end+" "+pollOptionStanding+" "+standingEnd);
-				 while(pollOptionName >-1){
-					 options.add(strawpollHtml.substring(pollOptionName+16,end));
-					 votes.add(strawpollHtml.substring(pollOptionStanding+6,standingEnd-1));
-					 pollOptionName = strawpollHtml.indexOf("pollOptionName",end);
-					 end =strawpollHtml.indexOf("<",pollOptionName+1);
-					 pollOptionStanding = strawpollHtml.indexOf("<span>",end);
-					 standingEnd = strawpollHtml.indexOf("vote",pollOptionStanding);
-					 
-				 }
-				 String results ="";
-				 for(int i = 0;i<options.size();i++){
-					 results+=options.get(i)+": "+votes.get(i)+"; ";
-				 }
-				 send(channel,results);
+			} else if (msg[1].equalsIgnoreCase("results")) {
+
+				String strawpollHtml = BotManager
+						.getRemoteContent("http://strawpoll.me/"
+								+ channelInfo.getLastStrawpoll() + "/r");
+
+				int pollOptionName = strawpollHtml.indexOf("pollOptionName");
+				int end = strawpollHtml.indexOf("<", pollOptionName + 1);
+				ArrayList<String> options = new ArrayList<String>();
+				int pollOptionStanding = strawpollHtml.indexOf("<span>", end);
+				int standingEnd = strawpollHtml.indexOf("vote",
+						pollOptionStanding);
+				ArrayList<String> votes = new ArrayList<String>();
+				System.out.println(pollOptionName + " " + end + " "
+						+ pollOptionStanding + " " + standingEnd);
+				while (pollOptionName > -1) {
+					options.add(strawpollHtml.substring(pollOptionName + 16,
+							end));
+					votes.add(strawpollHtml.substring(pollOptionStanding + 6,
+							standingEnd - 1));
+					pollOptionName = strawpollHtml.indexOf("pollOptionName",
+							end);
+					end = strawpollHtml.indexOf("<", pollOptionName + 1);
+					pollOptionStanding = strawpollHtml.indexOf("<span>", end);
+					standingEnd = strawpollHtml.indexOf("vote",
+							pollOptionStanding);
+
+				}
+				String results = "";
+				for (int i = 0; i < options.size(); i++) {
+					results += options.get(i) + ": " + votes.get(i) + "; ";
+				}
+				send(channel, results);
 			}
 		}
 		// !command - Ops
@@ -2044,6 +2062,14 @@ public class ReceiverBot extends PircBot {
 			}
 			return;
 		}
+
+		if (msg[0].equalsIgnoreCase(prefix + "highlightthat")
+				|| msg[0].equalsIgnoreCase(prefix + "ht")) {
+			String result = JSONUtil
+					.highlightThat("http://www.stinusmeret.be/mc/highlight.php?action=coebot&channel="
+							+ channel.substring(1) + "&user=" + sender);
+			send(channel, result.replaceAll("\"", ""));
+		}
 		// ##########################QUOTES##############################
 		if (msg[0].equalsIgnoreCase(prefix + "quote") && isSub) {
 			if (msg.length > 1) {
@@ -2059,6 +2085,7 @@ public class ReceiverBot extends PircBot {
 							int index = Integer.parseInt(msg[2]);
 							send(channel, "Quote #" + index + ": "
 									+ channelInfo.getQuote(index));
+							lastQuoted = System.currentTimeMillis();
 						} else {
 							send(channel, "Syntax is " + prefix
 									+ "quote get <index>");
@@ -2074,10 +2101,11 @@ public class ReceiverBot extends PircBot {
 						log("RB: Matched command !randomquote");
 						if (msg.length > 1) {
 							int randQuotes = (int) (Math.random() * channelInfo
-									.addQuote(""));
+									.getQuoteSize());
 							if (randQuotes > -1) {
 								send(channel, "Quote #" + randQuotes + ": "
 										+ channelInfo.getQuote(randQuotes));
+								lastQuoted1 = System.currentTimeMillis();
 							} else
 								send(channel, "Error, whoops");
 						} else {
@@ -2091,18 +2119,18 @@ public class ReceiverBot extends PircBot {
 				if (msg[1].equalsIgnoreCase("add")) {
 					log("RB: Matched command !addQuote");
 					if (isOp && msg.length > 2) {
-					
+
 						String quoteReceived = this.fuseArray(msg, 2);
-						if(quoteReceived.contains("&&&")){
+						if (quoteReceived.contains("&&&")) {
 							send(channel, "Quotes cannot contain &&&");
-						}else{
-						quoteReceived.trim();
-						int numQuote = channelInfo.addQuote(quoteReceived);
-						if (numQuote > -1)
-							send(channel, quoteReceived
-									+ " added, this is quote #" + numQuote);
-						else
-							send(channel, "Quote already exists.");
+						} else {
+							quoteReceived.trim();
+							int numQuote = channelInfo.addQuote(quoteReceived);
+							if (numQuote > -1)
+								send(channel, quoteReceived
+										+ " added, this is quote #" + numQuote);
+							else
+								send(channel, "Quote already exists.");
 						}
 					}
 				}
@@ -2122,6 +2150,32 @@ public class ReceiverBot extends PircBot {
 									"Quote not found, make sure you have the EXACT quote");
 						}
 					}
+				}
+				// search
+				if (msg[1].equalsIgnoreCase("search") && isOp) {
+					log("RB: Matched command !search");
+					String containers = "Quotes containing \""
+							+ fuseArray(msg, 2) + "\": ";
+
+					int num = 0;
+					for (int i = 0; i < channelInfo.getQuoteSize(); i++) {
+						if (channelInfo
+								.getQuote(i)
+								.toLowerCase()
+								.contains(
+										fuseArray(msg, 2).toLowerCase().trim())) {
+
+							num++;
+							containers += i + ",";
+						}
+					}
+					if (num > 0) {
+						send(channel,
+								containers.substring(0, containers.length() - 1)
+										+ ".");
+					} else
+						send(channel, "No quotes contained that phrase, sorry.");
+
 				}
 				// delQuote
 				if (msg[1].equalsIgnoreCase("delete")
@@ -2163,7 +2217,8 @@ public class ReceiverBot extends PircBot {
 				sendCommand(channel, ".subscribersoff");
 			}
 			if (msg.length > 0) {
-				if (msg[0].equalsIgnoreCase("+b")) {
+				if (msg[0].equalsIgnoreCase("+b")
+						|| msg[0].equalsIgnoreCase(prefix + "ban")) {
 					sendCommand(channel, ".ban " + msg[1].toLowerCase());
 					send(channel, msg[1].toLowerCase() + " was banned.");
 					channelInfo.increasePunCount();
@@ -2722,12 +2777,12 @@ public class ReceiverBot extends PircBot {
 			}
 			return;
 		}
-		if (msg[0].equalsIgnoreCase(prefix + "amIReg")) {
-			if (isRegular)
-				send(channel, sender + " is a regular.");
-			else
-				send(channel, sender + " is not a regular.");
-		}
+		// if (msg[0].equalsIgnoreCase(prefix + "amIReg")) {
+		// if (isRegular)
+		// send(channel, sender + " is a regular.");
+		// else
+		// send(channel, sender + " is not a regular.");
+		// }
 		// !regular - Owner
 		if ((msg[0].equalsIgnoreCase(prefix + "regular") || msg[0]
 				.equalsIgnoreCase(prefix + "regulars")) && isOp) {
@@ -3125,7 +3180,8 @@ public class ReceiverBot extends PircBot {
 		}
 
 		// !join
-		if (msg[0].equalsIgnoreCase(prefix + "join")) {
+		if (msg[0].equalsIgnoreCase(prefix + "join")
+				&& channel.equalsIgnoreCase("#" + getNick())) {
 			log("RB: Matched command !join");
 
 			if (!BotManager.getInstance().publicJoin) {
@@ -3429,6 +3485,14 @@ public class ReceiverBot extends PircBot {
 			System.out.println("INFO: Internal reconnection: "
 					+ this.getServer());
 			String[] channels = this.getChannels();
+			try {
+				System.out
+						.println("Sleeping for 15 seconds to allow for more JOINs");
+				Thread.sleep(15000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			this.reconnect();
 			for (int i = 0; i < channels.length; i++) {
 				this.joinChannel(channels[i]);
@@ -3789,7 +3853,7 @@ public class ReceiverBot extends PircBot {
 	private String getTimeoutText(int count, Channel channel) {
 		if (channel.getEnableWarnings()) {
 			if (count > 1) {
-				return "temp ban";
+				return "timeout";
 			} else {
 				return "warning";
 			}
