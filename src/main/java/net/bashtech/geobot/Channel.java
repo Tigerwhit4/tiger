@@ -19,15 +19,17 @@
 package net.bashtech.geobot;
 
 import org.java_websocket.WebSocket;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Channel {
-	public PropertiesFile config;
+	public JSONObject config;
 
 	private String channel;
 	private String twitchname;
@@ -122,16 +124,18 @@ public class Channel {
 	public boolean active;
 	private static Timer commercial;
 	private int lastStrawpoll;
-
+	PropertiesFile oldconfig;
 	public Channel(String name) {
 		channel = name;
-		config = new PropertiesFile(name + ".properties");
+		 oldconfig = new PropertiesFile(channel + ".properties");
+		config = new JSONObject();
 		loadProperties(name);
 		warningCount = new HashMap<String, EnumMap<FilterType, Integer>>();
 		warningTime = new HashMap<String, Long>();
 		commandCooldown = new HashMap<String, Long>();
 
 		twitchname = channel.substring(1);
+
 	}
 
 	public Channel(String name, int mode) {
@@ -154,7 +158,8 @@ public class Channel {
 	public void setPrefix(String prefix) {
 		this.prefix = prefix.charAt(0) + "";
 
-		config.setString("commandPrefix", this.prefix);
+		config.put("commandPrefix", this.prefix);
+		saveConfig();
 	}
 
 	public void setLastStrawpoll(int newId) {
@@ -171,19 +176,22 @@ public class Channel {
 
 	public void setStreamCount(int newCount) {
 		streamNumber = newCount;
-		config.setInt("streamCount", streamNumber);
+		config.put("streamCount", streamNumber);
+		saveConfig();
 	}
 
 	public void setWp(boolean state) {
 		wpOn = state;
-		config.setBoolean("wpTimer", wpOn);
+		config.put("wpTimer", wpOn);
+		saveConfig();
 	}
 
 	public long timeSinceSaid() {
 		long now = System.currentTimeMillis();
 		long differenceInSeconds = (now - sinceWp) / 1000L;
 		sinceWp = now;
-		config.setLong("sinceWp", sinceWp);
+		config.put("sinceWp", sinceWp);
+		saveConfig();
 		return (differenceInSeconds);
 	}
 
@@ -203,7 +211,8 @@ public class Channel {
 
 	public void setBullet(String newBullet) {
 		bullet = newBullet;
-		config.setString("bullet", newBullet);
+		config.put("bullet", newBullet);
+		saveConfig();
 	}
 
 	public String getChannelBullet() {
@@ -212,7 +221,8 @@ public class Channel {
 
 	public void increaseWpCount() {
 		wpCount++;
-		config.setInt("wpCount", wpCount);
+		config.put("wpCount", wpCount);
+		saveConfig();
 	}
 
 	public int getWpCount() {
@@ -226,7 +236,8 @@ public class Channel {
 	public void setEmoteSet(String emoteSet) {
 		this.emoteSet = emoteSet;
 
-		config.setString("emoteSet", emoteSet);
+		config.put("emoteSet", emoteSet);
+		saveConfig();
 	}
 
 	public boolean getSubsRegsMinusLinks() {
@@ -238,7 +249,8 @@ public class Channel {
 		subscribers.clear();
 
 		subsRegsMinusLinks = on;
-		config.setBoolean("subsRegsMinusLinks", subsRegsMinusLinks);
+		config.put("subsRegsMinusLinks", subsRegsMinusLinks);
+		saveConfig();
 
 	}
 
@@ -251,23 +263,24 @@ public class Channel {
 		subscribers.clear();
 
 		this.subscriberRegulars = subscriberRegulars;
-		config.setBoolean("subscriberRegulars", subscriberRegulars);
+		config.put("subscriberRegulars", subscriberRegulars);
+		saveConfig();
 	}
 
 	// ##############################################################
 	public int addQuote(String quote) {
-		quote = quote.replaceAll("&&&", "");
-		if (quote.length() < 1)
-			return quotes.size();
+
 		if (quotes.contains(quote)) {
 			return -1;
 		} else {
 			quotes.add(quote);
+			JSONArray quotesArray = new JSONArray();
 			String quotesString = "";
 			for (int i = 0; i < quotes.size(); i++) {
-				quotesString += quotes.get(i) + "&&&";
+				quotesArray.add(quotes.get(i));
 			}
-			config.setString("quotes", quotesString);
+			config.put("quotes", quotesArray);
+			saveConfig();
 			return quotes.indexOf(quote);
 		}
 	}
@@ -288,18 +301,20 @@ public class Channel {
 			return false;
 		else {
 			quotes.remove(index);
+			JSONArray quotesArray = new JSONArray();
 			String quotesString = "";
 			for (int i = 0; i < quotes.size(); i++) {
-				quotesString += quotes.get(i) + "&&&";
+				quotesArray.add(quotes.get(i));
 			}
-			config.setString("quotes", quotesString);
+			config.put("quotes", quotesArray);
+			saveConfig();
 			return true;
 		}
 	}
 
 	public int getQuoteIndex(String quote) {
 		if (quotes.contains(quote))
-			return quotes.indexOf(quote) - 1;
+			return quotes.indexOf(quote);
 		else
 			return -1;
 	}
@@ -330,44 +345,41 @@ public class Channel {
 			commands.put(key, command);
 		}
 
-		String commandsKey = "";
-		String commandsValue = "";
-
-		Iterator itr = commands.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry pairs = (Map.Entry) itr.next();
-			commandsKey += pairs.getKey() + ",";
-			commandsValue += pairs.getValue() + ",,";
-		}
-
-		config.setString("commandsKey", commandsKey);
-		config.setString("commandsValue", commandsValue);
+		saveCommands();
 
 	}
 
 	public void removeCommand(String key) {
 		if (commands.containsKey(key)) {
 			commands.remove(key);
-			commandsRestrictions.remove(key);
+			commandsRestrictions.remove(key);			
 
-			String commandsKey = "";
-			String commandsValue = "";
+			saveCommands();
 
-			Iterator itr = commands.entrySet().iterator();
-
-			while (itr.hasNext()) {
-				Map.Entry pairs = (Map.Entry) itr.next();
-				commandsKey += pairs.getKey() + ",";
-				commandsValue += pairs.getValue() + ",,";
-			}
-
-			config.setString("commandsKey", commandsKey);
-			config.setString("commandsValue", commandsValue);
-
-			saveCommandRestrictions();
+			
 		}
 
+	}
+	public void saveCommands(){
+		JSONArray commandsArr = new JSONArray();
+		
+
+		Iterator itr = commands.entrySet().iterator();
+
+		while (itr.hasNext()) {
+			Map.Entry pairs = (Map.Entry) itr.next();
+			JSONObject commandObj = new JSONObject();
+			commandObj.put("key", pairs.getKey());
+			commandObj.put("value", pairs.getValue());
+			if(commandsRestrictions.containsKey(pairs.getKey())){
+				commandObj.put("restriction", commandsRestrictions.get(pairs.getKey()));
+			}
+			commandsArr.add(commandObj);
+			
+		}
+
+		config.put("commands",commandsArr);
+		saveConfig();
 	}
 
 	public boolean setCommandsRestriction(String command, int level) {
@@ -378,7 +390,7 @@ public class Channel {
 
 		commandsRestrictions.put(command, level);
 
-		saveCommandRestrictions();
+		saveCommands();
 
 		return true;
 	}
@@ -386,28 +398,33 @@ public class Channel {
 	public boolean checkCommandRestriction(String command, int level) {
 		System.out.println("Checking command: " + command + " User level: "
 				+ level);
-		if (!commandsRestrictions.containsKey(command))
+		if (!commandsRestrictions.containsKey(command.toLowerCase()))
 			return true;
 
-		if (level >= commandsRestrictions.get(command))
+		if (level >= commandsRestrictions.get(command.toLowerCase()))
 			return true;
 
 		return false;
 	}
 
-	public void saveCommandRestrictions() {
-		String commandRestrictionsString = "";
-
-		Iterator itr = commandsRestrictions.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry pairs = (Map.Entry) itr.next();
-			commandRestrictionsString += pairs.getKey() + "|"
-					+ pairs.getValue() + ",";
-		}
-
-		config.setString("commandRestrictions", commandRestrictionsString);
-	}
+//	public void saveCommandRestrictions() {
+//		String commandRestrictionsString = "";
+//		JSONArray commandRestrictionsKey = new JSONArray();
+//		JSONArray commandRestrictionsValue = new JSONArray();
+//
+//		Iterator itr = commandsRestrictions.entrySet().iterator();
+//
+//		while (itr.hasNext()) {
+//			Map.Entry pairs = (Map.Entry) itr.next();
+//			commandRestrictionsKey.add(pairs.getKey());
+//			commandRestrictionsValue.add(pairs.getValue());
+//
+//		}
+//
+//		config.put("commandRestrictionsKey", commandRestrictionsKey);
+//		config.put("commandRestrictionsValue", commandRestrictionsValue);
+//		saveConfig();
+//	}
 
 	public void setRepeatCommand(String key, int delay, int diff) {
 		key = key.toLowerCase();
@@ -423,7 +440,7 @@ public class Channel {
 			commandsRepeat.put(key, rc);
 		}
 
-		writeRepeatCommand();
+		saveRepeatCommands();
 	}
 
 	public void removeRepeatCommand(String key) {
@@ -432,40 +449,34 @@ public class Channel {
 			commandsRepeat.get(key).timer.cancel();
 			commandsRepeat.remove(key);
 
-			writeRepeatCommand();
+			saveRepeatCommands();
 		}
 	}
 
 	public void setRepeatCommandStatus(String key, boolean status) {
 		if (commandsRepeat.containsKey(key)) {
 			commandsRepeat.get(key).setStatus(status);
-			writeRepeatCommand();
+			saveRepeatCommands();
 		}
 	}
 
-	private void writeRepeatCommand() {
-		String commandsRepeatKey = "";
-		String commandsRepeatDelay = "";
-		String commandsRepeatDiff = "";
-		String commandsRepeatActive = "";
-
+	private void saveRepeatCommands() {
+		JSONArray repeatedCommands = new JSONArray();
 		Iterator itr = commandsRepeat.entrySet().iterator();
 
 		while (itr.hasNext()) {
 			Map.Entry pairs = (Map.Entry) itr.next();
-			commandsRepeatKey += pairs.getKey() + ",";
-			commandsRepeatDelay += ((RepeatCommand) pairs.getValue()).delay
-					+ ",";
-			commandsRepeatDiff += ((RepeatCommand) pairs.getValue()).messageDifference
-					+ ",";
-			commandsRepeatActive += ((RepeatCommand) pairs.getValue()).active
-					+ ",";
+			JSONObject repeatObj = new JSONObject();
+			repeatObj.put("name", pairs.getKey());
+			repeatObj.put("delay", ((RepeatCommand)pairs.getValue()).delay);
+			repeatObj.put("messageDifference", ((RepeatCommand)pairs.getValue()).messageDifference);
+			repeatObj.put("active", ((RepeatCommand)pairs.getValue()).active);
+			repeatedCommands.add(repeatObj);
+			
 		}
 
-		config.setString("commandsRepeatKey", commandsRepeatKey);
-		config.setString("commandsRepeatDelay", commandsRepeatDelay);
-		config.setString("commandsRepeatDiff", commandsRepeatDiff);
-		config.setString("commandsRepeatActive", commandsRepeatActive);
+		config.put("repeatedCommands", repeatedCommands);
+		saveConfig();
 	}
 
 	public void setScheduledCommand(String key, String pattern, int diff) {
@@ -481,7 +492,7 @@ public class Channel {
 			commandsSchedule.put(key, rc);
 		}
 
-		writeScheduledCommand();
+		saveScheduledCommands();
 
 	}
 
@@ -490,41 +501,38 @@ public class Channel {
 			commandsSchedule.get(key).s.stop();
 			commandsSchedule.remove(key);
 
-			writeScheduledCommand();
+			saveScheduledCommands();
 		}
 	}
 
 	public void setScheduledCommandStatus(String key, boolean status) {
 		if (commandsSchedule.containsKey(key)) {
 			commandsSchedule.get(key).setStatus(status);
-			writeScheduledCommand();
+			saveScheduledCommands();
 		}
 	}
 
-	private void writeScheduledCommand() {
-		String commandsScheduleKey = "";
-		String commandsSchedulePattern = "";
-		String commandsScheduleDiff = "";
-		String commandsScheduleActive = "";
+	private void saveScheduledCommands() {
+		
+		JSONArray scheduledCommands = new JSONArray();
 
 		Iterator itr = commandsSchedule.entrySet().iterator();
 
 		while (itr.hasNext()) {
 			Map.Entry pairs = (Map.Entry) itr.next();
-			commandsScheduleKey += pairs.getKey() + ",,";
-			commandsSchedulePattern += ((ScheduledCommand) pairs.getValue()).pattern
-					+ ",,";
-			commandsScheduleDiff += ((ScheduledCommand) pairs.getValue()).messageDifference
-					+ ",,";
-			commandsScheduleActive += ((ScheduledCommand) pairs.getValue()).active
-					+ ",,";
+			JSONObject scheduleObj = new JSONObject();
+			scheduleObj.put("name", pairs.getKey());
+			scheduleObj.put("pattern",((ScheduledCommand) pairs.getValue()).pattern);
+			scheduleObj.put("messageDifference",((ScheduledCommand) pairs.getValue()).messageDifference);
+			scheduleObj.put("active",((ScheduledCommand) pairs.getValue()).active);
+			scheduledCommands.add(scheduleObj);
+			
+		
 
 		}
 
-		config.setString("commandsScheduleKey", commandsScheduleKey);
-		config.setString("commandsSchedulePattern", commandsSchedulePattern);
-		config.setString("commandsScheduleDiff", commandsScheduleDiff);
-		config.setString("commandsScheduleActive", commandsScheduleActive);
+		config.put("scheduledCommands",scheduledCommands);
+		saveConfig();
 	}
 
 	public ArrayList<String> getCommandList() {
@@ -590,16 +598,19 @@ public class Channel {
 	}
 
 	private void saveAutoReply() {
-		String triggerString = "";
-		String responseString = "";
+		JSONArray triggerString = new JSONArray();
+		JSONArray responseString = new JSONArray();
+		JSONArray autoReplies = new JSONArray();
 
 		for (int i = 0; i < autoReplyTrigger.size(); i++) {
-			triggerString += autoReplyTrigger.get(i).toString() + ",,";
-			responseString += autoReplyResponse.get(i).toString() + ",,";
+			JSONObject autoreplyObj = new JSONObject();
+			autoreplyObj.put("trigger",autoReplyTrigger.get(i).toString());
+			autoreplyObj.put("response",autoReplyResponse.get(i).toString());
+			autoReplies.add(autoreplyObj);
 		}
 
-		config.setString("autoReplyTriggers", triggerString);
-		config.setString("autoReplyResponse", responseString);
+		config.put("autoReplies",autoReplies);
+		saveConfig();
 	}
 
 	// #####################################################
@@ -610,9 +621,10 @@ public class Channel {
 
 	public void setTopic(String s) {
 		topic = s;
-		config.setString("topic", topic);
+		config.put("topic", topic);
 		topicTime = (int) (System.currentTimeMillis() / 1000);
-		config.setInt("topicTime", topicTime);
+		config.put("topicTime", topicTime);
+		saveConfig();
 	}
 
 	public void updateGame(String game) throws IOException {
@@ -665,12 +677,14 @@ public class Channel {
 
 	public void setFilterSymbolsMin(int symbols) {
 		filterSymbolsMin = symbols;
-		config.setInt("filterSymbolsMin", filterSymbolsMin);
+		config.put("filterSymbolsMin", filterSymbolsMin);
+		saveConfig();
 	}
 
 	public void setFilterSymbolsPercent(int symbols) {
 		filterSymbolsPercent = symbols;
-		config.setInt("filterSymbolsPercent", filterSymbolsPercent);
+		config.put("filterSymbolsPercent", filterSymbolsPercent);
+		saveConfig();
 	}
 
 	public boolean getFilterCaps() {
@@ -691,27 +705,32 @@ public class Channel {
 
 	public void setFilterCaps(boolean caps) {
 		filterCaps = caps;
-		config.setBoolean("filterCaps", filterCaps);
+		config.put("filterCaps", filterCaps);
+		saveConfig();
 	}
 
 	public void setfilterCapsPercent(int caps) {
 		filterCapsPercent = caps;
-		config.setInt("filterCapsPercent", filterCapsPercent);
+		config.put("filterCapsPercent", filterCapsPercent);
+		saveConfig();
 	}
 
 	public void setfilterCapsMinCharacters(int caps) {
 		filterCapsMinCharacters = caps;
-		config.setInt("filterCapsMinCharacters", filterCapsMinCharacters);
+		config.put("filterCapsMinCharacters", filterCapsMinCharacters);
+		saveConfig();
 	}
 
 	public void setfilterCapsMinCapitals(int caps) {
 		filterCapsMinCapitals = caps;
-		config.setInt("filterCapsMinCapitals", filterCapsMinCapitals);
+		config.put("filterCapsMinCapitals", filterCapsMinCapitals);
+		saveConfig();
 	}
 
 	public void setFilterLinks(boolean links) {
 		filterLinks = links;
-		config.setBoolean("filterLinks", links);
+		config.put("filterLinks", links);
+		saveConfig();
 	}
 
 	public boolean getFilterLinks() {
@@ -720,7 +739,8 @@ public class Channel {
 
 	public void setFilterOffensive(boolean option) {
 		filterOffensive = option;
-		config.setBoolean("filterOffensive", option);
+		config.put("filterOffensive", option);
+		saveConfig();
 	}
 
 	public boolean getFilterOffensive() {
@@ -729,7 +749,8 @@ public class Channel {
 
 	public void setFilterEmotes(boolean option) {
 		filterEmotes = option;
-		config.setBoolean("filterEmotes", option);
+		config.put("filterEmotes", option);
+		saveConfig();
 	}
 
 	public boolean getFilterEmotes() {
@@ -738,7 +759,8 @@ public class Channel {
 
 	public void setFilterSymbols(boolean option) {
 		filterSymbols = option;
-		config.setBoolean("filterSymbols", option);
+		config.put("filterSymbols", option);
+		saveConfig();
 	}
 
 	public boolean getFilterSymbols() {
@@ -751,12 +773,14 @@ public class Channel {
 
 	public void setFilterMax(int option) {
 		filterMaxLength = option;
-		config.setInt("filterMaxLength", option);
+		config.put("filterMaxLength", option);
+		saveConfig();
 	}
 
 	public void setFilterEmotesMax(int option) {
 		filterEmotesMax = option;
-		config.setInt("filterEmotesMax", option);
+		config.put("filterEmotesMax", option);
+		saveConfig();
 	}
 
 	public int getFilterEmotesMax() {
@@ -770,12 +794,14 @@ public class Channel {
 	public void setFilterEmotesSingle(boolean filterEmotesSingle) {
 		this.filterEmotesSingle = filterEmotesSingle;
 
-		config.setBoolean("filterEmotesSingle", filterEmotesSingle);
+		config.put("filterEmotesSingle", filterEmotesSingle);
+		saveConfig();
 	}
 
 	public void setAnnounceJoinParts(boolean bol) {
 		announceJoinParts = bol;
-		config.setBoolean("announceJoinParts", bol);
+		config.put("announceJoinParts", bol);
+		saveConfig();
 	}
 
 	public boolean getAnnounceJoinParts() {
@@ -784,7 +810,8 @@ public class Channel {
 
 	public void setFilterColor(boolean option) {
 		filterColors = option;
-		config.setBoolean("filterColors", option);
+		config.put("filterColors", option);
+		saveConfig();
 	}
 
 	public boolean getFilterColor() {
@@ -793,7 +820,8 @@ public class Channel {
 
 	public void setFilterMe(boolean option) {
 		filterMe = option;
-		config.setBoolean("filterMe", option);
+		config.put("filterMe", option);
+		saveConfig();
 	}
 
 	public boolean getFilterMe() {
@@ -802,7 +830,8 @@ public class Channel {
 
 	public void setEnableWarnings(boolean option) {
 		enableWarnings = option;
-		config.setBoolean("enableWarnings", option);
+		config.put("enableWarnings", option);
+		saveConfig();
 	}
 
 	public boolean getEnableWarnings() {
@@ -811,7 +840,8 @@ public class Channel {
 
 	public void setTimeoutDuration(int option) {
 		timeoutDuration = option;
-		config.setInt("timeoutDuration", option);
+		config.put("timeoutDuration", option);
+		saveConfig();
 	}
 
 	public int getTimeoutDuration() {
@@ -837,15 +867,16 @@ public class Channel {
 
 		}
 
-		String regularsString = "";
+		JSONArray regularsArray = new JSONArray();
 
 		synchronized (regulars) {
 			for (String s : regulars) {
-				regularsString += s + ",";
+				regularsArray.add(s);
 			}
 		}
 
-		config.setString("regulars", regularsString);
+		config.put("regulars", regularsArray);
+		saveConfig();
 	}
 
 	public void removeRegular(String name) {
@@ -853,15 +884,16 @@ public class Channel {
 			if (regulars.contains(name.toLowerCase()))
 				regulars.remove(name.toLowerCase());
 		}
-		String regularsString = "";
+		JSONArray regularsArray = new JSONArray();
 
 		synchronized (regulars) {
 			for (String s : regulars) {
-				regularsString += s + ",";
+				regularsArray.add(s);
 			}
 		}
 
-		config.setString("regulars", regularsString);
+		config.put("regulars", regularsArray);
+		saveConfig();
 	}
 
 	public Set<String> getRegulars() {
@@ -906,16 +938,18 @@ public class Channel {
 	// }
 	public void addRaidWhitelist(String name) {
 		raidWhitelist.add(name.toLowerCase());
-		String raidWhitelistString = "";
+		JSONArray raidWhitelistArray = new JSONArray();
 		for (String s : raidWhitelist) {
-			raidWhitelistString += s + "&&&";
+			raidWhitelistArray.add(s);
 		}
-		config.setString("raidWhitelist", raidWhitelistString);
+		config.put("raidWhitelist", raidWhitelistArray);
+		saveConfig();
 	}
 
 	public void setGamertag(String gamerTag) {
 		this.gamerTag = gamerTag.replaceAll(" ", "+");
-		config.setString("gamerTag", this.gamerTag);
+		config.put("gamerTag", this.gamerTag);
+		saveConfig();
 	}
 
 	public String getGamerTag() {
@@ -924,11 +958,12 @@ public class Channel {
 
 	public void deleteRaidWhitelist(String name) {
 		raidWhitelist.remove(name);
-		String raidWhitelistString = "";
+		JSONArray raidWhitelistArray = new JSONArray();
 		for (String s : raidWhitelist) {
-			raidWhitelistString += s + "&&&";
+			raidWhitelistArray.add(s);
 		}
-		config.setString("raidWhitelist", raidWhitelistString);
+		config.put("raidWhitelist", raidWhitelistArray);
+		saveConfig();
 	}
 
 	public ArrayList<String> getRaidWhitelist() {
@@ -970,15 +1005,16 @@ public class Channel {
 			moderators.add(name.toLowerCase());
 		}
 
-		String moderatorsString = "";
+		JSONArray moderatorsArray = new JSONArray();
 
 		synchronized (moderators) {
 			for (String s : moderators) {
-				moderatorsString += s + ",";
+				moderatorsArray.add(s);
 			}
 		}
 
-		config.setString("moderators", moderatorsString);
+		config.put("moderators", moderatorsArray);
+		saveConfig();
 	}
 
 	public void removeModerator(String name) {
@@ -987,15 +1023,16 @@ public class Channel {
 				moderators.remove(name.toLowerCase());
 		}
 
-		String moderatorsString = "";
+		JSONArray moderatorsArray = new JSONArray();
 
 		synchronized (moderators) {
 			for (String s : moderators) {
-				moderatorsString += s + ",";
+				moderatorsArray.add(s);
 			}
 		}
 
-		config.setString("moderators", moderatorsString);
+		config.put("moderators", moderatorsArray);
+		saveConfig();
 	}
 
 	public Set<String> getModerators() {
@@ -1018,15 +1055,16 @@ public class Channel {
 			owners.add(name.toLowerCase());
 		}
 
-		String ownersString = "";
+		JSONArray ownersString = new JSONArray();
 
 		synchronized (owners) {
 			for (String s : owners) {
-				ownersString += s + ",";
+				ownersString.add(s);
 			}
 		}
 
-		config.setString("owners", ownersString);
+		config.put("owners", ownersString);
+		saveConfig();
 	}
 
 	public void removeOwner(String name) {
@@ -1035,15 +1073,16 @@ public class Channel {
 				owners.remove(name.toLowerCase());
 		}
 
-		String ownersString = "";
+		JSONArray ownersString = new JSONArray();
 
 		synchronized (owners) {
 			for (String s : owners) {
-				ownersString += s + ",";
+				ownersString.add(s);
 			}
 		}
 
-		config.setString("owners", ownersString);
+		config.put("owners", ownersString);
+		saveConfig();
 	}
 
 	public Set<String> getOwners() {
@@ -1057,15 +1096,16 @@ public class Channel {
 			permittedDomains.add(name.toLowerCase());
 		}
 
-		String permittedDomainsString = "";
+		JSONArray permittedDomainsString = new JSONArray();
 
 		synchronized (permittedDomains) {
 			for (String s : permittedDomains) {
-				permittedDomainsString += s + ",";
+				permittedDomainsString.add(s);
 			}
 		}
 
-		config.setString("permittedDomains", permittedDomainsString);
+		config.put("permittedDomains", permittedDomainsString);
+		saveConfig();
 	}
 
 	public void removePermittedDomain(String name) {
@@ -1077,15 +1117,17 @@ public class Channel {
 			}
 		}
 
-		String permittedDomainsString = "";
+		JSONArray permittedDomainsString = new JSONArray();
 
 		synchronized (permittedDomains) {
 			for (String s : permittedDomains) {
-				permittedDomainsString += s + ",";
+				permittedDomainsString.add(s);
 			}
 		}
 
-		config.setString("permittedDomains", permittedDomainsString);
+		config.put("permittedDomains", permittedDomainsString);
+		saveConfig();
+
 	}
 
 	public boolean isDomainPermitted(String domain) {
@@ -1124,15 +1166,16 @@ public class Channel {
 
 		}
 
-		String offensiveWordsString = "";
+		JSONArray offensiveWordsArray = new JSONArray();
 
 		synchronized (offensiveWords) {
 			for (String s : offensiveWords) {
-				offensiveWordsString += s + ",,";
+				offensiveWordsArray.add(s);
 			}
 		}
 
-		config.setString("offensiveWords", offensiveWordsString);
+		config.put("offensiveWords", offensiveWordsArray);
+		saveConfig();
 	}
 
 	public void removeOffensive(String word) {
@@ -1141,14 +1184,16 @@ public class Channel {
 				offensiveWords.remove(word);
 		}
 
-		String offensiveWordsString = "";
+		JSONArray offensiveWordsArray = new JSONArray();
+
 		synchronized (offensiveWords) {
 			for (String s : offensiveWords) {
-				offensiveWordsString += s + ",,";
+				offensiveWordsArray.add(s);
 			}
 		}
 
-		config.setString("offensiveWords", offensiveWordsString);
+		config.put("offensiveWords", offensiveWordsArray);
+		saveConfig();
 
 		synchronized (offensiveWordsRegex) {
 			offensiveWordsRegex.clear();
@@ -1172,7 +1217,8 @@ public class Channel {
 	public void clearBannedPhrases() {
 		offensiveWords.clear();
 		offensiveWordsRegex.clear();
-		config.setString("offensiveWords", "");
+		config.put("offensiveWords", new JSONArray());
+		saveConfig();
 	}
 
 	public boolean isBannedPhrase(String phrase) {
@@ -1188,7 +1234,8 @@ public class Channel {
 			}
 		}
 
-		int severity = config.getInt("banPhraseSeverity");
+		int severity = Integer.parseInt((String) config
+				.get("banPhraseSeverity"));
 		if (BotManager.getInstance().banPhraseLists.containsKey(severity)) {
 			for (Pattern reg : BotManager.getInstance().banPhraseLists
 					.get(severity)) {
@@ -1211,13 +1258,15 @@ public class Channel {
 
 	public void setTopicFeature(boolean setting) {
 		this.useTopic = setting;
-		config.setBoolean("useTopic", this.useTopic);
+		config.put("useTopic", this.useTopic);
+		saveConfig();
 
 	}
 
 	public void setFiltersFeature(boolean setting) {
 		this.useFilters = setting;
-		config.setBoolean("useFilters", this.useFilters);
+		config.put("useFilters", this.useFilters);
+		saveConfig();
 	}
 
 	public Poll getPoll() {
@@ -1242,7 +1291,8 @@ public class Channel {
 
 	public void setThrow(boolean setting) {
 		this.enableThrow = setting;
-		config.setBoolean("enableThrow", this.enableThrow);
+		config.put("enableThrow", this.enableThrow);
+		saveConfig();
 	}
 
 	public boolean checkSignKicks() {
@@ -1251,12 +1301,14 @@ public class Channel {
 
 	public void setSignKicks(boolean setting) {
 		this.signKicks = setting;
-		config.setBoolean("signKicks", this.signKicks);
+		config.put("signKicks", this.signKicks);
+		saveConfig();
 	}
 
 	public void setLogging(boolean option) {
 		logChat = option;
-		config.setBoolean("logChat", option);
+		config.put("logChat", option);
+		saveConfig();
 	}
 
 	public boolean getLogging() {
@@ -1269,7 +1321,8 @@ public class Channel {
 
 	public void setCommercialLength(int commercialLength) {
 		this.commercialLength = commercialLength;
-		config.setInt("commercialLength", commercialLength);
+		config.put("commercialLength", commercialLength);
+		saveConfig();
 	}
 
 	// ##################################################
@@ -1303,7 +1356,8 @@ public class Channel {
 
 	public void setLastfm(String string) {
 		lastfm = string;
-		config.setString("lastfm", lastfm);
+		config.put("lastfm", lastfm);
+		saveConfig();
 	}
 
 	public boolean updateSong() {
@@ -1328,10 +1382,12 @@ public class Channel {
 		long viewers = JSONUtil.krakenViewers(name);
 		if (viewers > maxViewers) {
 			maxViewers = (int) viewers;
-			config.setInt("max viewers", maxViewers);
+			config.put("maxViewers", maxViewers);
 			maxviewerDate = new java.util.Date().toString();
-			config.setString("maxviewerDate", maxviewerDate);
+			config.put("maxviewerDate", maxviewerDate);
+
 		}
+		saveConfig();
 
 	}
 
@@ -1345,14 +1401,16 @@ public class Channel {
 
 	public void resetMaxViewers(int newMax) {
 		maxViewers = newMax;
-		config.setInt("max viewers", maxViewers);
+		config.put("maxViewers", maxViewers);
+		saveConfig();
 	}
 
 	public void increasePunCount() {
 		punishCount++;
 		sincePunish = System.currentTimeMillis();
-		config.setLong("sincePunish", sincePunish);
-		config.setInt("punishCount", punishCount);
+		config.put("sincePunish", sincePunish);
+		config.put("punishCount", punishCount);
+		saveConfig();
 	}
 
 	public int getPunCount() {
@@ -1375,14 +1433,15 @@ public class Channel {
 	public void dead(String name) {
 		if (streamUp) {
 			streamNumber++;
-			config.setInt("streamCount", streamNumber);
+			config.put("streamCount", streamNumber);
 			runningMaxViewers += streamMax;
-			config.setInt("runningMaxViewers", runningMaxViewers);
+			config.put("runningMaxViewers", runningMaxViewers);
 		}
 		streamUp = false;
-		config.setBoolean("streamAlive", false);
+		config.put("streamAlive", false);
 		streamMax = 0;
-		config.setInt("maxViewersStream", 0);
+		config.put("maxViewersStream", 0);
+		saveConfig();
 	}
 
 	public double getAverage() {
@@ -1397,7 +1456,8 @@ public class Channel {
 
 	public void setSteam(String string) {
 		steamID = string;
-		config.setString("steamID", steamID);
+		config.put("steamID", steamID);
+		saveConfig();
 	}
 
 	// #################################################
@@ -1408,7 +1468,8 @@ public class Channel {
 
 	public void setClickToTweetFormat(String string) {
 		clickToTweetFormat = string;
-		config.setString("clickToTweetFormat", clickToTweetFormat);
+		config.put("clickToTweetFormat", clickToTweetFormat);
+		saveConfig();
 	}
 
 	public int getWarningCount(String name, FilterType type) {
@@ -1490,7 +1551,8 @@ public class Channel {
 
 	public void setUpdateDelay(int newDelay) {
 		updateDelay = newDelay;
-		config.setInt("updateDelay", newDelay);
+		config.put("updateDelay", newDelay);
+		saveConfig();
 	}
 
 	public void reload() {
@@ -1518,25 +1580,18 @@ public class Channel {
 		defaults.put("maxviewerDate", "");
 
 		defaults.put("topic", "");
-		defaults.put("commandsKey", "");
-		defaults.put("commandsValue", "");
-		defaults.put("commandsRepeatKey", "");
-		defaults.put("commandsRepeatDelay", "");
-		defaults.put("commandsRepeatDiff", "");
-		defaults.put("commandsRepeatActive", "");
-		defaults.put("commandsScheduleKey", "");
-		defaults.put("commandsSchedulePattern", "");
-		defaults.put("commandsScheduleDiff", "");
-		defaults.put("commandsScheduleActive", "");
-		defaults.put("autoReplyTriggers", "");
-		defaults.put("autoReplyResponse", "");
-		defaults.put("regulars", "");
-		defaults.put("moderators", "");
-		defaults.put("owners", "");
+		defaults.put("commands", new JSONArray());
+		
+		defaults.put("repeatedCommands", new JSONArray());
+		defaults.put("scheduledCommands", new JSONArray());
+		defaults.put("autoReplies", new JSONArray());
+		defaults.put("regulars", new JSONArray());
+		defaults.put("moderators", new JSONArray());
+		defaults.put("owners", new JSONArray());
 		defaults.put("useTopic", true);
 		defaults.put("useFilters", false);
 		defaults.put("enableThrow", true);
-		defaults.put("permittedDomains", "");
+		defaults.put("permittedDomains", new JSONArray());
 		defaults.put("signKicks", false);
 		defaults.put("topicTime", 0);
 		defaults.put("mode", 2);
@@ -1545,7 +1600,7 @@ public class Channel {
 		defaults.put("steamID", "");
 		defaults.put("logChat", false);
 		defaults.put("filterMaxLength", 500);
-		defaults.put("offensiveWords", "");
+		defaults.put("offensiveWords", new JSONArray());
 		defaults.put("commercialLength", 30);
 		defaults.put("filterColors", false);
 		defaults.put("filterMe", false);
@@ -1557,7 +1612,7 @@ public class Channel {
 		defaults.put("filterSymbolsPercent", 50);
 		defaults.put("filterSymbolsMin", 5);
 		defaults.put("commandPrefix", "!");
-		defaults.put("commandRestrictions", "");
+		
 		defaults.put("emoteSet", "");
 		defaults.put("subscriberRegulars", false);
 		defaults.put("filterEmotesSingle", false);
@@ -1567,10 +1622,10 @@ public class Channel {
 
 		defaults.put("wpTimer", false);
 		defaults.put("wpCount", 0);
-		defaults.put("bullet", "#!");
+		defaults.put("bullet", "coeBot");
 		defaults.put("cooldown", 5);
 
-		defaults.put("max viewers", 0);
+		defaults.put("maxViewers", 0);
 		defaults.put("runningMaxViewers", 0);
 		defaults.put("streamCount", 0);
 		defaults.put("streamAlive", false);
@@ -1588,102 +1643,202 @@ public class Channel {
 			String key = String.valueOf(pairs.getKey());
 			String value = String.valueOf(pairs.getValue());
 			if (!config.containsKey(key))
-				config.setString(key, value);
+				config.put(key, value);
 		}
+		saveConfig();
+	}
+
+	public void updateConfigs() {
+		config.put("subsRegsMinusLinks", subsRegsMinusLinks);
+		config.put("filterCaps", filterCaps);
+		config.put("filterOffensive", true);
+		config.put("filterCapsPercent", filterCapsPercent);
+		config.put("filterCapsMinCharacters", filterCapsMinCharacters);
+		config.put("filterCapsMinCapitals", filterCapsMinCapitals);
+		config.put("filterLinks", filterLinks);
+		config.put("filterEmotes", filterEmotes);
+		config.put("filterSymbols", filterSymbols);
+		config.put("filterEmotesMax", filterEmotesMax);
+
+		config.put("punishCount", punishCount);
+		config.put("sincePunish", sincePunish);
+		config.put("sinceWp", System.currentTimeMillis());
+		config.put("maxviewerDate", maxviewerDate);
+
+		config.put("topic", topic);
+		this.saveCommands();
+		this.saveAutoReply();
+		this.saveRepeatCommands();
+		this.saveScheduledCommands();
+		
+
+		this.addRegular("JSONCONVERT");
+		this.removeRegular("JSONCONVERT");
+		this.addModerator("JSONCONVERT");
+		this.removeModerator("JSONCONVERT");
+		this.addOwner("JSONCONVERT");
+		this.removeOwner("JSONCONVERT");
+
+		config.put("useTopic", useTopic);
+		config.put("useFilters", useFilters);
+		config.put("enableThrow", enableThrow);
+
+		this.addPermittedDomain("JSONCONVERT");
+		this.removePermittedDomain("JSONCONVERT");
+
+		config.put("signKicks", signKicks);
+		config.put("topicTime", topicTime);
+		config.put("mode", mode);
+		config.put("announceJoinParts", false);
+		config.put("lastfm", lastfm);
+		config.put("steamID", steamID);
+		config.put("logChat", logChat);
+		config.put("filterMaxLength", filterMaxLength);
+		this.addOffensive("JSONCONVERT");
+		this.removeOffensive("JSONCONVERT");
+
+		config.put("commercialLength", commercialLength);
+		config.put("filterColors", filterColors);
+		config.put("filterMe", filterMe);
+		config.put("staticChannel", staticChannel);
+		config.put("enableWarnings", enableWarnings);
+		config.put("timeoutDuration", timeoutDuration);
+		config.put("clickToTweetFormat", clickToTweetFormat);
+		config.put("filterSymbolsPercent", filterSymbolsPercent);
+		config.put("filterSymbolsMin", filterSymbolsMin);
+		config.put("commandPrefix", prefix);
+		
+		
+		config.put("emoteSet", emoteSet);
+		config.put("subscriberRegulars", subscriberRegulars);
+		config.put("filterEmotesSingle", filterEmotesSingle);
+		config.put("subMessage", oldconfig.getString("subMessage"));
+		config.put("subscriberAlert", oldconfig.getString("subscriberAlert"));
+		config.put("banPhraseSeverity", Integer.parseInt(oldconfig.getString("banPhraseSeverity")));
+
+		config.put("wpTimer", oldconfig.getString("wpTimer"));
+		config.put("wpCount", wpCount);
+		config.put("bullet", bullet);
+		config.put("cooldown", cooldown);
+
+		config.put("maxViewers", maxViewers);
+		config.put("runningMaxViewers", runningMaxViewers);
+		config.put("streamCount", streamNumber);
+		config.put("streamAlive", streamUp);
+		config.put("maxViewersStream", streamMax);
+
+		config.put("updateDelay", updateDelay);
+		this.addQuote("JSONCONVERT");
+		this.deleteQuote(this.getQuoteIndex("JSONCONVERT"));
+		
+		
+		//config.put("subscribers", subscribers);
+		this.addRaidWhitelist("JSONCONVERT");
+		this.deleteRaidWhitelist("JSONCONVERT");
+		
+		config.put("gamerTag", gamerTag);
+		saveConfig();
+
 	}
 
 	private void loadProperties(String name) {
 		setDefaults();
-
-		gamerTag = config.getString("gamerTag");
+		
+		gamerTag = oldconfig.getString("gamerTag");
 		// channel = config.getString("channel");
-		subsRegsMinusLinks = Boolean.parseBoolean(config
+		subsRegsMinusLinks = Boolean.parseBoolean(oldconfig
 				.getString("subsRegsMinusLinks"));
-		updateDelay = Integer.parseInt(config.getString("updateDelay"));
-		punishCount = Integer.parseInt(config.getString("punishCount"));
-		streamUp = Boolean.parseBoolean(config.getString("streamAlive"));
-		sinceWp = Long.parseLong(config.getString("sinceWp"));
-		maxviewerDate = config.getString("maxviewerDate");
-		runningMaxViewers = Integer.parseInt(config
+		updateDelay = Integer.parseInt(oldconfig.getString("updateDelay"));
+		punishCount = Integer.parseInt(oldconfig.getString("punishCount"));
+		streamUp = Boolean.parseBoolean(oldconfig.getString("streamAlive"));
+		sinceWp = Long.parseLong(oldconfig.getString("sinceWp"));
+		maxviewerDate = oldconfig.getString("maxviewerDate");
+		runningMaxViewers = Integer.parseInt(oldconfig
 				.getString("runningMaxViewers"));
-		streamNumber = Integer.parseInt(config.getString("streamCount"));
-		streamMax = Integer.parseInt(config.getString("maxViewersStream"));
-		maxViewers = Integer.parseInt(config.getString("max viewers"));
-		filterCaps = Boolean.parseBoolean(config.getString("filterCaps"));
+		streamNumber = Integer.parseInt(oldconfig.getString("streamCount"));
+		streamMax = Integer.parseInt(oldconfig.getString("maxViewersStream"));
+		maxViewers = Integer.parseInt(oldconfig.getString("max viewers"));
+		filterCaps = Boolean.parseBoolean(oldconfig.getString("filterCaps"));
 
-		filterCapsPercent = Integer.parseInt(config
+		filterCapsPercent = Integer.parseInt(oldconfig
 				.getString("filterCapsPercent"));
-		filterCapsMinCharacters = Integer.parseInt(config
+		filterCapsMinCharacters = Integer.parseInt(oldconfig
 				.getString("filterCapsMinCharacters"));
-		filterCapsMinCapitals = Integer.parseInt(config
+		filterCapsMinCapitals = Integer.parseInt(oldconfig
 				.getString("filterCapsMinCapitals"));
-		filterLinks = Boolean.parseBoolean(config.getString("filterLinks"));
-		filterOffensive = Boolean.parseBoolean(config
+		filterLinks = Boolean.parseBoolean(oldconfig.getString("filterLinks"));
+		filterOffensive = Boolean.parseBoolean(oldconfig
 				.getString("filterOffensive"));
-		filterEmotes = Boolean.parseBoolean(config.getString("filterEmotes"));
+		filterEmotes = Boolean
+				.parseBoolean(oldconfig.getString("filterEmotes"));
 
-		wpOn = Boolean.parseBoolean(config.getString("wpTimer"));
-		wpCount = Integer.parseInt(config.getString("wpCount"));
-		bullet = config.getString("bullet");
-		cooldown = Integer.parseInt(config.getString("cooldown"));
-		sincePunish = Long.parseLong(config.getString("sincePunish"));
+		wpOn = Boolean.parseBoolean(oldconfig.getString("wpTimer"));
+		wpCount = Integer.parseInt(oldconfig.getString("wpCount"));
+		bullet = oldconfig.getString("bullet");
+		cooldown = Integer.parseInt(oldconfig.getString("cooldown"));
+		sincePunish = Long.parseLong(oldconfig.getString("sincePunish"));
 
-		filterSymbols = Boolean.parseBoolean(config.getString("filterSymbols"));
-		filterSymbolsPercent = Integer.parseInt(config
+		filterSymbols = Boolean.parseBoolean(oldconfig
+				.getString("filterSymbols"));
+		filterSymbolsPercent = Integer.parseInt(oldconfig
 				.getString("filterSymbolsPercent"));
-		filterSymbolsMin = Integer.parseInt(config
+		filterSymbolsMin = Integer.parseInt(oldconfig
 				.getString("filterSymbolsMin"));
-		filterEmotesMax = Integer.parseInt(config.getString("filterEmotesMax"));
-		filterEmotesSingle = Boolean.parseBoolean(config
+		filterEmotesMax = Integer.parseInt(oldconfig
+				.getString("filterEmotesMax"));
+		filterEmotesSingle = Boolean.parseBoolean(oldconfig
 				.getString("filterEmotesSingle"));
 		// announceJoinParts =
 		// Boolean.parseBoolean(config.getString("announceJoinParts"));
 		announceJoinParts = false;
-		topic = config.getString("topic");
-		topicTime = config.getInt("topicTime");
-		useTopic = Boolean.parseBoolean(config.getString("useTopic"));
-		useFilters = Boolean.parseBoolean(config.getString("useFilters"));
-		enableThrow = Boolean.parseBoolean(config.getString("enableThrow"));
-		signKicks = Boolean.parseBoolean(config.getString("signKicks"));
-		lastfm = config.getString("lastfm");
-		steamID = config.getString("steamID");
-		logChat = Boolean.parseBoolean(config.getString("logChat"));
-		mode = config.getInt("mode");
-		filterMaxLength = config.getInt("filterMaxLength");
-		commercialLength = config.getInt("commercialLength");
-		filterColors = Boolean.parseBoolean(config.getString("filterColors"));
-		filterMe = Boolean.parseBoolean(config.getString("filterMe"));
-		staticChannel = Boolean.parseBoolean(config.getString("staticChannel"));
-		clickToTweetFormat = config.getString("clickToTweetFormat");
+		topic = oldconfig.getString("topic");
+		topicTime = oldconfig.getInt("topicTime");
+		useTopic = Boolean.parseBoolean(oldconfig.getString("useTopic"));
+		useFilters = Boolean.parseBoolean(oldconfig.getString("useFilters"));
+		enableThrow = Boolean.parseBoolean(oldconfig.getString("enableThrow"));
+		signKicks = Boolean.parseBoolean(oldconfig.getString("signKicks"));
+		lastfm = oldconfig.getString("lastfm");
+		steamID = oldconfig.getString("steamID");
+		logChat = Boolean.parseBoolean(oldconfig.getString("logChat"));
+		mode = oldconfig.getInt("mode");
+		filterMaxLength = oldconfig.getInt("filterMaxLength");
+		commercialLength = oldconfig.getInt("commercialLength");
+		filterColors = Boolean
+				.parseBoolean(oldconfig.getString("filterColors"));
+		filterMe = Boolean.parseBoolean(oldconfig.getString("filterMe"));
+		staticChannel = Boolean.parseBoolean(oldconfig
+				.getString("staticChannel"));
+		clickToTweetFormat = oldconfig.getString("clickToTweetFormat");
 
-		enableWarnings = Boolean.parseBoolean(config
+		enableWarnings = Boolean.parseBoolean(oldconfig
 				.getString("enableWarnings"));
-		timeoutDuration = config.getInt("timeoutDuration");
-		prefix = config.getString("commandPrefix").charAt(0) + "";
-		emoteSet = config.getString("emoteSet");
-		subscriberRegulars = config.getBoolean("subscriberRegulars");
+		timeoutDuration = oldconfig.getInt("timeoutDuration");
+		prefix = oldconfig.getString("commandPrefix").charAt(0) + "";
+		emoteSet = oldconfig.getString("emoteSet");
+		subscriberRegulars = oldconfig.getBoolean("subscriberRegulars");
 
-		String[] quotesArray = config.getString("quotes").split("&&&");
+		String[] quotesArray = oldconfig.getString("quotes").split("&&&");
 
 		for (int i = 0; i < quotesArray.length; i++) {
 			quotes.add(quotesArray[i]);
 		}
 
-		String[] raidWhitelistArray = config.getString("raidWhitelist").split(
-				"&&&");
+		String[] raidWhitelistArray = oldconfig.getString("raidWhitelist")
+				.split("&&&");
 
 		for (int i = 0; i < raidWhitelistArray.length; i++) {
 			raidWhitelist.add(raidWhitelistArray[i]);
 		}
 
-		String[] subsArray = config.getString("subscribers").split("&&&");
+		String[] subsArray = oldconfig.getString("subscribers").split("&&&");
 
 		for (int i = 0; i < subsArray.length; i++) {
 			subscribers.add(subsArray[i]);
 		}
 
-		String[] commandsKey = config.getString("commandsKey").split(",");
-		String[] commandsValue = config.getString("commandsValue").split(",,");
+		String[] commandsKey = oldconfig.getString("commandsKey").split(",");
+		String[] commandsValue = oldconfig.getString("commandsValue").split(
+				",,");
 
 		for (int i = 0; i < commandsKey.length; i++) {
 			if (commandsKey[i].length() > 1) {
@@ -1692,7 +1847,8 @@ public class Channel {
 			}
 		}
 
-		String[] commandR = config.getString("commandRestrictions").split(",");
+		String[] commandR = oldconfig.getString("commandRestrictions").split(
+				",");
 		for (int i = 0; i < commandR.length; i++) {
 			if (commandR[i].length() > 1) {
 				String[] parts = commandR[i].split("\\|");
@@ -1700,14 +1856,14 @@ public class Channel {
 			}
 		}
 
-		String[] commandsRepeatKey = config.getString("commandsRepeatKey")
+		String[] commandsRepeatKey = oldconfig.getString("commandsRepeatKey")
 				.split(",");
-		String[] commandsRepeatDelay = config.getString("commandsRepeatDelay")
+		String[] commandsRepeatDelay = oldconfig.getString(
+				"commandsRepeatDelay").split(",");
+		String[] commandsRepeatDiff = oldconfig.getString("commandsRepeatDiff")
 				.split(",");
-		String[] commandsRepeatDiff = config.getString("commandsRepeatDiff")
-				.split(",");
-		String[] commandsRepeatActive = config
-				.getString("commandsRepeatActive").split(",");
+		String[] commandsRepeatActive = oldconfig.getString(
+				"commandsRepeatActive").split(",");
 
 		for (int i = 0; i < commandsRepeatKey.length; i++) {
 			if (commandsRepeatKey[i].length() > 1) {
@@ -1722,13 +1878,13 @@ public class Channel {
 			}
 		}
 
-		String[] commandsScheduleKey = config.getString("commandsScheduleKey")
-				.split(",,");
-		String[] commandsSchedulePattern = config.getString(
+		String[] commandsScheduleKey = oldconfig.getString(
+				"commandsScheduleKey").split(",,");
+		String[] commandsSchedulePattern = oldconfig.getString(
 				"commandsSchedulePattern").split(",,");
-		String[] commandsScheduleDiff = config
-				.getString("commandsScheduleDiff").split(",,");
-		String[] commandsScheduleActive = config.getString(
+		String[] commandsScheduleDiff = oldconfig.getString(
+				"commandsScheduleDiff").split(",,");
+		String[] commandsScheduleActive = oldconfig.getString(
 				"commandsScheduleActive").split(",,");
 
 		for (int i = 0; i < commandsScheduleKey.length; i++) {
@@ -1744,10 +1900,10 @@ public class Channel {
 			}
 		}
 
-		String[] autoReplyTriggersString = config
-				.getString("autoReplyTriggers").split(",,");
-		String[] autoReplyResponseString = config
-				.getString("autoReplyResponse").split(",,");
+		String[] autoReplyTriggersString = oldconfig.getString(
+				"autoReplyTriggers").split(",,");
+		String[] autoReplyResponseString = oldconfig.getString(
+				"autoReplyResponse").split(",,");
 
 		for (int i = 0; i < autoReplyTriggersString.length; i++) {
 			if (autoReplyTriggersString[i].length() > 0) {
@@ -1757,7 +1913,7 @@ public class Channel {
 			}
 		}
 
-		String[] regularsRaw = config.getString("regulars").split(",");
+		String[] regularsRaw = oldconfig.getString("regulars").split(",");
 		synchronized (regulars) {
 			for (int i = 0; i < regularsRaw.length; i++) {
 				if (regularsRaw[i].length() > 1) {
@@ -1766,7 +1922,7 @@ public class Channel {
 			}
 		}
 
-		String[] moderatorsRaw = config.getString("moderators").split(",");
+		String[] moderatorsRaw = oldconfig.getString("moderators").split(",");
 		synchronized (moderators) {
 			for (int i = 0; i < moderatorsRaw.length; i++) {
 				if (moderatorsRaw[i].length() > 1) {
@@ -1775,7 +1931,7 @@ public class Channel {
 			}
 		}
 
-		String[] ownersRaw = config.getString("owners").split(",");
+		String[] ownersRaw = oldconfig.getString("owners").split(",");
 		synchronized (owners) {
 			for (int i = 0; i < ownersRaw.length; i++) {
 				if (ownersRaw[i].length() > 1) {
@@ -1784,7 +1940,8 @@ public class Channel {
 			}
 		}
 
-		String[] domainsRaw = config.getString("permittedDomains").split(",");
+		String[] domainsRaw = oldconfig.getString("permittedDomains")
+				.split(",");
 		synchronized (permittedDomains) {
 			for (int i = 0; i < domainsRaw.length; i++) {
 				if (domainsRaw[i].length() > 1) {
@@ -1795,9 +1952,9 @@ public class Channel {
 				}
 			}
 		}
-		System.out.println(config.getString("offensiveWords"));
-		String[] offensiveWordsRaw = config.getString("offensiveWords").split(
-				",,");
+		System.out.println(oldconfig.getString("offensiveWords"));
+		String[] offensiveWordsRaw = oldconfig.getString("offensiveWords")
+				.split(",,");
 		synchronized (offensiveWords) {
 			synchronized (offensiveWordsRegex) {
 				for (int i = 0; i < offensiveWordsRaw.length; i++) {
@@ -1826,7 +1983,7 @@ public class Channel {
 
 	public void setMode(int mode) {
 		this.mode = mode;
-		config.setInt("mode", this.mode);
+		config.put("mode", this.mode);
 
 		if (mode == -1) {
 			this.setFiltersFeature(true);
@@ -1840,6 +1997,7 @@ public class Channel {
 			this.setTopicFeature(false);
 			this.setThrow(false);
 		}
+		saveConfig();
 	}
 
 	public int getMode() {
@@ -1900,11 +2058,25 @@ public class Channel {
 
 	public void setCooldown(int newCooldown) {
 		cooldown = newCooldown;
-		config.setInt("cooldown", newCooldown);
+		config.put("cooldown", newCooldown);
+		saveConfig();
 	}
 
 	public long getCooldown() {
 
 		return cooldown;
+	}
+
+	public void saveConfig() {
+		try {
+
+			FileWriter file = new FileWriter(channel + ".json");
+			file.write(config.toJSONString());
+			file.flush();
+			file.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

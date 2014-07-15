@@ -1252,7 +1252,7 @@ public class ReceiverBot extends PircBot {
 			}
 		}
 		// isLive
-		if (msg[0].equalsIgnoreCase(prefix + "islive") && isSub) {
+		if (msg[0].equalsIgnoreCase(prefix + "islive") && isOp) {
 			if (msg.length > 1) {
 				if (JSONUtil.krakenIsLive(msg[1].toLowerCase())) {
 					send(channel, "Yes, " + msg[1].toLowerCase()
@@ -1538,7 +1538,7 @@ public class ReceiverBot extends PircBot {
 			send(channel, "The commercial has been delayed by five minutes.");
 
 		}
-		
+
 		if (msg[0].equalsIgnoreCase(prefix + "testChannelSend") && isOp) {
 			log("RB: Matched command !testChannelSend");
 
@@ -1610,6 +1610,7 @@ public class ReceiverBot extends PircBot {
 			} else if (msg.length > 2) {
 				if (msg[1].equalsIgnoreCase("add") && msg.length > 3) {
 					String key = msg[2].replaceAll("[^a-zA-Z0-9]", "");
+					key = key.toLowerCase();
 					String value = fuseArray(msg, 3);
 					if (!value.contains(",,")) {
 
@@ -1643,7 +1644,7 @@ public class ReceiverBot extends PircBot {
 
 				} else if (msg[1].equalsIgnoreCase("restrict")
 						&& msg.length >= 4) {
-					String command = msg[2];
+					String command = msg[2].toLowerCase();
 					String levelStr = msg[3].toLowerCase();
 					int level = 0;
 					if (channelInfo.getCommand(command) != null) {
@@ -2068,7 +2069,7 @@ public class ReceiverBot extends PircBot {
 			String result = JSONUtil
 					.highlightThat("http://www.stinusmeret.be/mc/highlight.php?action=coebot&channel="
 							+ channel.substring(1) + "&user=" + sender);
-			send(channel, result.replaceAll("\"", ""));
+			// send(channel, result.replaceAll("\"", ""));
 		}
 		// ##########################QUOTES##############################
 		if (msg[0].equalsIgnoreCase(prefix + "quote") && isSub) {
@@ -2402,11 +2403,9 @@ public class ReceiverBot extends PircBot {
 				send(channel, "Me: " + channelInfo.getFilterMe());
 				send(channel, "Links: " + channelInfo.getFilterLinks());
 				send(channel,
-						"Banned phrases: "
-								+ channelInfo.getFilterOffensive()
+						"Banned phrases: " + channelInfo.getFilterOffensive()
 								+ " ~ severity="
-								+ channelInfo.config
-										.getInt("banPhraseSeverity"));
+								+ channelInfo.config.get("banPhraseSeverity"));
 				send(channel,
 						"Caps: " + channelInfo.getFilterCaps() + " ~ percent="
 								+ channelInfo.getfilterCapsPercent()
@@ -2577,18 +2576,18 @@ public class ReceiverBot extends PircBot {
 					} else if (msg[1].equalsIgnoreCase("severity")) {
 						if (msg.length > 2 && Main.isInteger(msg[2])) {
 							int severity = Integer.parseInt(msg[2]);
-							channelInfo.config.setInt("banPhraseSeverity",
+							channelInfo.config.put("banPhraseSeverity",
 									severity);
 
 							send(channel,
 									"Severity set to "
 											+ channelInfo.config
-													.getInt("banPhraseSeverity"));
+													.get("banPhraseSeverity"));
 						} else {
 							send(channel,
 									"Severity is "
 											+ channelInfo.config
-													.getInt("banPhraseSeverity"));
+													.get("banPhraseSeverity"));
 						}
 					} else if (msg[1].equalsIgnoreCase("delete")
 							|| msg[1].equalsIgnoreCase("remove")
@@ -2917,10 +2916,7 @@ public class ReceiverBot extends PircBot {
 			}
 			return;
 		}
-		// test
-		if (msg[0].equalsIgnoreCase(prefix + "test") && isAdmin) {
-			send('#' + sender, "Test.");
-		}
+
 		// xboxGame
 		if (msg[0].equalsIgnoreCase(prefix + "xboxgame") && isOwner) {
 			String gamerTag = channelInfo.getGamerTag();
@@ -2963,6 +2959,10 @@ public class ReceiverBot extends PircBot {
 				send(channel, sender, value);
 
 			}
+		}
+		// config conversion
+		if (msg[0].equalsIgnoreCase(prefix + "JSONconvert") && isAdmin) {
+			channelInfo.updateConfigs();
 		}
 		// !set - Owner
 		if (msg[0].equalsIgnoreCase(prefix + "set") && isOp) {
@@ -3144,21 +3144,19 @@ public class ReceiverBot extends PircBot {
 				if (msg.length < 3) {
 					send(channel,
 							"Subscriber alerts: "
-									+ channelInfo.config
-											.getBoolean("subscriberAlert"));
+									+ channelInfo.config.get("subscriberAlert"));
 					send(channel, "Subscriber alert message: "
-							+ channelInfo.config.getString("subMessage"));
+							+ channelInfo.config.get("subMessage"));
 				} else if (msg[2].equalsIgnoreCase("on")) {
-					channelInfo.config.setBoolean("subscriberAlert", true);
+					channelInfo.config.put("subscriberAlert", true);
 					send(channel, "Subscriber alerts enabled.");
 				} else if (msg[2].equalsIgnoreCase("off")) {
-					channelInfo.config.setBoolean("subscriberAlert", false);
+					channelInfo.config.put("subscriberAlert", false);
 					send(channel, "Subscriber alerts disabled.");
 				} else if (msg[2].equalsIgnoreCase("message") && msg.length > 3) {
-					channelInfo.config.setString("subMessage",
-							fuseArray(msg, 3));
+					channelInfo.config.put("subMessage", fuseArray(msg, 3));
 					send(channel, "Subscriber alert message set to: "
-							+ channelInfo.config.getString("subMessage"));
+							+ channelInfo.config.get("subMessage"));
 				}
 			}
 			return;
@@ -3330,7 +3328,7 @@ public class ReceiverBot extends PircBot {
 		long cooldown = channelInfo.getCooldown() * 1L;
 
 		if (msg[0].substring(0, 1).equalsIgnoreCase(prefix)) {
-			String command = msg[0].substring(1);
+			String command = msg[0].substring(1).toLowerCase();
 			String value = channelInfo.getCommand(command);
 			if (value != null) {
 				log("RB: Matched command " + msg[0]);
@@ -3342,11 +3340,11 @@ public class ReceiverBot extends PircBot {
 				// } else {
 				// send(channel,
 				// "Command cannot contain double commas (\",,\").");
-				// }
+				// }s
 				// } else {
 				if (channelInfo.checkCommandRestriction(command, accessLevel)) {
 					long currentTime = System.currentTimeMillis();
-					if (currentTime > (lastCommand + cooldown * 1000L)) {
+					if (currentTime > (lastCommand + cooldown * 1000L) || isOp) {
 						lastCommand = currentTime;
 
 						if (value.contains("(_PARAMETER_)")) {
@@ -3434,8 +3432,9 @@ public class ReceiverBot extends PircBot {
 		System.out.println("RB: New subscriber in " + channel.getTwitchName()
 				+ " " + username);
 		logMain("New subscriber to " + channel + ": " + username);
-		if (channel.config.getBoolean("subscriberAlert")) {
-			String msgFormat = channel.config.getString("subMessage");
+		if (Boolean
+				.parseBoolean((String) channel.config.get("subscriberAlert"))) {
+			String msgFormat = (String) channel.config.get("subMessage");
 			send(channel.getChannel(), null, msgFormat,
 					new String[] { username });
 		}
@@ -3514,6 +3513,7 @@ public class ReceiverBot extends PircBot {
 			String hostname) {
 
 		Channel channelInfo = getChannelObject(channel);
+		channelInfo.updateConfigs();
 
 		if (channelInfo == null)
 			return;
@@ -3572,6 +3572,9 @@ public class ReceiverBot extends PircBot {
 				if (message.length() > 0) {
 					List<String> chunks = Main.splitEqually(message, 500);
 					int c = 1;
+					if (target == null) {
+						sendMessage(target, "The bullet is null.");
+					}
 					for (String chunk : chunks) {
 						sendMessage(target,
 								(useBullet ? channelInfo.getChannelBullet()
@@ -3582,7 +3585,8 @@ public class ReceiverBot extends PircBot {
 						useBullet = true;
 					}
 				}
-				setRandomNickColor();
+				// sendMessage(target,message);
+				// setRandomNickColor();
 				if (tried) {
 					delete = true;
 					tried = false;
