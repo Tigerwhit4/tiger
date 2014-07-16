@@ -1632,16 +1632,16 @@ public class Channel {
 		defaults.put("maxViewersStream", 0);
 
 		defaults.put("updateDelay", 120);
-		defaults.put("quotes", "");
-		defaults.put("subscribers", "");
-		defaults.put("raidWhitelist", "");
+		defaults.put("quotes", new JSONArray());
+		//defaults.put("subscribers", "");
+		defaults.put("raidWhitelist", new JSONArray());
 		defaults.put("gamerTag", "");
 
 		Iterator it = defaults.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry pairs = (Map.Entry) it.next();
 			String key = String.valueOf(pairs.getKey());
-			String value = String.valueOf(pairs.getValue());
+			Object value = (pairs.getValue());
 			if (!config.containsKey(key))
 				config.put(key, value);
 		}
