@@ -1632,9 +1632,9 @@ public class Channel {
 		defaults.put("maxViewersStream", 0);
 
 		defaults.put("updateDelay", 120);
-		defaults.put("quotes", "");
-		defaults.put("subscribers", "");
-		defaults.put("raidWhitelist", "");
+		defaults.put("quotes", new JSONArray());
+		//defaults.put("subscribers", new JSONArray());
+		defaults.put("raidWhitelist", new JSONArray());
 		defaults.put("gamerTag", "");
 
 		Iterator it = defaults.entrySet().iterator();
@@ -1716,7 +1716,7 @@ public class Channel {
 		config.put("subscriberAlert", oldconfig.getString("subscriberAlert"));
 		config.put("banPhraseSeverity", Integer.parseInt(oldconfig.getString("banPhraseSeverity")));
 
-		config.put("wpTimer", oldconfig.getString("wpTimer"));
+		config.put("wpTimer", Boolean.parseBoolean(oldconfig.getString("wpTimer")));
 		config.put("wpCount", wpCount);
 		config.put("bullet", bullet);
 		config.put("cooldown", cooldown);
