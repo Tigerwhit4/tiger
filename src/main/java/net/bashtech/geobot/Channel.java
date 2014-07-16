@@ -21,9 +21,13 @@ package net.bashtech.geobot;
 import org.java_websocket.WebSocket;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +62,7 @@ public class Channel {
 	private String topic;
 	private int topicTime;
 	private Set<String> regulars = new HashSet<String>();
-	private Set<String> subscribers = new HashSet<String>();
+	// private Set<String> subscribers = new HashSet<String>();
 	private Set<String> moderators = new HashSet<String>();
 	Set<String> tagModerators = new HashSet<String>();
 	private Set<String> owners = new HashSet<String>();
@@ -103,7 +107,7 @@ public class Channel {
 	private String bullet = "#!";
 	private String gamerTag;
 
-	private Map<String, Object> defaults = new HashMap<String, Object>();
+	private JSONObject defaults = new JSONObject();
 
 	private int cooldown = 0;
 
@@ -124,11 +128,18 @@ public class Channel {
 	public boolean active;
 	private static Timer commercial;
 	private int lastStrawpoll;
-	PropertiesFile oldconfig;
+
 	public Channel(String name) {
 		channel = name;
-		 oldconfig = new PropertiesFile(channel + ".properties");
-		config = new JSONObject();
+		JSONParser parser = new JSONParser();
+		try {
+			Object obj = parser.parse(new FileReader(channel + ".json"));
+			config = (JSONObject) obj;
+		} catch (Exception e) {
+			System.out.println("Generating new config for "+channel);
+			config = new JSONObject();
+		}
+
 		loadProperties(name);
 		warningCount = new HashMap<String, EnumMap<FilterType, Integer>>();
 		warningTime = new HashMap<String, Long>();
@@ -246,7 +257,7 @@ public class Channel {
 
 	public void setSubsRegsMinusLinks(boolean on) {
 
-		subscribers.clear();
+		// subscribers.clear();
 
 		subsRegsMinusLinks = on;
 		config.put("subsRegsMinusLinks", subsRegsMinusLinks);
@@ -260,7 +271,7 @@ public class Channel {
 
 	public void setSubscriberRegulars(boolean subscriberRegulars) {
 
-		subscribers.clear();
+		// subscribers.clear();
 
 		this.subscriberRegulars = subscriberRegulars;
 		config.put("subscriberRegulars", subscriberRegulars);
@@ -352,17 +363,16 @@ public class Channel {
 	public void removeCommand(String key) {
 		if (commands.containsKey(key)) {
 			commands.remove(key);
-			commandsRestrictions.remove(key);			
+			commandsRestrictions.remove(key);
 
 			saveCommands();
 
-			
 		}
 
 	}
-	public void saveCommands(){
+
+	public void saveCommands() {
 		JSONArray commandsArr = new JSONArray();
-		
 
 		Iterator itr = commands.entrySet().iterator();
 
@@ -371,14 +381,17 @@ public class Channel {
 			JSONObject commandObj = new JSONObject();
 			commandObj.put("key", pairs.getKey());
 			commandObj.put("value", pairs.getValue());
-			if(commandsRestrictions.containsKey(pairs.getKey())){
-				commandObj.put("restriction", commandsRestrictions.get(pairs.getKey()));
+			if (commandsRestrictions.containsKey(pairs.getKey())) {
+				commandObj.put("restriction",
+						commandsRestrictions.get(pairs.getKey()));
+			} else {
+				commandObj.put("restriction", 1);
 			}
 			commandsArr.add(commandObj);
-			
+
 		}
 
-		config.put("commands",commandsArr);
+		config.put("commands", commandsArr);
 		saveConfig();
 	}
 
@@ -407,24 +420,24 @@ public class Channel {
 		return false;
 	}
 
-//	public void saveCommandRestrictions() {
-//		String commandRestrictionsString = "";
-//		JSONArray commandRestrictionsKey = new JSONArray();
-//		JSONArray commandRestrictionsValue = new JSONArray();
-//
-//		Iterator itr = commandsRestrictions.entrySet().iterator();
-//
-//		while (itr.hasNext()) {
-//			Map.Entry pairs = (Map.Entry) itr.next();
-//			commandRestrictionsKey.add(pairs.getKey());
-//			commandRestrictionsValue.add(pairs.getValue());
-//
-//		}
-//
-//		config.put("commandRestrictionsKey", commandRestrictionsKey);
-//		config.put("commandRestrictionsValue", commandRestrictionsValue);
-//		saveConfig();
-//	}
+	// public void saveCommandRestrictions() {
+	// String commandRestrictionsString = "";
+	// JSONArray commandRestrictionsKey = new JSONArray();
+	// JSONArray commandRestrictionsValue = new JSONArray();
+	//
+	// Iterator itr = commandsRestrictions.entrySet().iterator();
+	//
+	// while (itr.hasNext()) {
+	// Map.Entry pairs = (Map.Entry) itr.next();
+	// commandRestrictionsKey.add(pairs.getKey());
+	// commandRestrictionsValue.add(pairs.getValue());
+	//
+	// }
+	//
+	// config.put("commandRestrictionsKey", commandRestrictionsKey);
+	// config.put("commandRestrictionsValue", commandRestrictionsValue);
+	// saveConfig();
+	// }
 
 	public void setRepeatCommand(String key, int delay, int diff) {
 		key = key.toLowerCase();
@@ -468,11 +481,12 @@ public class Channel {
 			Map.Entry pairs = (Map.Entry) itr.next();
 			JSONObject repeatObj = new JSONObject();
 			repeatObj.put("name", pairs.getKey());
-			repeatObj.put("delay", ((RepeatCommand)pairs.getValue()).delay);
-			repeatObj.put("messageDifference", ((RepeatCommand)pairs.getValue()).messageDifference);
-			repeatObj.put("active", ((RepeatCommand)pairs.getValue()).active);
+			repeatObj.put("delay", ((RepeatCommand) pairs.getValue()).delay);
+			repeatObj.put("messageDifference",
+					((RepeatCommand) pairs.getValue()).messageDifference);
+			repeatObj.put("active", ((RepeatCommand) pairs.getValue()).active);
 			repeatedCommands.add(repeatObj);
-			
+
 		}
 
 		config.put("repeatedCommands", repeatedCommands);
@@ -513,7 +527,7 @@ public class Channel {
 	}
 
 	private void saveScheduledCommands() {
-		
+
 		JSONArray scheduledCommands = new JSONArray();
 
 		Iterator itr = commandsSchedule.entrySet().iterator();
@@ -522,16 +536,17 @@ public class Channel {
 			Map.Entry pairs = (Map.Entry) itr.next();
 			JSONObject scheduleObj = new JSONObject();
 			scheduleObj.put("name", pairs.getKey());
-			scheduleObj.put("pattern",((ScheduledCommand) pairs.getValue()).pattern);
-			scheduleObj.put("messageDifference",((ScheduledCommand) pairs.getValue()).messageDifference);
-			scheduleObj.put("active",((ScheduledCommand) pairs.getValue()).active);
+			scheduleObj.put("pattern",
+					((ScheduledCommand) pairs.getValue()).pattern);
+			scheduleObj.put("messageDifference",
+					((ScheduledCommand) pairs.getValue()).messageDifference);
+			scheduleObj.put("active",
+					((ScheduledCommand) pairs.getValue()).active);
 			scheduledCommands.add(scheduleObj);
-			
-		
 
 		}
 
-		config.put("scheduledCommands",scheduledCommands);
+		config.put("scheduledCommands", scheduledCommands);
 		saveConfig();
 	}
 
@@ -604,12 +619,12 @@ public class Channel {
 
 		for (int i = 0; i < autoReplyTrigger.size(); i++) {
 			JSONObject autoreplyObj = new JSONObject();
-			autoreplyObj.put("trigger",autoReplyTrigger.get(i).toString());
-			autoreplyObj.put("response",autoReplyResponse.get(i).toString());
+			autoreplyObj.put("trigger", autoReplyTrigger.get(i).toString());
+			autoreplyObj.put("response", autoReplyResponse.get(i).toString());
 			autoReplies.add(autoreplyObj);
 		}
 
-		config.put("autoReplies",autoReplies);
+		config.put("autoReplies", autoReplies);
 		saveConfig();
 	}
 
@@ -1234,8 +1249,8 @@ public class Channel {
 			}
 		}
 
-		int severity = Integer.parseInt((String) config
-				.get("banPhraseSeverity"));
+		int severity =((Long) config
+				.get("banPhraseSeverity")).intValue();
 		if (BotManager.getInstance().banPhraseLists.containsKey(severity)) {
 			for (Pattern reg : BotManager.getInstance().banPhraseLists
 					.get(severity)) {
@@ -1563,15 +1578,15 @@ public class Channel {
 	private void setDefaults() {
 
 		// defaults.put("channel", channel);
-		defaults.put("subsRegsMinusLinks", false);
-		defaults.put("filterCaps", false);
-		defaults.put("filterOffensive", true);
+		defaults.put("subsRegsMinusLinks", new Boolean(false));
+		defaults.put("filterCaps", new Boolean(false));
+		defaults.put("filterOffensive",  new Boolean(true));
 		defaults.put("filterCapsPercent", 50);
 		defaults.put("filterCapsMinCharacters", 0);
 		defaults.put("filterCapsMinCapitals", 6);
-		defaults.put("filterLinks", false);
-		defaults.put("filterEmotes", false);
-		defaults.put("filterSymbols", false);
+		defaults.put("filterLinks", new Boolean(false));
+		defaults.put("filterEmotes", new Boolean(false));
+		defaults.put("filterSymbols", new Boolean(false));
 		defaults.put("filterEmotesMax", 4);
 
 		defaults.put("punishCount", 0);
@@ -1581,46 +1596,46 @@ public class Channel {
 
 		defaults.put("topic", "");
 		defaults.put("commands", new JSONArray());
-		
+
 		defaults.put("repeatedCommands", new JSONArray());
 		defaults.put("scheduledCommands", new JSONArray());
 		defaults.put("autoReplies", new JSONArray());
 		defaults.put("regulars", new JSONArray());
 		defaults.put("moderators", new JSONArray());
 		defaults.put("owners", new JSONArray());
-		defaults.put("useTopic", true);
-		defaults.put("useFilters", false);
-		defaults.put("enableThrow", true);
+		defaults.put("useTopic", new Boolean(true));
+		defaults.put("useFilters", new Boolean(false));
+		defaults.put("enableThrow", new Boolean(true));
 		defaults.put("permittedDomains", new JSONArray());
-		defaults.put("signKicks", false);
+		defaults.put("signKicks", new Boolean(false));
 		defaults.put("topicTime", 0);
 		defaults.put("mode", 2);
-		defaults.put("announceJoinParts", false);
+		defaults.put("announceJoinParts", new Boolean(false));
 		defaults.put("lastfm", "");
 		defaults.put("steamID", "");
-		defaults.put("logChat", false);
+		defaults.put("logChat", new Boolean(false));
 		defaults.put("filterMaxLength", 500);
 		defaults.put("offensiveWords", new JSONArray());
 		defaults.put("commercialLength", 30);
-		defaults.put("filterColors", false);
-		defaults.put("filterMe", false);
-		defaults.put("staticChannel", false);
-		defaults.put("enableWarnings", true);
+		defaults.put("filterColors", new Boolean(false));
+		defaults.put("filterMe", new Boolean(false));
+		defaults.put("staticChannel", new Boolean(false));
+		defaults.put("enableWarnings", new Boolean(true));
 		defaults.put("timeoutDuration", 600);
 		defaults.put("clickToTweetFormat",
 				"Checkout (_CHANNEL_URL_) playing (_GAME_) on @TwitchTV");
 		defaults.put("filterSymbolsPercent", 50);
 		defaults.put("filterSymbolsMin", 5);
 		defaults.put("commandPrefix", "!");
-		
+
 		defaults.put("emoteSet", "");
-		defaults.put("subscriberRegulars", false);
-		defaults.put("filterEmotesSingle", false);
+		defaults.put("subscriberRegulars", new Boolean(false));
+		defaults.put("filterEmotesSingle", new Boolean(false));
 		defaults.put("subMessage", "(_1_) has subscribed!");
-		defaults.put("subscriberAlert", false);
+		defaults.put("subscriberAlert", new Boolean(false));
 		defaults.put("banPhraseSeverity", 99);
 
-		defaults.put("wpTimer", false);
+		defaults.put("wpTimer", new Boolean(false));
 		defaults.put("wpCount", 0);
 		defaults.put("bullet", "coeBot");
 		defaults.put("cooldown", 5);
@@ -1628,20 +1643,24 @@ public class Channel {
 		defaults.put("maxViewers", 0);
 		defaults.put("runningMaxViewers", 0);
 		defaults.put("streamCount", 0);
-		defaults.put("streamAlive", false);
+		defaults.put("streamAlive", new Boolean(false));
 		defaults.put("maxViewersStream", 0);
 
 		defaults.put("updateDelay", 120);
-		defaults.put("quotes", "");
-		defaults.put("subscribers", "");
-		defaults.put("raidWhitelist", "");
+		defaults.put("quotes", new JSONArray());
+		// defaults.put("subscribers", new JSONArray());
+		defaults.put("raidWhitelist", new JSONArray());
 		defaults.put("gamerTag", "");
 
+		
 		Iterator it = defaults.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry pairs = (Map.Entry) it.next();
 			String key = String.valueOf(pairs.getKey());
-			String value = String.valueOf(pairs.getValue());
+			Object value = pairs.getValue();
+			if(value instanceof Integer){
+				value = Integer.parseInt(String.valueOf(value))*1L;
+			}
 			if (!config.containsKey(key))
 				config.put(key, value);
 		}
@@ -1670,7 +1689,6 @@ public class Channel {
 		this.saveAutoReply();
 		this.saveRepeatCommands();
 		this.saveScheduledCommands();
-		
 
 		this.addRegular("JSONCONVERT");
 		this.removeRegular("JSONCONVERT");
@@ -1707,16 +1725,18 @@ public class Channel {
 		config.put("filterSymbolsPercent", filterSymbolsPercent);
 		config.put("filterSymbolsMin", filterSymbolsMin);
 		config.put("commandPrefix", prefix);
-		
-		
+
 		config.put("emoteSet", emoteSet);
 		config.put("subscriberRegulars", subscriberRegulars);
 		config.put("filterEmotesSingle", filterEmotesSingle);
-		config.put("subMessage", oldconfig.getString("subMessage"));
-		config.put("subscriberAlert", oldconfig.getString("subscriberAlert"));
-		config.put("banPhraseSeverity", Integer.parseInt(oldconfig.getString("banPhraseSeverity")));
+		config.put("subMessage", config.get("subMessage"));
+		config.put("subscriberAlert",
+				Boolean.valueOf((Boolean) config.get("subscriberAlert")));
+		config.put("banPhraseSeverity",
+				((Long) config.get("banPhraseSeverity")).intValue());
 
-		config.put("wpTimer", oldconfig.getString("wpTimer"));
+		config.put("wpTimer",
+				Boolean.valueOf((Boolean) config.get("wpTimer")));
 		config.put("wpCount", wpCount);
 		config.put("bullet", bullet);
 		config.put("cooldown", cooldown);
@@ -1730,250 +1750,266 @@ public class Channel {
 		config.put("updateDelay", updateDelay);
 		this.addQuote("JSONCONVERT");
 		this.deleteQuote(this.getQuoteIndex("JSONCONVERT"));
-		
-		
-		//config.put("subscribers", subscribers);
+
+		// config.put("subscribers", subscribers);
 		this.addRaidWhitelist("JSONCONVERT");
 		this.deleteRaidWhitelist("JSONCONVERT");
-		
+
 		config.put("gamerTag", gamerTag);
 		saveConfig();
 
 	}
 
 	private void loadProperties(String name) {
+
 		setDefaults();
-		
-		gamerTag = oldconfig.getString("gamerTag");
+
+		gamerTag = (String) config.get("gamerTag");
 		// channel = config.getString("channel");
-		subsRegsMinusLinks = Boolean.parseBoolean(oldconfig
-				.getString("subsRegsMinusLinks"));
-		updateDelay = Integer.parseInt(oldconfig.getString("updateDelay"));
-		punishCount = Integer.parseInt(oldconfig.getString("punishCount"));
-		streamUp = Boolean.parseBoolean(oldconfig.getString("streamAlive"));
-		sinceWp = Long.parseLong(oldconfig.getString("sinceWp"));
-		maxviewerDate = oldconfig.getString("maxviewerDate");
-		runningMaxViewers = Integer.parseInt(oldconfig
-				.getString("runningMaxViewers"));
-		streamNumber = Integer.parseInt(oldconfig.getString("streamCount"));
-		streamMax = Integer.parseInt(oldconfig.getString("maxViewersStream"));
-		maxViewers = Integer.parseInt(oldconfig.getString("max viewers"));
-		filterCaps = Boolean.parseBoolean(oldconfig.getString("filterCaps"));
+		subsRegsMinusLinks=Boolean.valueOf((Boolean) config.get("subsRegsMinusLinks"));
+		updateDelay = ((Long) config.get("updateDelay")).intValue();
+		punishCount = ((Long) config.get("punishCount")).intValue();
+		streamUp = (Boolean) config.get("streamAlive");
+		sinceWp = ((Long) config.get("sinceWp"));
+		maxviewerDate = (String) config.get("maxviewerDate");
+		runningMaxViewers = ((Long) config.get("runningMaxViewers")).intValue();
+		streamNumber = ((Long) config.get("streamCount")).intValue();
+		streamMax =((Long) config.get("maxViewersStream")).intValue();
+		maxViewers =((Long) config.get("maxViewers")).intValue();
+		filterCaps = Boolean.valueOf((Boolean) config.get("filterCaps"));
 
-		filterCapsPercent = Integer.parseInt(oldconfig
-				.getString("filterCapsPercent"));
-		filterCapsMinCharacters = Integer.parseInt(oldconfig
-				.getString("filterCapsMinCharacters"));
-		filterCapsMinCapitals = Integer.parseInt(oldconfig
-				.getString("filterCapsMinCapitals"));
-		filterLinks = Boolean.parseBoolean(oldconfig.getString("filterLinks"));
-		filterOffensive = Boolean.parseBoolean(oldconfig
-				.getString("filterOffensive"));
-		filterEmotes = Boolean
-				.parseBoolean(oldconfig.getString("filterEmotes"));
+		filterCapsPercent =((Long) config
+				.get("filterCapsPercent")).intValue();
+		filterCapsMinCharacters =((Long) config
+				.get("filterCapsMinCharacters")).intValue();
+		filterCapsMinCapitals =((Long) config
+				.get("filterCapsMinCapitals")).intValue();
+		filterLinks = Boolean.valueOf((Boolean) config.get("filterLinks"));
+		filterOffensive = Boolean.valueOf((Boolean) config
+				.get("filterOffensive"));
+		filterEmotes = Boolean.valueOf((Boolean) config.get("filterEmotes"));
 
-		wpOn = Boolean.parseBoolean(oldconfig.getString("wpTimer"));
-		wpCount = Integer.parseInt(oldconfig.getString("wpCount"));
-		bullet = oldconfig.getString("bullet");
-		cooldown = Integer.parseInt(oldconfig.getString("cooldown"));
-		sincePunish = Long.parseLong(oldconfig.getString("sincePunish"));
+		wpOn = Boolean.valueOf((Boolean) config.get("wpTimer"));
+		wpCount =((Long) config.get("wpCount")).intValue();
+		bullet = (String) config.get("bullet");
+		cooldown =((Long) config.get("cooldown")).intValue();
+		sincePunish = (Long) config.get("sincePunish");
 
-		filterSymbols = Boolean.parseBoolean(oldconfig
-				.getString("filterSymbols"));
-		filterSymbolsPercent = Integer.parseInt(oldconfig
-				.getString("filterSymbolsPercent"));
-		filterSymbolsMin = Integer.parseInt(oldconfig
-				.getString("filterSymbolsMin"));
-		filterEmotesMax = Integer.parseInt(oldconfig
-				.getString("filterEmotesMax"));
-		filterEmotesSingle = Boolean.parseBoolean(oldconfig
-				.getString("filterEmotesSingle"));
+		filterSymbols = Boolean.valueOf((Boolean) config
+				.get("filterSymbols"));
+		filterSymbolsPercent =((Long) config
+				.get("filterSymbolsPercent")).intValue();
+		filterSymbolsMin =((Long) config
+				.get("filterSymbolsMin")).intValue();
+		filterEmotesMax =((Long) config
+				.get("filterEmotesMax")).intValue();
+		filterEmotesSingle = Boolean.valueOf((Boolean) config
+				.get("filterEmotesSingle"));
 		// announceJoinParts =
 		// Boolean.parseBoolean(config.getString("announceJoinParts"));
 		announceJoinParts = false;
-		topic = oldconfig.getString("topic");
-		topicTime = oldconfig.getInt("topicTime");
-		useTopic = Boolean.parseBoolean(oldconfig.getString("useTopic"));
-		useFilters = Boolean.parseBoolean(oldconfig.getString("useFilters"));
-		enableThrow = Boolean.parseBoolean(oldconfig.getString("enableThrow"));
-		signKicks = Boolean.parseBoolean(oldconfig.getString("signKicks"));
-		lastfm = oldconfig.getString("lastfm");
-		steamID = oldconfig.getString("steamID");
-		logChat = Boolean.parseBoolean(oldconfig.getString("logChat"));
-		mode = oldconfig.getInt("mode");
-		filterMaxLength = oldconfig.getInt("filterMaxLength");
-		commercialLength = oldconfig.getInt("commercialLength");
-		filterColors = Boolean
-				.parseBoolean(oldconfig.getString("filterColors"));
-		filterMe = Boolean.parseBoolean(oldconfig.getString("filterMe"));
-		staticChannel = Boolean.parseBoolean(oldconfig
-				.getString("staticChannel"));
-		clickToTweetFormat = oldconfig.getString("clickToTweetFormat");
+		topic = (String) config.get("topic");
+		topicTime =((Long) config.get("topicTime")).intValue();
+		useTopic = Boolean.valueOf((Boolean) config.get("useTopic"));
+		useFilters =Boolean.valueOf((Boolean) config.get("useFilters"));
+		enableThrow = Boolean.valueOf((Boolean) config.get("enableThrow"));
+		signKicks = Boolean.valueOf((Boolean) config.get("signKicks"));
+		lastfm = (String) config.get("lastfm");
+		steamID = (String) config.get("steamID");
+		logChat = Boolean.valueOf((Boolean) config.get("logChat"));
+		mode =((Long) config.get("mode")).intValue();
+		filterMaxLength =((Long) config
+				.get("filterMaxLength")).intValue();
+		commercialLength =((Long) config
+				.get("commercialLength")).intValue();
+		filterColors = Boolean.valueOf((Boolean) config.get("filterColors"));
+		filterMe = Boolean.valueOf((Boolean) config.get("filterMe"));
+		staticChannel = Boolean.valueOf((Boolean) config
+				.get("staticChannel"));
+		clickToTweetFormat = (String) config.get("clickToTweetFormat");
 
-		enableWarnings = Boolean.parseBoolean(oldconfig
-				.getString("enableWarnings"));
-		timeoutDuration = oldconfig.getInt("timeoutDuration");
-		prefix = oldconfig.getString("commandPrefix").charAt(0) + "";
-		emoteSet = oldconfig.getString("emoteSet");
-		subscriberRegulars = oldconfig.getBoolean("subscriberRegulars");
+		enableWarnings = Boolean.valueOf((Boolean) config
+				.get("enableWarnings"));
+		timeoutDuration =((Long) config
+				.get("timeoutDuration")).intValue();
+		prefix = (String) config.get("commandPrefix");
+		emoteSet = (String) config.get("emoteSet");
+		subscriberRegulars = Boolean.valueOf((Boolean) config
+				.get("subscriberRegulars"));
 
-		String[] quotesArray = oldconfig.getString("quotes").split("&&&");
+		JSONArray quotesArray = (JSONArray) config.get("quotes");
 
-		for (int i = 0; i < quotesArray.length; i++) {
-			quotes.add(quotesArray[i]);
+		for (int i = 0; i < quotesArray.size(); i++) {
+			quotes.add((String) quotesArray.get(i));
 		}
 
-		String[] raidWhitelistArray = oldconfig.getString("raidWhitelist")
-				.split("&&&");
+		JSONArray raidWhitelistArray = (JSONArray) config.get("raidWhitelist");
 
-		for (int i = 0; i < raidWhitelistArray.length; i++) {
-			raidWhitelist.add(raidWhitelistArray[i]);
-		}
-
-		String[] subsArray = oldconfig.getString("subscribers").split("&&&");
-
-		for (int i = 0; i < subsArray.length; i++) {
-			subscribers.add(subsArray[i]);
-		}
-
-		String[] commandsKey = oldconfig.getString("commandsKey").split(",");
-		String[] commandsValue = oldconfig.getString("commandsValue").split(
-				",,");
-
-		for (int i = 0; i < commandsKey.length; i++) {
-			if (commandsKey[i].length() > 1) {
-				commands.put(commandsKey[i].replaceAll("[^a-zA-Z0-9]", "")
-						.toLowerCase(), commandsValue[i]);
+		for (int i = 0; i < raidWhitelistArray.size(); i++) {
+			if (!raidWhitelistArray.get(i).equals("")) {
+				raidWhitelist.add((String) raidWhitelistArray.get(i));
 			}
 		}
 
-		String[] commandR = oldconfig.getString("commandRestrictions").split(
-				",");
-		for (int i = 0; i < commandR.length; i++) {
-			if (commandR[i].length() > 1) {
-				String[] parts = commandR[i].split("\\|");
-				commandsRestrictions.put(parts[0], Integer.parseInt(parts[1]));
+		// String[] subsArray = oldconfig.getString("subscribers").split("&&&");
+		//
+		// for (int i = 0; i < subsArray.length; i++) {
+		// subscribers.add(subsArray[i]);
+		// }
+
+		JSONArray commandsArray = (JSONArray) config.get("commands");
+
+		for (int i = 0; i < commandsArray.size(); i++) {
+			JSONObject commandObject = (JSONObject) commandsArray.get(i);
+			commands.put((String) commandObject.get("key"),
+					(String) commandObject.get("value"));
+			if(commandObject.containsKey("restriction")){
+			commandsRestrictions
+					.put((String) commandObject.get("key"),
+							((Long) commandObject
+									.get("restriction")).intValue());
 			}
+
 		}
 
-		String[] commandsRepeatKey = oldconfig.getString("commandsRepeatKey")
-				.split(",");
-		String[] commandsRepeatDelay = oldconfig.getString(
-				"commandsRepeatDelay").split(",");
-		String[] commandsRepeatDiff = oldconfig.getString("commandsRepeatDiff")
-				.split(",");
-		String[] commandsRepeatActive = oldconfig.getString(
-				"commandsRepeatActive").split(",");
+		//
+		// String[] commandsRepeatKey = oldconfig.getString("commandsRepeatKey")
+		// .split(",");
+		// String[] commandsRepeatDelay = oldconfig.getString(
+		// "commandsRepeatDelay").split(",");
+		// String[] commandsRepeatDiff =
+		// oldconfig.getString("commandsRepeatDiff")
+		// .split(",");
+		// String[] commandsRepeatActive = oldconfig.getString(
+		// "commandsRepeatActive").split(",");
+		JSONArray repeatedCommandsArray = (JSONArray) config
+				.get("repeatedCommands");
 
-		for (int i = 0; i < commandsRepeatKey.length; i++) {
-			if (commandsRepeatKey[i].length() > 1) {
-				RepeatCommand rc = new RepeatCommand(channel,
-						commandsRepeatKey[i].replaceAll("[^a-zA-Z0-9]", ""),
-						Integer.parseInt(commandsRepeatDelay[i]),
-						Integer.parseInt(commandsRepeatDiff[i]),
-						Boolean.parseBoolean(commandsRepeatActive[i]));
-				commandsRepeat
-						.put(commandsRepeatKey[i]
-								.replaceAll("[^a-zA-Z0-9]", ""), rc);
-			}
+		for (int i = 0; i < repeatedCommandsArray.size(); i++) {
+			JSONObject repeatedCommandObj = (JSONObject) repeatedCommandsArray
+					.get(i);
+			RepeatCommand rc = new RepeatCommand(channel,
+					((String) repeatedCommandObj.get("name")).replaceAll(
+							"[^a-zA-Z0-9]", ""),
+					((Long) repeatedCommandObj.get("delay")).intValue(),
+					((Long) repeatedCommandObj
+							.get("messageDifference")).intValue(),
+					Boolean.valueOf((Boolean) repeatedCommandObj
+							.get("active")));
+			commandsRepeat.put(((String) repeatedCommandObj.get("name"))
+					.replaceAll("[^a-zA-Z0-9]", ""), rc);
+
 		}
 
-		String[] commandsScheduleKey = oldconfig.getString(
-				"commandsScheduleKey").split(",,");
-		String[] commandsSchedulePattern = oldconfig.getString(
-				"commandsSchedulePattern").split(",,");
-		String[] commandsScheduleDiff = oldconfig.getString(
-				"commandsScheduleDiff").split(",,");
-		String[] commandsScheduleActive = oldconfig.getString(
-				"commandsScheduleActive").split(",,");
+		// String[] commandsScheduleKey = oldconfig.getString(
+		// "commandsScheduleKey").split(",,");
+		// String[] commandsSchedulePattern = oldconfig.getString(
+		// "commandsSchedulePattern").split(",,");
+		// String[] commandsScheduleDiff = oldconfig.getString(
+		// "commandsScheduleDiff").split(",,");
+		// String[] commandsScheduleActive = oldconfig.getString(
+		// "commandsScheduleActive").split(",,");
+		JSONArray scheduledCommandsArray = (JSONArray) config
+				.get("scheduledCommands");
 
-		for (int i = 0; i < commandsScheduleKey.length; i++) {
-			if (commandsScheduleKey[i].length() > 1) {
-				ScheduledCommand rc = new ScheduledCommand(channel,
-						commandsScheduleKey[i].replaceAll("[^a-zA-Z0-9]", ""),
-						commandsSchedulePattern[i],
-						Integer.parseInt(commandsScheduleDiff[i]),
-						Boolean.parseBoolean(commandsScheduleActive[i]));
-				commandsSchedule.put(
-						commandsScheduleKey[i].replaceAll("[^a-zA-Z0-9]", ""),
-						rc);
-			}
+		for (int i = 0; i < scheduledCommandsArray.size(); i++) {
+			JSONObject scheduledCommandsObj = (JSONObject) scheduledCommandsArray
+					.get(i);
+			ScheduledCommand rc = new ScheduledCommand(channel,
+					((String) scheduledCommandsObj.get("name")).replaceAll(
+							"[^a-zA-Z0-9]", ""),
+					(String) scheduledCommandsObj.get("pattern"),
+					((Long) scheduledCommandsObj
+							.get("messageDifference")).intValue(),
+					Boolean.valueOf((Boolean) scheduledCommandsObj
+							.get("active")));
+			commandsSchedule.put(((String) scheduledCommandsObj.get("name"))
+					.replaceAll("[^a-zA-Z0-9]", ""), rc);
+
 		}
 
-		String[] autoReplyTriggersString = oldconfig.getString(
-				"autoReplyTriggers").split(",,");
-		String[] autoReplyResponseString = oldconfig.getString(
-				"autoReplyResponse").split(",,");
+		// String[] autoReplyTriggersString = oldconfig.getString(
+		// "autoReplyTriggers").split(",,");
+		// String[] autoReplyResponseString = oldconfig.getString(
+		// "autoReplyResponse").split(",,");
+		JSONArray autoReplyArray = (JSONArray) config.get("autoReplies");
+		for (int i = 0; i < autoReplyArray.size(); i++) {
+			JSONObject autoReplyObj = (JSONObject) autoReplyArray.get(i);
+			autoReplyTrigger.add(Pattern.compile(
+					(String) autoReplyObj.get("trigger"),
+					Pattern.CASE_INSENSITIVE));
+			autoReplyResponse.add((String) autoReplyObj.get("response"));
 
-		for (int i = 0; i < autoReplyTriggersString.length; i++) {
-			if (autoReplyTriggersString[i].length() > 0) {
-				autoReplyTrigger.add(Pattern.compile(
-						autoReplyTriggersString[i], Pattern.CASE_INSENSITIVE));
-				autoReplyResponse.add(autoReplyResponseString[i]);
-			}
 		}
 
-		String[] regularsRaw = oldconfig.getString("regulars").split(",");
+		// String[] regularsRaw = oldconfig.getString("regulars").split(",");
+		JSONArray regularsJSONArray = (JSONArray) config.get("regulars");
 		synchronized (regulars) {
-			for (int i = 0; i < regularsRaw.length; i++) {
-				if (regularsRaw[i].length() > 1) {
-					regulars.add(regularsRaw[i].toLowerCase());
-				}
+			for (int i = 0; i < regularsJSONArray.size(); i++) {
+
+				regulars.add(((String) regularsJSONArray.get(i)).toLowerCase());
+
 			}
 		}
 
-		String[] moderatorsRaw = oldconfig.getString("moderators").split(",");
+		// String[] moderatorsRaw =
+		// oldconfig.getString("moderators").split(",");
+		JSONArray modsArray = (JSONArray) config.get("moderators");
 		synchronized (moderators) {
-			for (int i = 0; i < moderatorsRaw.length; i++) {
-				if (moderatorsRaw[i].length() > 1) {
-					moderators.add(moderatorsRaw[i].toLowerCase());
-				}
+			for (int i = 0; i < modsArray.size(); i++) {
+
+				moderators.add(((String) modsArray.get(i)).toLowerCase());
+
 			}
 		}
 
-		String[] ownersRaw = oldconfig.getString("owners").split(",");
+		// String[] ownersRaw = oldconfig.getString("owners").split(",");
+		JSONArray ownersArray = (JSONArray) config.get("owners");
 		synchronized (owners) {
-			for (int i = 0; i < ownersRaw.length; i++) {
-				if (ownersRaw[i].length() > 1) {
-					owners.add(ownersRaw[i].toLowerCase());
-				}
+			for (int i = 0; i < ownersArray.size(); i++) {
+
+				owners.add(((String) ownersArray.get(i)).toLowerCase());
+
 			}
 		}
 
-		String[] domainsRaw = oldconfig.getString("permittedDomains")
-				.split(",");
+		// String[] domainsRaw =
+		// oldconfig.getString("permittedDomains").split(",");
+		JSONArray domainsArray = (JSONArray) config.get("permittedDomains");
+
 		synchronized (permittedDomains) {
-			for (int i = 0; i < domainsRaw.length; i++) {
-				if (domainsRaw[i].length() > 1) {
-					// permittedDomains.add(domainsRaw[i].toLowerCase().replaceAll("\\.",
-					// "\\\\."));
-					permittedDomains.add(domainsRaw[i].toLowerCase());
+			for (int i = 0; i < domainsArray.size(); i++) {
 
-				}
+				// permittedDomains.add(domainsRaw[i].toLowerCase().replaceAll("\\.",
+				// "\\\\."));
+				permittedDomains.add(((String) domainsArray.get(i))
+						.toLowerCase());
+
 			}
 		}
-		System.out.println(oldconfig.getString("offensiveWords"));
-		String[] offensiveWordsRaw = oldconfig.getString("offensiveWords")
-				.split(",,");
+		// System.out.println(oldconfig.getString("offensiveWords"));
+		// String[] offensiveWordsRaw = oldconfig.getString("offensiveWords")
+		// .split(",,");
+		JSONArray offensiveArray = (JSONArray) config.get("offensiveWords");
+
 		synchronized (offensiveWords) {
 			synchronized (offensiveWordsRegex) {
-				for (int i = 0; i < offensiveWordsRaw.length; i++) {
-					if (offensiveWordsRaw[i].length() > 1) {
-						String w = offensiveWordsRaw[i];
-						offensiveWords.add(w);
-						if (w.startsWith("REGEX:")) {
-							String line = w.substring(6);
-							System.out.println("Adding: " + line);
-							Pattern tempP = Pattern.compile(line);
-							offensiveWordsRegex.add(tempP);
-						} else {
-							String line = "(?i).*" + Pattern.quote(w) + ".*";
-							System.out.println("Adding: " + line);
-							Pattern tempP = Pattern.compile(line);
-							offensiveWordsRegex.add(tempP);
-						}
+				for (int i = 0; i < offensiveArray.size(); i++) {
 
+					String w = (String) offensiveArray.get(i);
+					offensiveWords.add(w);
+					if (w.startsWith("REGEX:")) {
+						String line = w.substring(6);
+						System.out.println("Adding: " + line);
+						Pattern tempP = Pattern.compile(line);
+						offensiveWordsRegex.add(tempP);
+					} else {
+						String line = "(?i).*" + Pattern.quote(w) + ".*";
+						System.out.println("Adding: " + line);
+						Pattern tempP = Pattern.compile(line);
+						offensiveWordsRegex.add(tempP);
 					}
+
 				}
 			}
 
@@ -2071,7 +2107,11 @@ public class Channel {
 		try {
 
 			FileWriter file = new FileWriter(channel + ".json");
-			file.write(config.toJSONString());
+			StringWriter out = new StringWriter();
+			   JSONValue.writeJSONString(config, out);
+			   String jsonText = out.toString();
+			   file.write(jsonText);
+//			file.write(config.toJSONString());
 			file.flush();
 			file.close();
 
