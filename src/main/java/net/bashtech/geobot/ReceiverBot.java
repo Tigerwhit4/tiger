@@ -1374,9 +1374,9 @@ public class ReceiverBot extends PircBot {
 			return;
 		}
 
-		// !commands - Op/Regular
+		// !commands - Op
 		if ((msg[0].equalsIgnoreCase(prefix + "commands") || msg[0]
-				.equalsIgnoreCase(prefix + "coemands")) && isRegular) {
+				.equalsIgnoreCase(prefix + "coemands")) && isOp) {
 			log("RB: Matched command !commands");
 
 			ArrayList<String> sorted = channelInfo.getCommandList();
@@ -3513,7 +3513,7 @@ public class ReceiverBot extends PircBot {
 			String hostname) {
 
 		Channel channelInfo = getChannelObject(channel);
-		channelInfo.updateConfigs();
+		
 
 		if (channelInfo == null)
 			return;
