@@ -3513,7 +3513,7 @@ public class ReceiverBot extends PircBot {
 			String hostname) {
 
 		Channel channelInfo = getChannelObject(channel);
-		
+		channelInfo.updateConfigs();
 
 		if (channelInfo == null)
 			return;
