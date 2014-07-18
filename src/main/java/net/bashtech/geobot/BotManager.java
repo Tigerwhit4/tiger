@@ -418,7 +418,7 @@ public class BotManager {
 
 		if (!config.keyExists("bothelpMessage")) {
 			config.setString("bothelpMessage",
-					"http://bashtech.net/twitch/geobot.php");
+					"You can find info about CoeBot's default commands at: http://help.coebot.tv");
 		}
 
 		// API KEYS

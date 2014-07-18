@@ -41,6 +41,7 @@ public class Channel {
 	boolean staticChannel;
 	private HashMap<String, String> commands = new HashMap<String, String>();
 	private HashMap<String, Integer> commandsRestrictions = new HashMap<String, Integer>();
+	private HashMap<String, Integer> commandCounts = new HashMap<String, Integer>();
 	private ArrayList<String> quotes = new ArrayList<String>();
 	HashMap<String, RepeatCommand> commandsRepeat = new HashMap<String, RepeatCommand>();
 	HashMap<String, ScheduledCommand> commandsSchedule = new HashMap<String, ScheduledCommand>();
@@ -348,12 +349,15 @@ public class Channel {
 
 		if (key.length() < 1)
 			return;
-
+		
 		if (commands.containsKey(key)) {
+			
 			commands.remove(key);
 			commands.put(key, command);
+			
 		} else {
 			commands.put(key, command);
+			commandCounts.put(key,0);
 		}
 
 		saveCommands();
@@ -364,6 +368,7 @@ public class Channel {
 		if (commands.containsKey(key)) {
 			commands.remove(key);
 			commandsRestrictions.remove(key);
+			commandCounts.remove(key);
 
 			saveCommands();
 
@@ -387,6 +392,7 @@ public class Channel {
 			} else {
 				commandObj.put("restriction", 1);
 			}
+			commandObj.put("count", commandCounts.get(pairs.getKey()));
 			commandsArr.add(commandObj);
 
 		}
@@ -395,6 +401,24 @@ public class Channel {
 		saveConfig();
 	}
 
+	public void increaseCommandCount(String commandName){
+		commandName = commandName.toLowerCase();
+		if(commandCounts.containsKey(commandName)){
+			int currentCount = commandCounts.get(commandName);
+			currentCount++;
+			commandCounts.put(commandName, currentCount);
+		}
+		saveCommands();
+		
+	}
+	public int getCurrentCount(String commandName){
+		commandName = commandName.toLowerCase();
+		if(commandCounts.containsKey(commandName)){
+			int currentCount = commandCounts.get(commandName);
+			return currentCount;
+		}else
+			return -1;
+	}
 	public boolean setCommandsRestriction(String command, int level) {
 		command = command.toLowerCase();
 
@@ -1869,8 +1893,14 @@ public class Channel {
 							((Long) commandObject
 									.get("restriction")).intValue());
 			}
+			if(commandObject.containsKey("count")&&commandObject.get("count")!=null){
+				commandCounts.put((String)commandObject.get("key"), ((Long)commandObject.get("count")).intValue());
+			}else{
+				commandCounts.put((String)commandObject.get("key"), 0);
+			}
 
 		}
+		saveCommands();
 
 		//
 		// String[] commandsRepeatKey = oldconfig.getString("commandsRepeatKey")

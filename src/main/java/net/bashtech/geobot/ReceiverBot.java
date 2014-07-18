@@ -100,7 +100,7 @@ public class ReceiverBot extends PircBot {
 				.compile(".*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\s+|:|/|$).*");
 
 		symbolsPatterns[0] = Pattern
-				.compile("(\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|ÃƒÂ£Ã¯Â¿Â½Ã‚Â¤|Ãƒâ€šÃ‚Â°|ÃƒÂ Ã‚ÂºÃ‹â€ |ÃƒÂ¢Ã¢â‚¬â€œÃ¢â‚¬Ëœ|ÃƒÂ¢Ã¢â‚¬â€œÃ¢â€šÂ¬|ÃƒÂ¢Ã¢â‚¬â€œÃ¢â‚¬Å¾|ÃƒÅ’Ã‚Â°ÃƒÅ’Ã‚Â¦ÃƒÅ’Ã‚Â®ÃƒÅ’ eÃƒï¿½Ã‚Â¦ÃƒÅ’Ã…Â¡Ãƒï¿½Ã‚Â¯Ãƒï¿½Ã‚Â¯ÃƒÅ’Ã¯Â¿Â½Ãƒï¿½Ã‚Â®ÃƒÅ’Ã…Â ÃƒÅ’Ã¯Â¿Â½Ãƒï¿½Ã…â€™ÃƒÅ’Ã¢â‚¬Â°Ãƒï¿½Ã¢â‚¬ËœÃƒï¿½Ã‚Â¨ÃƒÅ’Ã…Â Ãƒï¿½Ã¯Â¿Â½Ãƒï¿½Ã¯Â¿Â½ÃƒÅ’Ã‚Â¨ÃƒÅ’Ã…Â¸ÃƒÅ’Ã‚Â¹|UÃƒÅ’Ã‚Â¶ÃƒÅ’Ã‚Â§Ãƒï¿½Ã‚Â©Ãƒï¿½Ã‚Â­Ãƒï¿½Ã‚Â§Ãƒï¿½Ã…Â ÃƒÅ’Ã¢â‚¬Â¦ÃƒÅ’Ã…Â Ãƒï¿½Ã‚Â¥Ãƒï¿½Ã‚Â©ÃƒÅ’Ã‚Â¿ÃƒÅ’Ã¢â‚¬ï¿½ÃƒÅ’Ã¢â‚¬ï¿½Ãƒï¿½Ã‚Â¥Ãƒï¿½Ã…â€™Ãƒï¿½Ã‚Â¬Ãƒï¿½Ã…Â Ãƒï¿½Ã¢â‚¬Â¹Ãƒï¿½Ã‚Â¬Ãƒâ€™Ã¢â‚¬Â°|ÃƒÂ¡Ã‚Â»Ã…â€™ÃƒÅ’Ã‚ÂµÃƒï¿½Ã¢â‚¬Â¡ÃƒÅ’Ã¢â‚¬â€œÃƒÅ’Ã¢â‚¬â€œ|AÃƒÅ’Ã‚Â´Ãƒï¿½Ã¯Â¿Â½ÃƒÅ’Ã‚Â¥ÃƒÅ’Ã‚Â³ÃƒÅ’ ÃƒÅ’Ã…Â¾ÃƒÅ’Ã‚Â¹Ãƒï¿½Ã‚Â©ÃƒÅ’Ã¢â‚¬Â¹ÃƒÅ’Ã¢â‚¬Â Ãƒï¿½Ã‚Â¤Ãƒï¿½Ã¢â‚¬Â¦|EÃƒÅ’Ã‚Â¡ÃƒÅ’Ã¢â‚¬ÂºÃƒï¿½Ã…Â¡ÃƒÅ’Ã‚ÂºÃƒÅ’Ã¢â‚¬â€œÃƒÅ’Ã‚ÂªÃƒï¿½Ã‹â€ ÃƒÅ’Ã‚Â²ÃƒÅ’Ã‚Â»ÃƒÅ’ ÃƒÅ’Ã‚Â°ÃƒÅ’Ã‚Â³ÃƒÅ’Ã¯Â¿Â½ÃƒÅ’Ã‚Â¿)");
+				.compile("(\\p{InPhonetic_Extensions}|\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|つ|°|ຈ|░|▀|▄|̰̦̮̠ę̟̹ͦͯͯ́ͮ̊̐͌̉͑ͨ̊́́̚|U̶̧ͩͭͧ͊̅̊ͥͩ̿̔̔ͥ͌ͬ͊͋ͬ҉|Ọ̵͇̖̖|A̴͍̥̳̠̞̹ͩ̋̆ͤͅ|E̡̛͚̺̖̪͈̲̻̠̰̳̐̿)");
 		symbolsPatterns[1] = Pattern.compile("[!-/:-@\\[-`{-~]");
 
 		this.setName(BotManager.getInstance().getInstance().nick);
@@ -1616,6 +1616,7 @@ public class ReceiverBot extends PircBot {
 
 						channelInfo.setCommand(key, value);
 						channelInfo.setCommandsRestriction(key, 1);
+						
 						// if(channelInfo.checkCommandRestriction(key,3)){
 						// channelInfo.setCommandsRestriction(key, 3);
 						// }else if(channelInfo.checkCommandRestriction(key,2)){
@@ -3332,6 +3333,12 @@ public class ReceiverBot extends PircBot {
 			String value = channelInfo.getCommand(command);
 			if (value != null) {
 				log("RB: Matched command " + msg[0]);
+//				String[] arguments = new String[msg.length -2];
+//				int tempI = 0;
+//				for(int i = 2; i<msg.length; i++){
+//					arguments[tempI] = msg[i];
+//					tempI++;
+//				}
 				// if (msg.length > 1 && isOwner) {
 				// String updatedMessage = fuseArray(msg, 1);
 				// if (!updatedMessage.contains(",,")) {
@@ -3351,7 +3358,9 @@ public class ReceiverBot extends PircBot {
 							value = value.replace("(_PARAMETER_)",
 									fuseArray(msg, 1));
 						}
+						channelInfo.increaseCommandCount(command);
 						send(channel, sender, value);
+						
 					}
 				}
 				// }
@@ -3513,7 +3522,6 @@ public class ReceiverBot extends PircBot {
 			String hostname) {
 
 		Channel channelInfo = getChannelObject(channel);
-		
 
 		if (channelInfo == null)
 			return;

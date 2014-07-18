@@ -127,14 +127,34 @@ public class MessageReplaceParser {
 			String progress = JSONUtil.xboxLastGameProgress(gamerTag);
 			message = message.replace("(_XBOX_PROGRESS_)", progress);
 		}
-
-		if (args != null) {
-			int argCounter = 1;
-			for (String argument : args) {
-				if (message.contains("(_" + argCounter + "_)"))
-					message = message.replace("(_" + argCounter + "_)",
-							argument);
-				argCounter++;
+		
+		
+//		if (args != null) {
+//			int argCounter = 1;
+//			for (String argument : args) {
+//				if (message.contains("(_" + argCounter + "_)"))
+//					message = message.replace("(_" + argCounter + "_)",
+//							argument);
+//				argCounter++;
+//			}
+//		}
+		if(message.contains("(_")&&message.contains("_COUNT_)")){
+			int commandStart  = message.indexOf("(_");
+			int commandEnd = message.indexOf("_COUNT_)");
+			String commandName = message.substring(commandStart+2,commandEnd).toLowerCase();
+			String value = ci.getCommand(commandName);
+			String replaced = message.substring(commandStart,commandEnd+8);
+			if(value!=null){
+				
+				int count = ci.getCurrentCount(commandName);
+				if(count>-1){
+					message = message.replace(replaced, count+"");
+				}else{
+					message = message.replace(replaced, "No count for that command...");
+				}
+				
+			}else{
+				message = message.replace(replaced, "No count for that command...");
 			}
 		}
 
