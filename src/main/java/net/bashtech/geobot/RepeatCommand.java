@@ -77,6 +77,7 @@ public class RepeatCommand {
             Channel channelInfo = BotManager.getInstance().getChannel(channel);
             if (channelInfo.messageCount - RepeatCommand.this.lastMessageCount >= messageDifference) {
                 String command = channelInfo.getCommand(key);
+                channelInfo.increaseCommandCount(key);
                 ReceiverBot.getInstance().send(channel, command);
 
                 if (key.equalsIgnoreCase("commercial"))

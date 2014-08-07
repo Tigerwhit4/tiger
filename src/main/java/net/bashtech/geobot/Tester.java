@@ -25,7 +25,7 @@ import java.util.Set;
 public class Tester {
 
     public static void main(String[] args) {
-        System.out.println(JSONUtil.getSourceRes("bwana"));
+        //System.out.println(JSONUtil.getSourceRes("bwana"));
     }
 
 }

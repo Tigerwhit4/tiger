@@ -82,6 +82,7 @@ public class ReceiverBot extends PircBot {
 	private boolean tried;
 	private boolean delete;
 	private boolean permitted;
+	private long lastConch = System.currentTimeMillis();
 
 	public ReceiverBot(String server, int port) {
 		ReceiverBot.setInstance(this);
@@ -279,17 +280,7 @@ public class ReceiverBot extends PircBot {
 		boolean isRegular = false;
 		boolean isSub = false;
 		int accessLevel = 0;
-		// try {
-		// read("quotesList"+channel+".txt");
-		// } catch (Exception e2) {
-		// try {
-		// save("quotesList"+channel+".txt", quotesList);
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
 
-		// }
 
 		// Check for user level based on other factors.
 		if (BotManager.getInstance().isAdmin(sender))
@@ -722,71 +713,67 @@ public class ReceiverBot extends PircBot {
 		if ((msg[0].equalsIgnoreCase(prefix + "viewers") || msg[0]
 				.equalsIgnoreCase(prefix + "lurkers"))) {
 			log("RB: Matched command !viewers");
-			if (BotManager.getInstance().twitchChannels) {
-				try {
-					send(channel, JSONUtil.krakenViewers(twitchName)
-							+ " viewers.");
-				} catch (Exception e) {
-					send(channel, "Stream is not live.");
-				}
-			} else {
-				try {
-					send(channel, JSONUtil.jtvViewers(twitchName) + " viewers.");
-				} catch (Exception e) {
-					send(channel, "Stream is not live.");
-				}
+
+			try {
+				send(channel, JSONUtil.krakenViewers(twitchName) + " viewers.");
+			} catch (Exception e) {
+				send(channel, "Stream is not live.");
 			}
 
 			return;
 		}
-		if ((msg[0].equalsIgnoreCase(prefix + "conch") || msg[0]
-				.equalsIgnoreCase(prefix + "helix")) && isSub) {
-			log("RB: Matched command !conch");
-			int rand = (int) Math.round(Math.random() * 13);
+		long newConch = System.currentTimeMillis();
 
-			switch (rand) {
-			case 0:
-				send(channel, "It is certain.");
-				break;
-			case 1:
-				send(channel, "It is decidedly so.");
-				break;
-			case 2:
-				send(channel, "Better not to tell.");
-				break;
-			case 3:
-				send(channel, "You may rely on it.");
-				break;
-			case 4:
-				send(channel, "Don't count on it.");
-				break;
-			case 5:
-				send(channel, "My reply is no.");
-				break;
-			case 6:
-				send(channel, "Very doubtful.");
-				break;
-			case 7:
-				send(channel, "My sources say no.");
-				break;
-			case 8:
-				send(channel, "Most likely.");
-				break;
-			case 9:
-				send(channel, "Signs point to yes.");
-				break;
-			case 10:
-				send(channel, "Outlook doesn't look good.");
-				break;
-			case 11:
-				send(channel, "The future seems hazy on this.");
-				break;
-			default:
-				send(channel, "Unable to discern.");
-				break;
+		if ((newConch >= (lastConch + 15 * 1000L)) || isOp) {
+			if ((msg[0].equalsIgnoreCase(prefix + "conch") || msg[0]
+					.equalsIgnoreCase(prefix + "helix")) && isSub) {
+				log("RB: Matched command !conch");
+				int rand = (int) Math.round(Math.random() * 13);
 
+				switch (rand) {
+				case 0:
+					send(channel, "It is certain.");
+					break;
+				case 1:
+					send(channel, "It is decidedly so.");
+					break;
+				case 2:
+					send(channel, "Better not to tell.");
+					break;
+				case 3:
+					send(channel, "You may rely on it.");
+					break;
+				case 4:
+					send(channel, "Don't count on it.");
+					break;
+				case 5:
+					send(channel, "My reply is no.");
+					break;
+				case 6:
+					send(channel, "Very doubtful.");
+					break;
+				case 7:
+					send(channel, "My sources say no.");
+					break;
+				case 8:
+					send(channel, "Most likely.");
+					break;
+				case 9:
+					send(channel, "Signs point to yes.");
+					break;
+				case 10:
+					send(channel, "Outlook doesn't look good.");
+					break;
+				case 11:
+					send(channel, "The future seems hazy on this.");
+					break;
+				default:
+					send(channel, "Unable to discern.");
+					break;
+
+				}
+				lastConch = newConch;
 			}
-
 		}
 		if (msg[0].equalsIgnoreCase(prefix + "punishstats") && isOp) {
 			log("RB: Matched command !punishstats");
@@ -870,8 +857,9 @@ public class ReceiverBot extends PircBot {
 				|| msg[0].equalsIgnoreCase(prefix + "resolution")) {
 			log("RB: Matched command !resolution");
 
-			String res = JSONUtil.getSourceRes(twitchName);
-			send(channel, "The source resolution is " + res);
+			send(channel,
+					prefix
+							+ "res is unavailable until Twitch adds parts of justin.tv's API into their current API");
 			return;
 		}
 
@@ -879,12 +867,9 @@ public class ReceiverBot extends PircBot {
 		if (msg[0].equalsIgnoreCase(prefix + "bitrate")) {
 			log("RB: Matched command !resolution");
 
-			double bitrate = JSONUtil.getSourceBitrate(twitchName);
-			if (bitrate > 1)
-				send(channel, "The source bitrate is " + (int) bitrate
-						+ " Kbps");
-			else
-				send(channel, "Stream is not live or an error occurred.");
+			send(channel,
+					prefix
+							+ "bitrate is unavailable until Twitch adds parts of justin.tv's API into their current API");
 			return;
 		}
 
@@ -892,17 +877,19 @@ public class ReceiverBot extends PircBot {
 		if (msg[0].equalsIgnoreCase(prefix + "uptime")) {
 			log("RB: Matched command !uptime");
 			try {
-				String uptime = this.getStreamList("up_time", channelInfo);
-				send(channel,
-						"Streaming for " + this.getTimeStreaming(uptime, 0)
-								+ " since " + uptime + " PST.");
+				//String uptime = this.getStreamList("up_time", channelInfo);
+//				send(channel,
+//						"Streaming for " + this.getTimeStreaming(uptime, 0)
+//								+ " since " + uptime + " PST.");
+				send(channel, prefix
+							+ "uptime is unavailable until Twitch adds parts of justin.tv's API into their current API");
 			} catch (Exception e) {
 				send(channel, "Error accessing Twitch API.");
 			}
 			return;
 		}
 		try {
-			getStreamList("up_time", channelInfo);
+			//getStreamList("up_time", channelInfo);
 			// channelInfo.alive(twitchName);
 		} catch (Exception e) {
 			channelInfo.dead(twitchName);
@@ -1116,65 +1103,65 @@ public class ReceiverBot extends PircBot {
 				send(channel, "Useage is " + prefix + "me <string>");
 		}
 		// highlight
-		if (msg[0].equalsIgnoreCase(prefix + "highlight")
-				&& BotManager.getInstance().twitchChannels) {
-			log("RB: Matched command !highlight");
-			if (isOp && msg.length > 3 && msg[1].equalsIgnoreCase("add")) {
-				int mins = Integer.parseInt(msg[2]);
-				String description = this.fuseArray(msg, 3);
-				description.trim();
-
-				try {
-					readHighlights("highlight" + channel + ".txt");
-				} catch (Exception e) {
-					send(channel,
-							"Error with the highlight list, it probably hasn't been created yet");
-				}
-				try {
-					String uptime = this.getStreamList("up_time", channelInfo);
-					String timeStreaming = this.getTimeStreaming(uptime, mins);
-					String status = JSONUtil.krakenStatus(twitchName);
-					highlightList.add(timeStreaming + " - " + description
-							+ " in stream " + status);
-					save("highlight" + channel + ".txt", highlightList);
-
-					send(channel, "Highlight marked at " + timeStreaming
-							+ " with description: \"" + description
-							+ "\" in stream: \"" + status + "\"");
-				} catch (Exception e) {
-					send(channel, "Error accessing Twitch API");
-				}
-
-			} else if (isOp && msg.length > 2) {
-				if (msg[1].equalsIgnoreCase("delete")
-						|| msg[1].equalsIgnoreCase("remove")) {
-					int index = Integer.parseInt(msg[2]);
-					try {
-						readHighlights("highlight" + channel + ".txt");
-						highlightList.remove(index);
-						save("highlight" + channel + ".txt", highlightList);
-
-						send(channel, "Highlight # " + index + " removed");
-					} catch (Exception e) {
-						send(channel, "Error deleting highlight.");
-					}
-				} else if (msg[1].equalsIgnoreCase("get")) {
-					int index = Integer.parseInt(msg[2]);
-					try {
-						readHighlights("highlight" + channel + ".txt");
-						send(channel,
-								"Highlight Start: " + highlightList.get(index));
-
-					} catch (Exception e) {
-						send(channel, "Error getting highlight.");
-					}
-				}
-			} else {
-				send(channel,
-						"Highlight syntax is \"!highlight <add> <minutes> <description>\" or \"!highlight <get/delete> <index>\"");
-			}
-
-		}
+//		if (msg[0].equalsIgnoreCase(prefix + "highlight")
+//				&& BotManager.getInstance().twitchChannels) {
+//			log("RB: Matched command !highlight");
+//			if (isOp && msg.length > 3 && msg[1].equalsIgnoreCase("add")) {
+//				int mins = Integer.parseInt(msg[2]);
+//				String description = this.fuseArray(msg, 3);
+//				description.trim();
+//
+//				try {
+//					readHighlights("highlight" + channel + ".txt");
+//				} catch (Exception e) {
+//					send(channel,
+//							"Error with the highlight list, it probably hasn't been created yet");
+//				}
+//				try {
+//					String uptime = this.getStreamList("up_time", channelInfo);
+//					String timeStreaming = this.getTimeStreaming(uptime, mins);
+//					String status = JSONUtil.krakenStatus(twitchName);
+//					highlightList.add(timeStreaming + " - " + description
+//							+ " in stream " + status);
+//					save("highlight" + channel + ".txt", highlightList);
+//
+//					send(channel, "Highlight marked at " + timeStreaming
+//							+ " with description: \"" + description
+//							+ "\" in stream: \"" + status + "\"");
+//				} catch (Exception e) {
+//					send(channel, "Error accessing Twitch API");
+//				}
+//
+//			} else if (isOp && msg.length > 2) {
+//				if (msg[1].equalsIgnoreCase("delete")
+//						|| msg[1].equalsIgnoreCase("remove")) {
+//					int index = Integer.parseInt(msg[2]);
+//					try {
+//						readHighlights("highlight" + channel + ".txt");
+//						highlightList.remove(index);
+//						save("highlight" + channel + ".txt", highlightList);
+//
+//						send(channel, "Highlight # " + index + " removed");
+//					} catch (Exception e) {
+//						send(channel, "Error deleting highlight.");
+//					}
+//				} else if (msg[1].equalsIgnoreCase("get")) {
+//					int index = Integer.parseInt(msg[2]);
+//					try {
+//						readHighlights("highlight" + channel + ".txt");
+//						send(channel,
+//								"Highlight Start: " + highlightList.get(index));
+//
+//					} catch (Exception e) {
+//						send(channel, "Error getting highlight.");
+//					}
+//				}
+//			} else {
+//				send(channel,
+//						"Highlight syntax is \"!highlight <add> <minutes> <description>\" or \"!highlight <get/delete> <index>\"");
+//			}
+//
+//		}
 
 		// !game - All
 
@@ -1221,10 +1208,8 @@ public class ReceiverBot extends PircBot {
 				}
 			} else {
 				String status = "";
-				if (BotManager.getInstance().twitchChannels)
-					status = JSONUtil.krakenStatus(twitchName);
-				else
-					status = JSONUtil.jtvStatus(twitchName);
+
+				status = JSONUtil.krakenStatus(twitchName);
 
 				if (status.length() > 0) {
 					send(channel, status);
@@ -1436,21 +1421,8 @@ public class ReceiverBot extends PircBot {
 		if (msg[0].equalsIgnoreCase(prefix + "throw") && (isSub)) {
 			log("RB: Matched command !throw");
 			if (msg.length > 1) {
-				String throwMessage = "";
-				{
-					for (int i = 1; i < msg.length; i++) {
-						if (!sender.equalsIgnoreCase("alefnull")
-								&& !sender.equalsIgnoreCase("endsgamer")
-								&& (msg[i].toLowerCase().contains("alef")
-										|| msg[i].toLowerCase()
-												.contains("aief") || msg[i]
-										.toLowerCase().contains("ends"))) {
-							throwMessage += sender + " ";
-						} else
-							throwMessage += msg[i] + " ";
-					}
-				}
-				send(channel, " (╯°□°）╯彡" + throwMessage);
+
+				send(channel, " (╯°□°）╯彡" + fuseArray(msg, 1));
 			}
 
 		}
@@ -1462,10 +1434,8 @@ public class ReceiverBot extends PircBot {
 				if (channelInfo.getTopic().equalsIgnoreCase("")) {
 					if (BotManager.getInstance().twitchChannels) {
 						String status = "";
-						if (BotManager.getInstance().twitchChannels)
-							status = JSONUtil.krakenStatus(twitchName);
-						else
-							status = JSONUtil.jtvStatus(twitchName);
+
+						status = JSONUtil.krakenStatus(twitchName);
 
 						if (status.length() > 0)
 							send(channel, status);
@@ -1616,7 +1586,7 @@ public class ReceiverBot extends PircBot {
 
 						channelInfo.setCommand(key, value);
 						channelInfo.setCommandsRestriction(key, 1);
-						
+
 						// if(channelInfo.checkCommandRestriction(key,3)){
 						// channelInfo.setCommandsRestriction(key, 3);
 						// }else if(channelInfo.checkCommandRestriction(key,2)){
@@ -2331,20 +2301,20 @@ public class ReceiverBot extends PircBot {
 				send(channel, channel.substring(1)
 						+ " is not currently in a race.");
 		}
-		if (msg[0].equalsIgnoreCase(prefix + "define") && isSub) {
-			if (msg.length > 1) {
-				log("RB: Matched command !define");
-				String fused = fuseArray(msg, 1);
-				fused = fused.replaceAll(" ", "+");
-				String result = JSONUtil.defineWord(fused);
-				send(channel, result);
-				if (result.equals("Couldn't find any results, sorry")) {
-				} else
-					send(channel,
-							"Definitions may or may not be accurate or as intended");
-			}
-
-		}
+//		if (msg[0].equalsIgnoreCase(prefix + "define") && isSub) {
+//			if (msg.length > 1) {
+//				log("RB: Matched command !define");
+//				String fused = fuseArray(msg, 1);
+//				fused = fused.replaceAll(" ", "+");
+//				String result = JSONUtil.defineWord(fused);
+//				send(channel, result);
+//				if (result.equals("Couldn't find any results, sorry")) {
+//				} else
+//					send(channel,
+//							"Definitions may or may not be accurate or as intended");
+//			}
+//
+//		}
 		if (msg[0].equalsIgnoreCase(prefix + "urban") && isRegular) {
 			if (msg.length > 1) {
 				log("RB: Matched command !urban");
@@ -2991,9 +2961,14 @@ public class ReceiverBot extends PircBot {
 			}// setbullet
 			else if (msg[1].equalsIgnoreCase("bullet")) {
 				if (msg.length > 2) {
-					bullet[0] = msg[2];
-					channelInfo.setBullet(msg[2]);
-					send(channel, "Bullet is now set to \"" + bullet[0] + "\"");
+					if (!msg[2].startsWith("/") && !msg[2].startsWith(".")) {
+						bullet[0] = msg[2];
+						channelInfo.setBullet(msg[2]);
+						send(channel, "Bullet is now set to \"" + bullet[0]
+								+ "\"");
+					} else
+						send(channel, "Bullet cannot start with \"/\" or \".\"");
+
 				} else
 					send(channel, "Usage is " + prefix
 							+ "set bullet <new bullet>");
@@ -3333,12 +3308,12 @@ public class ReceiverBot extends PircBot {
 			String value = channelInfo.getCommand(command);
 			if (value != null) {
 				log("RB: Matched command " + msg[0]);
-//				String[] arguments = new String[msg.length -2];
-//				int tempI = 0;
-//				for(int i = 2; i<msg.length; i++){
-//					arguments[tempI] = msg[i];
-//					tempI++;
-//				}
+				// String[] arguments = new String[msg.length -2];
+				// int tempI = 0;
+				// for(int i = 2; i<msg.length; i++){
+				// arguments[tempI] = msg[i];
+				// tempI++;
+				// }
 				// if (msg.length > 1 && isOwner) {
 				// String updatedMessage = fuseArray(msg, 1);
 				// if (!updatedMessage.contains(",,")) {
@@ -3360,7 +3335,7 @@ public class ReceiverBot extends PircBot {
 						}
 						channelInfo.increaseCommandCount(command);
 						send(channel, sender, value);
-						
+
 					}
 				}
 				// }
@@ -3649,41 +3624,43 @@ public class ReceiverBot extends PircBot {
 	}
 
 	public void sendCommand(String target, String message) {
-		// if(msgTimer.size()>19){
-		// msgTimer.add(System.currentTimeMillis());
-		// long diff = msgTimer.get(19) - msgTimer.get(0);
-		// log("RB: There are "+msgTimer.size()+" times in msgTimer. Diff = "+diff);
+		if (msgTimer.size() > 19) {
+			msgTimer.add(System.currentTimeMillis());
+			long diff = msgTimer.get(19) - msgTimer.get(0);
+			log("RB: There are " + msgTimer.size()
+					+ " times in msgTimer. Diff = " + diff);
 
-		// if(diff > 30*1000L){
-		// msgTimer.remove(0);
+			if (diff > 30 * 1000L) {
+				msgTimer.remove(0);
 
-		sendMessage(target, message);
-		// if(tried){
-		// delete = true;
-		// tried = false;
-		// }
-		// checkQueued();
+				sendMessage(target, message);
+				if (tried) {
+					delete = true;
+					tried = false;
+				}
+				checkQueued();
 
-		// }else{
-		// msgTimer.remove(20);
-		// log("RB: Prevented overflow of messages that would result in a ban.");
-		// QueuedMessage qm = new QueuedMessage(target,message,true);
-		// boolean matchesAny = false;
-		// for(int i = 0; i<queuedMessages.size(); i++){
-		// if(queuedMessages.get(i).getMessage().equals(message)&&queuedMessages.get(i).getTarget().equals(target))
-		// matchesAny = true;
-		// }
-		// if(!matchesAny)
-		// queuedMessages.add(qm);
+			} else {
+				msgTimer.remove(20);
+				log("RB: Prevented overflow of messages that would result in a ban.");
+				QueuedMessage qm = new QueuedMessage(target, message, true);
+				boolean matchesAny = false;
+				for (int i = 0; i < queuedMessages.size(); i++) {
+					if (queuedMessages.get(i).getMessage().equals(message)
+							&& queuedMessages.get(i).getTarget().equals(target))
+						matchesAny = true;
+				}
+				if (!matchesAny)
+					queuedMessages.add(qm);
 
-		// }
-		// }else{
-		// log("RB: seeding msgTimer list");
-		// for(int i = 0; i<(20); i++){
-		// msgTimer.add(System.currentTimeMillis()-31000L);
-		// }
+			}
+		} else {
+			log("RB: seeding msgTimer list");
+			for (int i = 0; i < (20); i++) {
+				msgTimer.add(System.currentTimeMillis() - 31000L);
+			}
 
-		// }
+		}
 	}
 
 	@Override
@@ -3957,34 +3934,34 @@ public class ReceiverBot extends PircBot {
 		}
 	}
 
-	private String getStreamList(String key, Channel channelInfo)
-			throws Exception {
-		URL feedSource = new URL(
-				"http://api.justin.tv/api/stream/list.xml?channel="
-						+ channelInfo.getTwitchName());
-		URLConnection uc = feedSource.openConnection();
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(uc.getInputStream());
-		doc.getDocumentElement().normalize();
-
-		NodeList nList = doc.getElementsByTagName("stream");
-		if (nList.getLength() < 1)
-			throw new Exception();
-
-		for (int temp = 0; temp < nList.getLength(); temp++) {
-
-			Node nNode = nList.item(temp);
-			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-				Element eElement = (Element) nNode;
-
-				return getTagValue(key, eElement);
-
-			}
-		}
-
-		return "";
-	}
+//	private String getStreamList(String key, Channel channelInfo)
+//			throws Exception {
+//		URL feedSource = new URL(
+//				"http://api.justin.tv/api/stream/list.xml?channel="
+//						+ channelInfo.getTwitchName());
+//		URLConnection uc = feedSource.openConnection();
+//		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+//		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+//		Document doc = dBuilder.parse(uc.getInputStream());
+//		doc.getDocumentElement().normalize();
+//
+//		NodeList nList = doc.getElementsByTagName("stream");
+//		if (nList.getLength() < 1)
+//			throw new Exception();
+//
+//		for (int temp = 0; temp < nList.getLength(); temp++) {
+//
+//			Node nNode = nList.item(temp);
+//			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+//				Element eElement = (Element) nNode;
+//
+//				return getTagValue(key, eElement);
+//
+//			}
+//		}
+//
+//		return "";
+//	}
 
 	public String getTimeStreaming(String uptime, int offset) {
 		DateFormat format = new SimpleDateFormat("EEE MMMM dd HH:mm:ss yyyy");

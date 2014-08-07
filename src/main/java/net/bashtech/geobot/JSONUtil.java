@@ -67,24 +67,24 @@ public class JSONUtil {
 
 	}
 
-	public static Long jtvViewers(String channel) {
-		try {
-			JSONParser parser = new JSONParser();
-			Object obj = parser
-					.parse(BotManager
-							.getRemoteContent("http://api.justin.tv/api/stream/summary.json?channel="
-									+ channel));
-
-			JSONObject jsonObject = (JSONObject) obj;
-
-			Long viewers = (Long) jsonObject.get("viewers_count");
-			return viewers;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return (long) 0;
-		}
-
-	}
+//	public static Long jtvViewers(String channel) {
+//		try {
+//			JSONParser parser = new JSONParser();
+//			Object obj = parser
+//					.parse(BotManager
+//							.getRemoteContent("http://api.justin.tv/api/stream/summary.json?channel="
+//									+ channel));
+//
+//			JSONObject jsonObject = (JSONObject) obj;
+//
+//			Long viewers = (Long) jsonObject.get("viewers_count");
+//			return viewers;
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			return (long) 0;
+//		}
+//
+//	}
 
 	public static String getGameChannel(String gameName) {
 		gameName = gameName.replaceAll(" ", "+");
@@ -258,23 +258,23 @@ public class JSONUtil {
 		}
 	}
 
-	public static String jtvStatus(String channel) {
-		try {
-			JSONParser parser = new JSONParser();
-			Object obj = parser.parse(BotManager
-					.getRemoteContent("http://api.justin.tv/api/channel/show/"
-							+ channel + ".json"));
-
-			JSONObject jsonObject = (JSONObject) obj;
-
-			String status = (String) jsonObject.get("status");
-			return status;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return "Unable to query API";
-		}
-
-	}
+//	public static String jtvStatus(String channel) {
+//		try {
+//			JSONParser parser = new JSONParser();
+//			Object obj = parser.parse(BotManager
+//					.getRemoteContent("http://api.justin.tv/api/channel/show/"
+//							+ channel + ".json"));
+//
+//			JSONObject jsonObject = (JSONObject) obj;
+//
+//			String status = (String) jsonObject.get("status");
+//			return status;
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			return "Unable to query API";
+//		}
+//
+//	}
 
 	public static String krakenStatus(String channel) {
 		try {
@@ -394,28 +394,28 @@ public class JSONUtil {
 		}
 	}
 
-	public static String defineWord(String word) {
-		String returned = BotManager
-				.getRemoteContent("http://www.dictionaryapi.com/api/v1/references/collegiate/xml/"
-						+ word + "?key=21f734f4-3d5f-4266-9c20-d6be5909c81a");
-		int start = returned.indexOf(":");
-		if (start > -1) {
-			int end = returned.indexOf("</", start + 1);
-			returned = "\"" + returned.substring(start + 1, end) + "\"";
-			return returned;
-		} else {
-			start = returned.indexOf("<suggestion>");
-			if (start > -1) {
-				int end = returned.indexOf("</", start);
-				returned = "Couldn't find a definition for that word, maybe try this one: \""
-						+ returned.substring(start + 12, end) + "\"";
-				return returned;
-			} else
-				return "Couldn't find any results, sorry";
-
-		}
-
-	}
+//	public static String defineWord(String word) {
+//		String returned = BotManager
+//				.getRemoteContent("http://www.dictionaryapi.com/api/v1/references/collegiate/xml/"
+//						+ word + "?key=21f734f4-3d5f-4266-9c20-d6be5909c81a");
+//		int start = returned.indexOf(":");
+//		if (start > -1) {
+//			int end = returned.indexOf("</", start + 1);
+//			returned = "\"" + returned.substring(start + 1, end) + "\"";
+//			return returned;
+//		} else {
+//			start = returned.indexOf("<suggestion>");
+//			if (start > -1) {
+//				int end = returned.indexOf("</", start);
+//				returned = "Couldn't find a definition for that word, maybe try this one: \""
+//						+ returned.substring(start + 12, end) + "\"";
+//				return returned;
+//			} else
+//				return "Couldn't find any results, sorry";
+//
+//		}
+//
+//	}
 
 	public static String defineUrban(String word) {
 
@@ -691,7 +691,7 @@ public class JSONUtil {
 		}
 
 	}
-
+	
 	public static boolean krakenChannelExist(String channel) {
 		if (BotManager.getInstance().twitchChannels == false)
 			return true;
@@ -814,54 +814,54 @@ public class JSONUtil {
 
 	}
 
-	public static Double getSourceBitrate(String channel) {
-		try {
-			JSONParser parser = new JSONParser();
-			Object obj = parser
-					.parse(BotManager
-							.getRemoteContent("http://api.justin.tv/api/stream/list.json?channel="
-									+ channel));
+//	public static Double getSourceBitrate(String channel) {
+//		try {
+//			JSONParser parser = new JSONParser();
+//			Object obj = parser
+//					.parse(BotManager
+//							.getRemoteContent("http://api.justin.tv/api/stream/list.json?channel="
+//									+ channel));
+//
+//			JSONArray outerArray = (JSONArray) obj;
+//
+//			if (outerArray.size() == 1) {
+//				JSONObject channelObject = (JSONObject) outerArray.get(0);
+//				Double bitrate = (Double) channelObject.get("video_bitrate");
+//				return bitrate;
+//			}
+//
+//			return new Double(0);
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			return new Double(0);
+//		}
+//
+//	}
 
-			JSONArray outerArray = (JSONArray) obj;
-
-			if (outerArray.size() == 1) {
-				JSONObject channelObject = (JSONObject) outerArray.get(0);
-				Double bitrate = (Double) channelObject.get("video_bitrate");
-				return bitrate;
-			}
-
-			return new Double(0);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return new Double(0);
-		}
-
-	}
-
-	public static String getSourceRes(String channel) {
-		try {
-			JSONParser parser = new JSONParser();
-			Object obj = parser
-					.parse(BotManager
-							.getRemoteContent("http://api.justin.tv/api/stream/list.json?channel="
-									+ channel));
-
-			JSONArray outerArray = (JSONArray) obj;
-
-			if (outerArray.size() == 1) {
-				JSONObject channelObject = (JSONObject) outerArray.get(0);
-				Long width = (Long) channelObject.get("video_width");
-				Long height = (Long) channelObject.get("video_height");
-				return width + "x" + height;
-			}
-
-			return "Unable to retrieve data";
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return "Unable to retrieve data";
-		}
-
-	}
+//	public static String getSourceRes(String channel) {
+//		try {
+//			JSONParser parser = new JSONParser();
+//			Object obj = parser
+//					.parse(BotManager
+//							.getRemoteContent("http://api.justin.tv/api/stream/list.json?channel="
+//									+ channel));
+//
+//			JSONArray outerArray = (JSONArray) obj;
+//
+//			if (outerArray.size() == 1) {
+//				JSONObject channelObject = (JSONObject) outerArray.get(0);
+//				Long width = (Long) channelObject.get("video_width");
+//				Long height = (Long) channelObject.get("video_height");
+//				return width + "x" + height;
+//			}
+//
+//			return "Unable to retrieve data";
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			return "Unable to retrieve data";
+//		}
+//
+//	}
 
 	public static String getChatProperties(String channel) {
 		try {
