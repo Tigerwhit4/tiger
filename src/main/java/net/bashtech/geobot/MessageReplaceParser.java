@@ -36,15 +36,15 @@ public class MessageReplaceParser {
 		if (message.contains("(_STATUS_)"))
 			message = message.replace("(_STATUS_)",
 					JSONUtil.krakenStatus(channel.substring(1)));
-//		if (message.contains("(_JTV_STATUS_)"))
-//			message = message.replace("(_JTV_STATUS_)",
-//					JSONUtil.jtvStatus(channel.substring(1)));
+		// if (message.contains("(_JTV_STATUS_)"))
+		// message = message.replace("(_JTV_STATUS_)",
+		// JSONUtil.jtvStatus(channel.substring(1)));
 		if (message.contains("(_VIEWERS_)"))
 			message = message.replace("(_VIEWERS_)",
 					"" + JSONUtil.krakenViewers(channel.substring(1)));
-//		if (message.contains("(_JTV_VIEWERS_)"))
-//			message = message.replace("(_JTV_VIEWERS_)",
-//					"" + JSONUtil.jtvViewers(channel.substring(1)));
+		// if (message.contains("(_JTV_VIEWERS_)"))
+		// message = message.replace("(_JTV_VIEWERS_)",
+		// "" + JSONUtil.jtvViewers(channel.substring(1)));
 		// if (message.contains("(_CHATTERS_)"))
 		// message = message.replace("(_CHATTERS_)", "" +
 		// ReceiverBot.getInstance().getUsers(channel).length);
@@ -67,9 +67,17 @@ public class MessageReplaceParser {
 		if (message.contains("(_STEAM_SERVER_)"))
 			message = message.replace("(_STEAM_SERVER_)",
 					JSONUtil.steam(ci.getSteam(), "server"));
-		if (message.contains("(_STEAM_STORE_)"))
-			message = message.replace("(_STEAM_STORE_)",
-					JSONUtil.steam(ci.getSteam(), "store"));
+		if (message.contains("(_STEAM_STORE_)")) {
+			String storeLink = JSONUtil.steam(ci.getSteam(), "store");
+			if (storeLink.equalsIgnoreCase("(unavailable)")) {
+				if (JSONUtil.krakenGame(channel.substring(1)).equalsIgnoreCase(
+						"minecraft")) {
+					message = message.replace("(_STEAM_STORE_)",
+							"minecraft.net");
+				}
+			} else
+				message = message.replace("(_STEAM_STORE_)", storeLink);
+		}
 		if (message.contains("(_BOT_HELP_)"))
 			message = message.replace("(_BOT_HELP_)",
 					BotManager.getInstance().bothelpMessage);
@@ -78,7 +86,7 @@ public class MessageReplaceParser {
 					"twitch.tv/" + channel.substring(1));
 		if (message.contains("(_TWEET_URL_)")) {
 			String url = JSONUtil
-					.shortenURL("https://twitter.com/intent/tweet?text="
+					.googURL("https://twitter.com/intent/tweet?text="
 							+ JSONUtil.urlEncode(MessageReplaceParser
 									.parseMessage(channel, sender,
 											ci.getClickToTweetFormat(), args)));
@@ -127,8 +135,18 @@ public class MessageReplaceParser {
 			String progress = JSONUtil.xboxLastGameProgress(gamerTag);
 			message = message.replace("(_XBOX_PROGRESS_)", progress);
 		}
-		
-		
+
+		if (message.contains("(_MINDCRACK_EXTRALIFE_AMOUNT_)")) {
+			String amount = JSONUtil.mindcrackExtraLife();
+			message = message.replace("(_MINDCRACK_EXTRALIFE_AMOUNT_)", "$"
+					+ amount);
+			System.out.println(message);
+		}
+		if (message.contains("(_LAST_SONG_)")) {
+			String songName = JSONUtil.lastSongLastFM(ci.getLastfm());
+			message = message.replace("(_LAST_SONG_)", songName);
+		}
+
 		if (args != null) {
 			int argCounter = 1;
 			for (String argument : args) {
@@ -138,23 +156,26 @@ public class MessageReplaceParser {
 				argCounter++;
 			}
 		}
-		if(message.contains("(_")&&message.contains("_COUNT_)")){
-			int commandStart  = message.indexOf("(_");
+		if (message.contains("(_") && message.contains("_COUNT_)")) {
+			int commandStart = message.indexOf("(_");
 			int commandEnd = message.indexOf("_COUNT_)");
-			String commandName = message.substring(commandStart+2,commandEnd).toLowerCase();
+			String commandName = message
+					.substring(commandStart + 2, commandEnd).toLowerCase();
 			String value = ci.getCommand(commandName);
-			String replaced = message.substring(commandStart,commandEnd+8);
-			if(value!=null){
-				
+			String replaced = message.substring(commandStart, commandEnd + 8);
+			if (value != null) {
+
 				int count = ci.getCurrentCount(commandName);
-				if(count>-1){
-					message = message.replace(replaced, count+"");
-				}else{
-					message = message.replace(replaced, "No count for that command...");
+				if (count > -1) {
+					message = message.replace(replaced, count + "");
+				} else {
+					message = message.replace(replaced,
+							"No count for that command...");
 				}
-				
-			}else{
-				message = message.replace(replaced, "No count for that command...");
+
+			} else {
+				message = message.replace(replaced,
+						"No count for that command...");
 			}
 		}
 

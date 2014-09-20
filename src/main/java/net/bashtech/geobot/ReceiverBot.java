@@ -46,8 +46,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ReceiverBot extends PircBot {
-	private ArrayList<String> quotesList;
-	private ArrayList<String> highlightList;
 	static ReceiverBot instance;
 	Timer joinCheck;
 	Random random = new Random();
@@ -86,8 +84,6 @@ public class ReceiverBot extends PircBot {
 
 	public ReceiverBot(String server, int port) {
 		ReceiverBot.setInstance(this);
-		quotesList = new ArrayList<String>();
-		highlightList = new ArrayList<String>();
 
 		linkPatterns[0] = Pattern.compile(".*http://.*",
 				Pattern.CASE_INSENSITIVE);
@@ -157,7 +153,7 @@ public class ReceiverBot extends PircBot {
 		recipient = recipient.replace(":", "");
 		System.out.println("DEBUG: Got DEOP for " + recipient + " in channel: "
 				+ channel);
-		// this.getChannelObject(channel).tagModerators.remove(recipient);
+		this.getChannelObject(channel).tagModerators.remove(recipient);
 	}
 
 	@Override
@@ -280,7 +276,6 @@ public class ReceiverBot extends PircBot {
 		boolean isRegular = false;
 		boolean isSub = false;
 		int accessLevel = 0;
-
 
 		// Check for user level based on other factors.
 		if (BotManager.getInstance().isAdmin(sender))
@@ -722,6 +717,18 @@ public class ReceiverBot extends PircBot {
 
 			return;
 		}
+		if ((msg[0].equalsIgnoreCase(prefix + "chatters"))) {
+			log("RB: Matched command !viewers");
+
+			try {
+				send(channel, JSONUtil.tmiChattersCount(twitchName)
+						+ " people currently connected to chat.");
+			} catch (Exception e) {
+				send(channel, "Stream is not live.");
+			}
+
+			return;
+		}
 		long newConch = System.currentTimeMillis();
 
 		if ((newConch >= (lastConch + 15 * 1000L)) || isOp) {
@@ -805,7 +812,7 @@ public class ReceiverBot extends PircBot {
 					+ channelInfo.getPunCount() + ". " + parsedSince);
 		}
 		// viewerstats
-		// channelInfo.checkViewerStats(twitchName);
+		//channelInfo.checkViewerStats(twitchName);
 		// !viewerstats
 		if (msg[0].equalsIgnoreCase(prefix + "viewerstats") && isOp) {
 			log("RB: Matched command !viewerstats");
@@ -876,21 +883,16 @@ public class ReceiverBot extends PircBot {
 		// !uptime - All
 		if (msg[0].equalsIgnoreCase(prefix + "uptime")) {
 			log("RB: Matched command !uptime");
-			try {
-				//String uptime = this.getStreamList("up_time", channelInfo);
-//				send(channel,
-//						"Streaming for " + this.getTimeStreaming(uptime, 0)
-//								+ " since " + uptime + " PST.");
-				send(channel, prefix
-							+ "uptime is unavailable until Twitch adds parts of justin.tv's API into their current API");
-			} catch (Exception e) {
-				send(channel, "Error accessing Twitch API.");
-			}
-			return;
+			//String time = channelInfo.getUptime();
+//			if (time != null)
+//				send(channel, twitchName + " has been live for " + time);
+//			else
+//				send(channel, "Stream is not currently online.");
 		}
+
+		// maintaining if the stream is alive or not
 		try {
-			//getStreamList("up_time", channelInfo);
-			// channelInfo.alive(twitchName);
+			channelInfo.alive(twitchName);
 		} catch (Exception e) {
 			channelInfo.dead(twitchName);
 
@@ -1103,65 +1105,65 @@ public class ReceiverBot extends PircBot {
 				send(channel, "Useage is " + prefix + "me <string>");
 		}
 		// highlight
-//		if (msg[0].equalsIgnoreCase(prefix + "highlight")
-//				&& BotManager.getInstance().twitchChannels) {
-//			log("RB: Matched command !highlight");
-//			if (isOp && msg.length > 3 && msg[1].equalsIgnoreCase("add")) {
-//				int mins = Integer.parseInt(msg[2]);
-//				String description = this.fuseArray(msg, 3);
-//				description.trim();
-//
-//				try {
-//					readHighlights("highlight" + channel + ".txt");
-//				} catch (Exception e) {
-//					send(channel,
-//							"Error with the highlight list, it probably hasn't been created yet");
-//				}
-//				try {
-//					String uptime = this.getStreamList("up_time", channelInfo);
-//					String timeStreaming = this.getTimeStreaming(uptime, mins);
-//					String status = JSONUtil.krakenStatus(twitchName);
-//					highlightList.add(timeStreaming + " - " + description
-//							+ " in stream " + status);
-//					save("highlight" + channel + ".txt", highlightList);
-//
-//					send(channel, "Highlight marked at " + timeStreaming
-//							+ " with description: \"" + description
-//							+ "\" in stream: \"" + status + "\"");
-//				} catch (Exception e) {
-//					send(channel, "Error accessing Twitch API");
-//				}
-//
-//			} else if (isOp && msg.length > 2) {
-//				if (msg[1].equalsIgnoreCase("delete")
-//						|| msg[1].equalsIgnoreCase("remove")) {
-//					int index = Integer.parseInt(msg[2]);
-//					try {
-//						readHighlights("highlight" + channel + ".txt");
-//						highlightList.remove(index);
-//						save("highlight" + channel + ".txt", highlightList);
-//
-//						send(channel, "Highlight # " + index + " removed");
-//					} catch (Exception e) {
-//						send(channel, "Error deleting highlight.");
-//					}
-//				} else if (msg[1].equalsIgnoreCase("get")) {
-//					int index = Integer.parseInt(msg[2]);
-//					try {
-//						readHighlights("highlight" + channel + ".txt");
-//						send(channel,
-//								"Highlight Start: " + highlightList.get(index));
-//
-//					} catch (Exception e) {
-//						send(channel, "Error getting highlight.");
-//					}
-//				}
-//			} else {
-//				send(channel,
-//						"Highlight syntax is \"!highlight <add> <minutes> <description>\" or \"!highlight <get/delete> <index>\"");
-//			}
-//
-//		}
+		// if (msg[0].equalsIgnoreCase(prefix + "highlight")
+		// && BotManager.getInstance().twitchChannels) {
+		// log("RB: Matched command !highlight");
+		// if (isOp && msg.length > 3 && msg[1].equalsIgnoreCase("add")) {
+		// int mins = Integer.parseInt(msg[2]);
+		// String description = this.fuseArray(msg, 3);
+		// description.trim();
+		//
+		// try {
+		// readHighlights("highlight" + channel + ".txt");
+		// } catch (Exception e) {
+		// send(channel,
+		// "Error with the highlight list, it probably hasn't been created yet");
+		// }
+		// try {
+		// String uptime = this.getStreamList("up_time", channelInfo);
+		// String timeStreaming = this.getTimeStreaming(uptime, mins);
+		// String status = JSONUtil.krakenStatus(twitchName);
+		// highlightList.add(timeStreaming + " - " + description
+		// + " in stream " + status);
+		// save("highlight" + channel + ".txt", highlightList);
+		//
+		// send(channel, "Highlight marked at " + timeStreaming
+		// + " with description: \"" + description
+		// + "\" in stream: \"" + status + "\"");
+		// } catch (Exception e) {
+		// send(channel, "Error accessing Twitch API");
+		// }
+		//
+		// } else if (isOp && msg.length > 2) {
+		// if (msg[1].equalsIgnoreCase("delete")
+		// || msg[1].equalsIgnoreCase("remove")) {
+		// int index = Integer.parseInt(msg[2]);
+		// try {
+		// readHighlights("highlight" + channel + ".txt");
+		// highlightList.remove(index);
+		// save("highlight" + channel + ".txt", highlightList);
+		//
+		// send(channel, "Highlight # " + index + " removed");
+		// } catch (Exception e) {
+		// send(channel, "Error deleting highlight.");
+		// }
+		// } else if (msg[1].equalsIgnoreCase("get")) {
+		// int index = Integer.parseInt(msg[2]);
+		// try {
+		// readHighlights("highlight" + channel + ".txt");
+		// send(channel,
+		// "Highlight Start: " + highlightList.get(index));
+		//
+		// } catch (Exception e) {
+		// send(channel, "Error getting highlight.");
+		// }
+		// }
+		// } else {
+		// send(channel,
+		// "Highlight syntax is \"!highlight <add> <minutes> <description>\" or \"!highlight <get/delete> <index>\"");
+		// }
+		//
+		// }
 
 		// !game - All
 
@@ -1233,7 +1235,7 @@ public class ReceiverBot extends PircBot {
 					e.printStackTrace();
 				}
 				String url = "http://google.com/#q=" + encodedQuery;
-				send(channel, JSONUtil.shortenURL(url));
+				send(channel, JSONUtil.googURL(url));
 			}
 		}
 		// isLive
@@ -1476,8 +1478,8 @@ public class ReceiverBot extends PircBot {
 				}
 				String url = "http://lmgtfy.com/?q=" + encodedQuery;
 				send(channel,
-						"Link to \"" + rawQuery + "\" -> "
-								+ JSONUtil.shortenURL(url));
+						"Link to \"" + rawQuery+": "
+								+ JSONUtil.googURL(url));
 			}
 			return;
 		}
@@ -2176,8 +2178,11 @@ public class ReceiverBot extends PircBot {
 
 		// Moderation commands - Ops
 		if (isOp) {
-			if (msg[0].equalsIgnoreCase("+m")) {
-				sendCommand(channel, ".slow");
+			if (msg[0].equalsIgnoreCase("+m") && msg.length > 1) {
+				int time = Integer.parseInt(msg[1]);
+				sendCommand(channel, ".slow " + time);
+			} else if (msg[0].equalsIgnoreCase("+m")) {
+				sendCommand(channel, ".slow ");
 			}
 			if (msg[0].equalsIgnoreCase("-m")) {
 				sendCommand(channel, ".slowoff");
@@ -2301,20 +2306,20 @@ public class ReceiverBot extends PircBot {
 				send(channel, channel.substring(1)
 						+ " is not currently in a race.");
 		}
-//		if (msg[0].equalsIgnoreCase(prefix + "define") && isSub) {
-//			if (msg.length > 1) {
-//				log("RB: Matched command !define");
-//				String fused = fuseArray(msg, 1);
-//				fused = fused.replaceAll(" ", "+");
-//				String result = JSONUtil.defineWord(fused);
-//				send(channel, result);
-//				if (result.equals("Couldn't find any results, sorry")) {
-//				} else
-//					send(channel,
-//							"Definitions may or may not be accurate or as intended");
-//			}
-//
-//		}
+		// if (msg[0].equalsIgnoreCase(prefix + "define") && isSub) {
+		// if (msg.length > 1) {
+		// log("RB: Matched command !define");
+		// String fused = fuseArray(msg, 1);
+		// fused = fused.replaceAll(" ", "+");
+		// String result = JSONUtil.defineWord(fused);
+		// send(channel, result);
+		// if (result.equals("Couldn't find any results, sorry")) {
+		// } else
+		// send(channel,
+		// "Definitions may or may not be accurate or as intended");
+		// }
+		//
+		// }
 		if (msg[0].equalsIgnoreCase(prefix + "urban") && isRegular) {
 			if (msg.length > 1) {
 				log("RB: Matched command !urban");
@@ -3934,34 +3939,34 @@ public class ReceiverBot extends PircBot {
 		}
 	}
 
-//	private String getStreamList(String key, Channel channelInfo)
-//			throws Exception {
-//		URL feedSource = new URL(
-//				"http://api.justin.tv/api/stream/list.xml?channel="
-//						+ channelInfo.getTwitchName());
-//		URLConnection uc = feedSource.openConnection();
-//		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-//		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-//		Document doc = dBuilder.parse(uc.getInputStream());
-//		doc.getDocumentElement().normalize();
-//
-//		NodeList nList = doc.getElementsByTagName("stream");
-//		if (nList.getLength() < 1)
-//			throw new Exception();
-//
-//		for (int temp = 0; temp < nList.getLength(); temp++) {
-//
-//			Node nNode = nList.item(temp);
-//			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-//				Element eElement = (Element) nNode;
-//
-//				return getTagValue(key, eElement);
-//
-//			}
-//		}
-//
-//		return "";
-//	}
+	// private String getStreamList(String key, Channel channelInfo)
+	// throws Exception {
+	// URL feedSource = new URL(
+	// "http://api.justin.tv/api/stream/list.xml?channel="
+	// + channelInfo.getTwitchName());
+	// URLConnection uc = feedSource.openConnection();
+	// DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	// DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	// Document doc = dBuilder.parse(uc.getInputStream());
+	// doc.getDocumentElement().normalize();
+	//
+	// NodeList nList = doc.getElementsByTagName("stream");
+	// if (nList.getLength() < 1)
+	// throw new Exception();
+	//
+	// for (int temp = 0; temp < nList.getLength(); temp++) {
+	//
+	// Node nNode = nList.item(temp);
+	// if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+	// Element eElement = (Element) nNode;
+	//
+	// return getTagValue(key, eElement);
+	//
+	// }
+	// }
+	//
+	// return "";
+	// }
 
 	public String getTimeStreaming(String uptime, int offset) {
 		DateFormat format = new SimpleDateFormat("EEE MMMM dd HH:mm:ss yyyy");
@@ -4040,37 +4045,7 @@ public class ReceiverBot extends PircBot {
 		}
 	}
 
-	public String getBullet() {
-		if (bulletPos == bullet.length)
-			bulletPos = 0;
 
-		String rt = bullet[bulletPos];
-		bulletPos++;
-
-		return rt;
-
-	}
-
-	public void save(String fileName, Object test) throws IOException {
-		FileOutputStream fout = new FileOutputStream(fileName);
-		ObjectOutputStream oos = new ObjectOutputStream(fout);
-		oos.writeObject(test);
-		fout.close();
-	}
-
-	@SuppressWarnings("unchecked")
-	// public void read(String fileName) throws Exception {
-	// FileInputStream fin= new FileInputStream (fileName);
-	// ObjectInputStream ois = new ObjectInputStream(fin);
-	// quotesList = (ArrayList<String>) ois.readObject();
-	// fin.close();
-	// }
-	public void readHighlights(String fileName) throws Exception {
-		FileInputStream fin = new FileInputStream(fileName);
-		ObjectInputStream ois = new ObjectInputStream(fin);
-		highlightList = (ArrayList<String>) ois.readObject();
-		fin.close();
-	}
 
 	public static boolean isInteger(String str) {
 		try {

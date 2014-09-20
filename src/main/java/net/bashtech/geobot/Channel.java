@@ -29,6 +29,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,7 +84,7 @@ public class Channel {
 	private String steamID;
 	private int mode; // 0: Admin/owner only; 1: Mod Only; 2: Everyone; -1
 						// Special mode to admins to use for channel moderation
-	private int bulletInt;
+
 	Raffle raffle;
 	public boolean logChat;
 	public long messageCount;
@@ -129,6 +132,8 @@ public class Channel {
 	public boolean active;
 	private static Timer commercial;
 	private int lastStrawpoll;
+	//private long timeAliveStart = System.currentTimeMillis();
+	private boolean streamAlive = false;
 
 	public Channel(String name) {
 		channel = name;
@@ -137,7 +142,7 @@ public class Channel {
 			Object obj = parser.parse(new FileReader(channel + ".json"));
 			config = (JSONObject) obj;
 		} catch (Exception e) {
-			System.out.println("Generating new config for "+channel);
+			System.out.println("Generating new config for " + channel);
 			config = new JSONObject();
 		}
 
@@ -148,12 +153,74 @@ public class Channel {
 
 		twitchname = channel.substring(1);
 
+//		Timer delayer = new Timer("start", true);
+//		delayer.schedule(new java.util.TimerTask() {
+//			@Override
+//			public void run() {
+//				startCheckers();
+//
+//			}
+//		}, 30000);
+
 	}
 
 	public Channel(String name, int mode) {
 		this(name);
 		setMode(mode);
 	}
+
+//	public void startCheckers() {
+		// ScheduledExecutorService service =
+		// Executors.newScheduledThreadPool(1);
+		// AsyncRunner uptimeChecker = new AsyncRunner(twitchname, 1);
+		// service.scheduleAtFixedRate(uptimeChecker, 0, 150, TimeUnit.SECONDS);
+		// AsyncRunner lastFMChecker = new AsyncRunner(twitchname, 2);
+		// service.scheduleAtFixedRate(lastFMChecker, 0, 90, TimeUnit.SECONDS);
+
+//		Timer isLiveChecker = new Timer("islivechecker", true);
+//		isLiveChecker.scheduleAtFixedRate(new java.util.TimerTask() {
+//			@Override
+//			public void run() {
+//				handleAsyncIsLive(JSONUtil.krakenIsLive(twitchname));
+//
+//			}
+//		}, 0, 90000);
+//
+//		Timer lastFMChecker = new Timer("lastfmchecker");
+//		lastFMChecker.scheduleAtFixedRate(new java.util.TimerTask() {
+//			@Override
+//			public void run() {
+//				updateSong(JSONUtil.lastFM(getLastfm()));
+//
+//			}
+//		}, 0, 45000);
+
+//	}
+
+//	public void handleAsyncIsLive(boolean output) {
+//
+//		if (output && !streamAlive) {
+//			timeAliveStart = System.currentTimeMillis();
+//			config.put("timeAliveStart", timeAliveStart);
+//			streamAlive = true;
+//			alive(twitchname);
+//			config.put("streamAlive", streamAlive);
+//		} else if (!output && streamAlive) {
+//			dead(twitchname);
+//			streamAlive = false;
+//			config.put("streamAlive", streamAlive);
+//		}
+//		saveConfig();
+//	}
+//
+//	public String getUptime() {
+//		if (streamAlive) {
+//			long deltaTime = System.currentTimeMillis() - timeAliveStart;
+//			return getDurationBreakdown(deltaTime);
+//		} else
+//			return null;
+//
+//	}
 
 	public String getChannel() {
 		return channel;
@@ -349,15 +416,15 @@ public class Channel {
 
 		if (key.length() < 1)
 			return;
-		
+
 		if (commands.containsKey(key)) {
-			
+
 			commands.remove(key);
 			commands.put(key, command);
-			
+
 		} else {
 			commands.put(key, command);
-			commandCounts.put(key,0);
+			commandCounts.put(key, 0);
 		}
 
 		saveCommands();
@@ -401,24 +468,26 @@ public class Channel {
 		saveConfig();
 	}
 
-	public void increaseCommandCount(String commandName){
+	public void increaseCommandCount(String commandName) {
 		commandName = commandName.toLowerCase();
-		if(commandCounts.containsKey(commandName)){
+		if (commandCounts.containsKey(commandName)) {
 			int currentCount = commandCounts.get(commandName);
 			currentCount++;
 			commandCounts.put(commandName, currentCount);
 		}
 		saveCommands();
-		
+
 	}
-	public int getCurrentCount(String commandName){
+
+	public int getCurrentCount(String commandName) {
 		commandName = commandName.toLowerCase();
-		if(commandCounts.containsKey(commandName)){
+		if (commandCounts.containsKey(commandName)) {
 			int currentCount = commandCounts.get(commandName);
 			return currentCount;
-		}else
+		} else
 			return -1;
 	}
+
 	public boolean setCommandsRestriction(String command, int level) {
 		command = command.toLowerCase();
 
@@ -1273,8 +1342,7 @@ public class Channel {
 			}
 		}
 
-		int severity =((Long) config
-				.get("banPhraseSeverity")).intValue();
+		int severity = ((Long) config.get("banPhraseSeverity")).intValue();
 		if (BotManager.getInstance().banPhraseLists.containsKey(severity)) {
 			for (Pattern reg : BotManager.getInstance().banPhraseLists
 					.get(severity)) {
@@ -1399,20 +1467,24 @@ public class Channel {
 		saveConfig();
 	}
 
-	public boolean updateSong() {
-		String newSong = JSONUtil.lastFM(getLastfm());
-		if (newSong.equals(lastSong) || newSong.equals("(Nothing)")
+	public void updateSong(String newSong) {
+
+		if (!streamAlive ||newSong.equals(lastSong) || newSong.equals("(Nothing)")
 				|| newSong.equalsIgnoreCase("(Error querying API)")) {
-			return false;
+			return;
 
 		} else {
 			long now = System.currentTimeMillis();
 			if ((now * 1L) >= (songUpdated + updateDelay * 1000L)) {
 				lastSong = newSong;
 				songUpdated = now + 5000;
-				return true;
+				String currBullet = bullet;
+				bullet = "♫";
+				BotManager.getInstance().receiverBot.send(channel,
+						"Now Playing: " + newSong);
+				bullet = currBullet;
 			}
-			return false;
+			return;
 		}
 
 	}
@@ -1456,28 +1528,21 @@ public class Channel {
 		return punishCount;
 	}
 
-	// public void alive(String name) {
-	// if (!streamUp) {
-	//
-	// }
-	// streamUp = true;
-	// config.setBoolean("streamAlive", true);
-	// long curViewers = JSONUtil.krakenViewers(name);
-	// if (curViewers > streamMax) {
-	// streamMax = (int) curViewers;
-	// config.setInt("maxViewersStream", (int) curViewers);
-	// }
-	// }
+	public void alive(String name) {
+
+		long curViewers = JSONUtil.krakenViewers(name);
+		if (curViewers > streamMax) {
+			streamMax = (int) curViewers;
+			config.put("maxViewersStream", curViewers);
+		}
+	}
 
 	public void dead(String name) {
-		if (streamUp) {
-			streamNumber++;
-			config.put("streamCount", streamNumber);
-			runningMaxViewers += streamMax;
-			config.put("runningMaxViewers", runningMaxViewers);
-		}
-		streamUp = false;
-		config.put("streamAlive", false);
+
+		streamNumber++;
+		config.put("streamCount", streamNumber);
+		runningMaxViewers += streamMax;
+		config.put("runningMaxViewers", runningMaxViewers);
 		streamMax = 0;
 		config.put("maxViewersStream", 0);
 		saveConfig();
@@ -1604,7 +1669,7 @@ public class Channel {
 		// defaults.put("channel", channel);
 		defaults.put("subsRegsMinusLinks", new Boolean(false));
 		defaults.put("filterCaps", new Boolean(false));
-		defaults.put("filterOffensive",  new Boolean(true));
+		defaults.put("filterOffensive", new Boolean(true));
 		defaults.put("filterCapsPercent", 50);
 		defaults.put("filterCapsMinCharacters", 0);
 		defaults.put("filterCapsMinCapitals", 6);
@@ -1675,15 +1740,15 @@ public class Channel {
 		// defaults.put("subscribers", new JSONArray());
 		defaults.put("raidWhitelist", new JSONArray());
 		defaults.put("gamerTag", "");
+		//defaults.put("timeAliveStart", System.currentTimeMillis());
 
-		
 		Iterator it = defaults.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry pairs = (Map.Entry) it.next();
 			String key = String.valueOf(pairs.getKey());
 			Object value = pairs.getValue();
-			if(value instanceof Integer){
-				value = Integer.parseInt(String.valueOf(value))*1L;
+			if (value instanceof Integer) {
+				value = Integer.parseInt(String.valueOf(value)) * 1L;
 			}
 			if (!config.containsKey(key))
 				config.put(key, value);
@@ -1759,8 +1824,7 @@ public class Channel {
 		config.put("banPhraseSeverity",
 				((Long) config.get("banPhraseSeverity")).intValue());
 
-		config.put("wpTimer",
-				Boolean.valueOf((Boolean) config.get("wpTimer")));
+		config.put("wpTimer", Boolean.valueOf((Boolean) config.get("wpTimer")));
 		config.put("wpCount", wpCount);
 		config.put("bullet", bullet);
 		config.put("cooldown", cooldown);
@@ -1768,7 +1832,7 @@ public class Channel {
 		config.put("maxViewers", maxViewers);
 		config.put("runningMaxViewers", runningMaxViewers);
 		config.put("streamCount", streamNumber);
-		config.put("streamAlive", streamUp);
+		config.put("streamAlive", streamAlive);
 		config.put("maxViewersStream", streamMax);
 
 		config.put("updateDelay", updateDelay);
@@ -1790,76 +1854,71 @@ public class Channel {
 
 		gamerTag = (String) config.get("gamerTag");
 		// channel = config.getString("channel");
-		subsRegsMinusLinks=Boolean.valueOf((Boolean) config.get("subsRegsMinusLinks"));
+		subsRegsMinusLinks = Boolean.valueOf((Boolean) config
+				.get("subsRegsMinusLinks"));
 		updateDelay = ((Long) config.get("updateDelay")).intValue();
 		punishCount = ((Long) config.get("punishCount")).intValue();
-		streamUp = (Boolean) config.get("streamAlive");
+		streamAlive = (Boolean) config.get("streamAlive");
 		sinceWp = ((Long) config.get("sinceWp"));
 		maxviewerDate = (String) config.get("maxviewerDate");
 		runningMaxViewers = ((Long) config.get("runningMaxViewers")).intValue();
 		streamNumber = ((Long) config.get("streamCount")).intValue();
-		streamMax =((Long) config.get("maxViewersStream")).intValue();
-		maxViewers =((Long) config.get("maxViewers")).intValue();
+		streamMax = ((Long) config.get("maxViewersStream")).intValue();
+		maxViewers = ((Long) config.get("maxViewers")).intValue();
 		filterCaps = Boolean.valueOf((Boolean) config.get("filterCaps"));
 
-		filterCapsPercent =((Long) config
-				.get("filterCapsPercent")).intValue();
-		filterCapsMinCharacters =((Long) config
-				.get("filterCapsMinCharacters")).intValue();
-		filterCapsMinCapitals =((Long) config
-				.get("filterCapsMinCapitals")).intValue();
+		filterCapsPercent = ((Long) config.get("filterCapsPercent")).intValue();
+		filterCapsMinCharacters = ((Long) config.get("filterCapsMinCharacters"))
+				.intValue();
+		filterCapsMinCapitals = ((Long) config.get("filterCapsMinCapitals"))
+				.intValue();
 		filterLinks = Boolean.valueOf((Boolean) config.get("filterLinks"));
 		filterOffensive = Boolean.valueOf((Boolean) config
 				.get("filterOffensive"));
 		filterEmotes = Boolean.valueOf((Boolean) config.get("filterEmotes"));
 
 		wpOn = Boolean.valueOf((Boolean) config.get("wpTimer"));
-		wpCount =((Long) config.get("wpCount")).intValue();
+		wpCount = ((Long) config.get("wpCount")).intValue();
 		bullet = (String) config.get("bullet");
-		cooldown =((Long) config.get("cooldown")).intValue();
+		cooldown = ((Long) config.get("cooldown")).intValue();
 		sincePunish = (Long) config.get("sincePunish");
 
-		filterSymbols = Boolean.valueOf((Boolean) config
-				.get("filterSymbols"));
-		filterSymbolsPercent =((Long) config
-				.get("filterSymbolsPercent")).intValue();
-		filterSymbolsMin =((Long) config
-				.get("filterSymbolsMin")).intValue();
-		filterEmotesMax =((Long) config
-				.get("filterEmotesMax")).intValue();
+		filterSymbols = Boolean.valueOf((Boolean) config.get("filterSymbols"));
+		filterSymbolsPercent = ((Long) config.get("filterSymbolsPercent"))
+				.intValue();
+		filterSymbolsMin = ((Long) config.get("filterSymbolsMin")).intValue();
+		filterEmotesMax = ((Long) config.get("filterEmotesMax")).intValue();
 		filterEmotesSingle = Boolean.valueOf((Boolean) config
 				.get("filterEmotesSingle"));
 		// announceJoinParts =
 		// Boolean.parseBoolean(config.getString("announceJoinParts"));
 		announceJoinParts = false;
 		topic = (String) config.get("topic");
-		topicTime =((Long) config.get("topicTime")).intValue();
+		topicTime = ((Long) config.get("topicTime")).intValue();
 		useTopic = Boolean.valueOf((Boolean) config.get("useTopic"));
-		useFilters =Boolean.valueOf((Boolean) config.get("useFilters"));
+		useFilters = Boolean.valueOf((Boolean) config.get("useFilters"));
 		enableThrow = Boolean.valueOf((Boolean) config.get("enableThrow"));
 		signKicks = Boolean.valueOf((Boolean) config.get("signKicks"));
 		lastfm = (String) config.get("lastfm");
 		steamID = (String) config.get("steamID");
 		logChat = Boolean.valueOf((Boolean) config.get("logChat"));
-		mode =((Long) config.get("mode")).intValue();
-		filterMaxLength =((Long) config
-				.get("filterMaxLength")).intValue();
-		commercialLength =((Long) config
-				.get("commercialLength")).intValue();
+		mode = ((Long) config.get("mode")).intValue();
+		filterMaxLength = ((Long) config.get("filterMaxLength")).intValue();
+		commercialLength = ((Long) config.get("commercialLength")).intValue();
 		filterColors = Boolean.valueOf((Boolean) config.get("filterColors"));
 		filterMe = Boolean.valueOf((Boolean) config.get("filterMe"));
-		staticChannel = Boolean.valueOf((Boolean) config
-				.get("staticChannel"));
+		staticChannel = Boolean.valueOf((Boolean) config.get("staticChannel"));
 		clickToTweetFormat = (String) config.get("clickToTweetFormat");
 
-		enableWarnings = Boolean.valueOf((Boolean) config
-				.get("enableWarnings"));
-		timeoutDuration =((Long) config
-				.get("timeoutDuration")).intValue();
+		enableWarnings = Boolean
+				.valueOf((Boolean) config.get("enableWarnings"));
+		timeoutDuration = ((Long) config.get("timeoutDuration")).intValue();
 		prefix = (String) config.get("commandPrefix");
 		emoteSet = (String) config.get("emoteSet");
 		subscriberRegulars = Boolean.valueOf((Boolean) config
 				.get("subscriberRegulars"));
+		
+		//timeAliveStart = (Long)config.get("timeAliveStart");
 
 		JSONArray quotesArray = (JSONArray) config.get("quotes");
 
@@ -1887,16 +1946,16 @@ public class Channel {
 			JSONObject commandObject = (JSONObject) commandsArray.get(i);
 			commands.put((String) commandObject.get("key"),
 					(String) commandObject.get("value"));
-			if(commandObject.containsKey("restriction")){
-			commandsRestrictions
-					.put((String) commandObject.get("key"),
-							((Long) commandObject
-									.get("restriction")).intValue());
+			if (commandObject.containsKey("restriction")) {
+				commandsRestrictions.put((String) commandObject.get("key"),
+						((Long) commandObject.get("restriction")).intValue());
 			}
-			if(commandObject.containsKey("count")&&commandObject.get("count")!=null){
-				commandCounts.put((String)commandObject.get("key"), ((Long)commandObject.get("count")).intValue());
-			}else{
-				commandCounts.put((String)commandObject.get("key"), 0);
+			if (commandObject.containsKey("count")
+					&& commandObject.get("count") != null) {
+				commandCounts.put((String) commandObject.get("key"),
+						((Long) commandObject.get("count")).intValue());
+			} else {
+				commandCounts.put((String) commandObject.get("key"), 0);
 			}
 
 		}
@@ -1922,10 +1981,9 @@ public class Channel {
 					((String) repeatedCommandObj.get("name")).replaceAll(
 							"[^a-zA-Z0-9]", ""),
 					((Long) repeatedCommandObj.get("delay")).intValue(),
-					((Long) repeatedCommandObj
-							.get("messageDifference")).intValue(),
-					Boolean.valueOf((Boolean) repeatedCommandObj
-							.get("active")));
+					((Long) repeatedCommandObj.get("messageDifference"))
+							.intValue(),
+					Boolean.valueOf((Boolean) repeatedCommandObj.get("active")));
 			commandsRepeat.put(((String) repeatedCommandObj.get("name"))
 					.replaceAll("[^a-zA-Z0-9]", ""), rc);
 
@@ -1949,8 +2007,8 @@ public class Channel {
 					((String) scheduledCommandsObj.get("name")).replaceAll(
 							"[^a-zA-Z0-9]", ""),
 					(String) scheduledCommandsObj.get("pattern"),
-					((Long) scheduledCommandsObj
-							.get("messageDifference")).intValue(),
+					((Long) scheduledCommandsObj.get("messageDifference"))
+							.intValue(),
 					Boolean.valueOf((Boolean) scheduledCommandsObj
 							.get("active")));
 			commandsSchedule.put(((String) scheduledCommandsObj.get("name"))
@@ -2133,15 +2191,52 @@ public class Channel {
 		return cooldown;
 	}
 
+	public static String getDurationBreakdown(long millis) {
+		if (millis < 0) {
+			throw new IllegalArgumentException(
+					"Duration must be greater than zero!");
+		}
+
+		long days = TimeUnit.MILLISECONDS.toDays(millis);
+		millis -= TimeUnit.DAYS.toMillis(days);
+		long hours = TimeUnit.MILLISECONDS.toHours(millis);
+		millis -= TimeUnit.HOURS.toMillis(hours);
+		long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+		millis -= TimeUnit.MINUTES.toMillis(minutes);
+		long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+
+		StringBuilder sb = new StringBuilder(64);
+		if (days > 0) {
+			sb.append(days);
+			sb.append(" days, ");
+		}
+
+		if (hours < 10)
+			sb.append(0);
+		sb.append(hours);
+
+		sb.append(" hours, ");
+		if (minutes < 10)
+			sb.append(0);
+		sb.append(minutes);
+		sb.append(" minutes, and ");
+		if (seconds < 10)
+			sb.append(0);
+		sb.append(seconds);
+		sb.append(" seconds.");
+
+		return (sb.toString());
+	}
+
 	public void saveConfig() {
 		try {
 
 			FileWriter file = new FileWriter(channel + ".json");
 			StringWriter out = new StringWriter();
-			   JSONValue.writeJSONString(config, out);
-			   String jsonText = out.toString();
-			   file.write(jsonText);
-//			file.write(config.toJSONString());
+			JSONValue.writeJSONString(config, out);
+			String jsonText = out.toString();
+			file.write(jsonText);
+			// file.write(config.toJSONString());
 			file.flush();
 			file.close();
 

@@ -31,6 +31,10 @@ import org.json.simple.parser.ParseException;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 public class BotManager {
@@ -164,6 +168,21 @@ public class BotManager {
 	}
 
 	public static String getRemoteContent(String urlString) {
+		
+//		ExecutorService executor = Executors.newFixedThreadPool(1);
+//		AsyncChecker checker = new AsyncChecker(urlString, 0);
+//		Future<String> future = executor.submit(checker);
+//		try {
+//			return future.get();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		} catch (ExecutionException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		}
+		
+		
 		String dataIn = "";
 		try {
 			URL url = new URL(urlString);
@@ -186,6 +205,19 @@ public class BotManager {
 
 	public static String getRemoteContentTwitch(String urlString,
 			int krakenVersion) {
+		
+//		ExecutorService executor = Executors.newFixedThreadPool(1);
+//		AsyncChecker checker = new AsyncChecker(urlString,1,krakenVersion);
+//		Future<String> future = executor.submit(checker);
+//		try {
+//			return future.get();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		} catch (ExecutionException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+		
 		String dataIn = "";
 		try {
 			URL url = new URL(urlString);
@@ -226,9 +258,29 @@ public class BotManager {
 
 		return dataIn;
 	}
+		
+		
+		
 
 	public static String postRemoteDataStrawpoll(String urlString) {
 
+//		ExecutorService executor = Executors.newFixedThreadPool(1);
+//		AsyncChecker checker = new AsyncChecker(urlString,2);
+//		Future<String> future = executor.submit(checker);
+//		try {
+//			return future.get();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		} catch (ExecutionException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		}
+		
+		
+		
+		
+	
 		String line = null;
 		try {
 			HttpURLConnection c = (HttpURLConnection) (new URL(
@@ -279,6 +331,22 @@ public class BotManager {
 
 	public static String postRemoteDataTwitch(String urlString,
 			String postData, int krakenVersion) {
+//		
+//		ExecutorService executor = Executors.newFixedThreadPool(1);
+//		AsyncChecker checker = new AsyncChecker(urlString,3,krakenVersion,postData);
+//		Future<String> future = executor.submit(checker);
+//		try {
+//			return future.get();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		} catch (ExecutionException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		}
+//	}
+			
+			
 		URL url;
 		HttpURLConnection conn;
 
@@ -310,8 +378,7 @@ public class BotManager {
 			while (inStream.hasNextLine())
 				response += (inStream.nextLine());
 
-			System.out.println(conn.getResponseCode());
-			System.out.println(response);
+			inStream.close();
 			return response;
 
 		} catch (MalformedURLException ex) {
@@ -322,9 +389,71 @@ public class BotManager {
 
 		return "";
 	}
+	
+	public static String postDataLinkShortener(String postData){
+		URL url;
+		HttpURLConnection conn;
+		postData="{\"longUrl\": \""+postData+"\"}";
+
+		try {
+			url = new URL("https://www.googleapis.com/urlshortener/v1/url");
+
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("User-Agent", "CoeBot");
+			conn.setRequestProperty("Content-Type",
+					"application/json");
+			conn.setRequestProperty("Content-Length", "" + Integer.toString(postData.getBytes().length));
+			//conn.setFixedLengthStreamingMode(postData.getBytes().length);
+			
+		
+
+			PrintWriter out = new PrintWriter(conn.getOutputStream());
+			System.out.println(postData);
+			out.print(postData);
+			out.close();
+
+			String response = "";
+
+			Scanner inStream = new Scanner(conn.getInputStream());
+
+			while (inStream.hasNextLine())
+				response += (inStream.nextLine());
+
+			inStream.close();
+			return response;
+
+		} catch (MalformedURLException ex) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+		return "";
+	
+	}
 
 	public static String putRemoteData(String urlString, String postData)
 			throws IOException {
+		
+//		ExecutorService executor = Executors.newFixedThreadPool(1);
+//		AsyncChecker checker = new AsyncChecker(urlString,4,0,postData);
+//		Future<String> future = executor.submit(checker);
+//		try {
+//			return future.get();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		} catch (ExecutionException e) {
+//			// TODO Auto-generated catch block
+//			return null;
+//		}
+//		
+//	}
+		
+		
+		
 		URL url;
 		HttpURLConnection conn;
 

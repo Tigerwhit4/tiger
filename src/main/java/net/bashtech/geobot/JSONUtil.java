@@ -393,6 +393,24 @@ public class JSONUtil {
 			return null;
 		}
 	}
+	public static Long tmiChattersCount(String channel) {
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("https://tmi.twitch.tv/group/user/"
+							+ channel + "/chatters"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+			Long chatterCount = (Long) jsonObject.get("chatter_count");
+			
+
+			return chatterCount;
+
+		} catch (Exception ex) {
+			System.out.println("Failed to get chatters");
+			return (long) 0;
+		}
+	}
 
 //	public static String defineWord(String word) {
 //		String returned = BotManager
@@ -483,6 +501,46 @@ public class JSONUtil {
 				JSONArray track = (JSONArray) recenttracks.get("track");
 
 				JSONObject index0 = (JSONObject) track.get(0);
+				String trackName = (String) index0.get("name");
+				JSONObject artistO = (JSONObject) index0.get("artist");
+				String artist = (String) artistO.get("#text");
+				lastSong = trackName + " by " + artist;
+				String url = (String) index0.get("url");
+
+				return lastSong;
+
+			} else {
+				if (lastSong == null)
+					return "(Nothing)";
+				else
+					return lastSong;
+			}
+		} catch (Exception ex) {
+
+			return "(Error querying API)";
+		}
+
+	}
+	public static String lastSongLastFM(String user) {
+		String api_key = BotManager.getInstance().LastFMAPIKey;
+		String lastSong = null;
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser
+					.parse(BotManager
+							.getRemoteContent("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user="
+									+ user
+									+ "&format=json&limit=2&api_key="
+									+ api_key));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			JSONObject recenttracks = (JSONObject) (jsonObject
+					.get("recenttracks"));
+			if (recenttracks.get("track") instanceof JSONArray) {
+				JSONArray track = (JSONArray) recenttracks.get("track");
+
+				JSONObject index0 = (JSONObject) track.get(1);
 				String trackName = (String) index0.get("name");
 				JSONObject artistO = (JSONObject) index0.get("artist");
 				String artist = (String) artistO.get("#text");
@@ -598,7 +656,7 @@ public class JSONUtil {
 				String gameid = (String) index0.get("gameid");
 
 				if (retValues.equals("profile"))
-					return JSONUtil.shortenURL(profileurl);
+					return JSONUtil.googURL(profileurl);
 				else if (retValues.equals("game"))
 					return (gameextrainfo != null ? gameextrainfo
 							: "(unavailable)");
@@ -611,7 +669,7 @@ public class JSONUtil {
 							: "(unavailable)");
 				else
 					return "Profile: "
-							+ JSONUtil.shortenURL(profileurl)
+							+ JSONUtil.googURL(profileurl)
 							+ (gameextrainfo != null ? ", Game: "
 									+ gameextrainfo : "")
 							+ (gameserverip != null ? ", Server: "
@@ -626,40 +684,56 @@ public class JSONUtil {
 		}
 	}
 
-	public static String shortenURL(String url) {
-		String login = BotManager.getInstance().bitlyLogin;
-		String api_key = BotManager.getInstance().bitlyAPIKey;
-
+	public static String googURL(String url){
 		try {
-			String encodedURL = "";
-			try {
-				encodedURL = URLEncoder.encode(url, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+
 
 			JSONParser parser = new JSONParser();
-			Object obj = parser.parse(BotManager
-					.getRemoteContent("http://api.bitly.com/v3/shorten?login="
-							+ login + "&apiKey=" + api_key + "&longUrl="
-							+ encodedURL + "&format=json"));
+			Object obj = parser.parse(BotManager.postDataLinkShortener(url));
 
 			JSONObject jsonObject = (JSONObject) obj;
-			String status_txt = (String) jsonObject.get("status_txt");
-
-			if (status_txt.equalsIgnoreCase("OK")) {
-				JSONObject data = (JSONObject) jsonObject.get("data");
-				String shortenedUrl = (String) data.get("url");
-				return shortenedUrl;
-			} else {
-				return url;
-			}
+			String response = (String) jsonObject.get("id");
+			return response;
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return url;
+			return "Error";
 		}
 	}
+//	public static String shortenURL(String url) {
+//		String login = BotManager.getInstance().bitlyLogin;
+//		String api_key = BotManager.getInstance().bitlyAPIKey;
+//
+//		try {
+//			String encodedURL = "";
+//			try {
+//				encodedURL = URLEncoder.encode(url, "UTF-8");
+//			} catch (UnsupportedEncodingException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//
+//			JSONParser parser = new JSONParser();
+//			Object obj = parser.parse(BotManager
+//					.getRemoteContent("http://api.bitly.com/v3/shorten?login="
+//							+ login + "&apiKey=" + api_key + "&longUrl="
+//							+ encodedURL + "&format=json"));
+//
+//			JSONObject jsonObject = (JSONObject) obj;
+//			String status_txt = (String) jsonObject.get("status_txt");
+//
+//			if (status_txt.equalsIgnoreCase("OK")) {
+//				JSONObject data = (JSONObject) jsonObject.get("data");
+//				String shortenedUrl = (String) data.get("url");
+//				return shortenedUrl;
+//			} else {
+//				return url;
+//			}
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			return url;
+//		}
+//	}
 
 	public static String urlEncode(String data) {
 		try {
@@ -691,7 +765,13 @@ public class JSONUtil {
 		}
 
 	}
-	
+	public static String mindcrackExtraLife(){
+		String source = BotManager.getInstance().getRemoteContent("http://www.extra-life.org/index.cfm?fuseaction=donorDrive.participant&participantID=96292");
+		int indexStart = source.indexOf("actualAmount=")+13;
+		int indexEnd = source.indexOf("&",indexStart);
+		String amount = source.substring(indexStart,indexEnd);
+		return amount;
+	}
 	public static boolean krakenChannelExist(String channel) {
 		if (BotManager.getInstance().twitchChannels == false)
 			return true;
