@@ -134,6 +134,7 @@ public class Channel {
 	private int lastStrawpoll;
 	//private long timeAliveStart = System.currentTimeMillis();
 	private boolean streamAlive = false;
+	private boolean urbanEnabled = false;
 
 	public Channel(String name) {
 		channel = name;
@@ -1667,6 +1668,7 @@ public class Channel {
 	private void setDefaults() {
 
 		// defaults.put("channel", channel);
+		defaults.put("urbanEnabled", true);
 		defaults.put("subsRegsMinusLinks", new Boolean(false));
 		defaults.put("filterCaps", new Boolean(false));
 		defaults.put("filterOffensive", new Boolean(true));
@@ -1851,7 +1853,7 @@ public class Channel {
 	private void loadProperties(String name) {
 
 		setDefaults();
-
+		urbanEnabled = Boolean.valueOf((Boolean)config.get("urbanEnabled"));
 		gamerTag = (String) config.get("gamerTag");
 		// channel = config.getString("channel");
 		subsRegsMinusLinks = Boolean.valueOf((Boolean) config
@@ -2243,5 +2245,15 @@ public class Channel {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void setUrban(boolean enabled) {
+		urbanEnabled = enabled;
+		config.put("urbanEnabled", enabled);
+		saveConfig();
+		
+	}
+	public boolean getUrban(){
+		return urbanEnabled;
 	}
 }

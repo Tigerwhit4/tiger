@@ -812,7 +812,7 @@ public class ReceiverBot extends PircBot {
 					+ channelInfo.getPunCount() + ". " + parsedSince);
 		}
 		// viewerstats
-		//channelInfo.checkViewerStats(twitchName);
+		// channelInfo.checkViewerStats(twitchName);
 		// !viewerstats
 		if (msg[0].equalsIgnoreCase(prefix + "viewerstats") && isOp) {
 			log("RB: Matched command !viewerstats");
@@ -881,22 +881,35 @@ public class ReceiverBot extends PircBot {
 		}
 
 		// !uptime - All
+
 		if (msg[0].equalsIgnoreCase(prefix + "uptime")) {
 			log("RB: Matched command !uptime");
-			//String time = channelInfo.getUptime();
-//			if (time != null)
-//				send(channel, twitchName + " has been live for " + time);
-//			else
-//				send(channel, "Stream is not currently online.");
+			try {
+				String uptime = JSONUtil.krakenCreated_at(channelInfo
+						.getTwitchName());
+				send(channel, this.getTimeStreaming(uptime));
+			} catch (Exception e) {
+				send(channel, "Error accessing Twitch API.");
+			}
+			return;
 		}
-
-		// maintaining if the stream is alive or not
-		try {
-			channelInfo.alive(twitchName);
-		} catch (Exception e) {
-			channelInfo.dead(twitchName);
-
-		}
+		// // !uptime - All
+		// if (msg[0].equalsIgnoreCase(prefix + "uptime")) {
+		// log("RB: Matched command !uptime");
+		// //String time = channelInfo.getUptime();
+		// // if (time != null)
+		// // send(channel, twitchName + " has been live for " + time);
+		// // else
+		// // send(channel, "Stream is not currently online.");
+		// }
+		//
+		// // maintaining if the stream is alive or not
+		// try {
+		// channelInfo.alive(twitchName);
+		// } catch (Exception e) {
+		// channelInfo.dead(twitchName);
+		//
+		// }
 
 		// !music - All
 		if (msg[0].equalsIgnoreCase(prefix + "music")) {
@@ -1478,8 +1491,7 @@ public class ReceiverBot extends PircBot {
 				}
 				String url = "http://lmgtfy.com/?q=" + encodedQuery;
 				send(channel,
-						"Link to \"" + rawQuery+": "
-								+ JSONUtil.googURL(url));
+						"Link to \"" + rawQuery + ": " + JSONUtil.googURL(url));
 			}
 			return;
 		}
@@ -2325,10 +2337,15 @@ public class ReceiverBot extends PircBot {
 				log("RB: Matched command !urban");
 				String fused = fuseArray(msg, 1);
 				fused = fused.replaceAll(" ", "+");
+				if(channelInfo.getUrban()){
 				String result = JSONUtil.defineUrban(fused);
 				if (result.length() > 140)
 					result = result.substring(0, 140);
 				send(channel, "\"" + result + "\"");
+				}
+				else{
+					send(channel, prefix+"urban is currently not enabled on this channel.");
+				}
 
 			}
 		}
@@ -2955,7 +2972,22 @@ public class ReceiverBot extends PircBot {
 					send(channel, "Feature: Topic is off");
 				}
 
-			}// setgamertag
+			}
+			//enable/disable urban
+			else if (msg[1].equalsIgnoreCase("urban")&&isOwner) {
+				if (msg.length > 2) {
+					boolean enabled = false;
+					if(msg[2].equalsIgnoreCase("on")||msg[2].equalsIgnoreCase("enabled")){
+						enabled = true;
+						send(channel, "The use of "+prefix+"urban is now enabled.");
+					}else if(msg[2].equalsIgnoreCase("off")||msg[2].equalsIgnoreCase("disabled")){
+						send(channel, "The use of "+prefix+"urban is now disabled.");
+					}
+					channelInfo.setUrban(enabled);
+					
+				}
+			}
+			// setgamertag
 			else if (msg[1].equalsIgnoreCase("gamertag")) {
 				if (msg.length > 2) {
 					String gamerTag = this.fuseArray(msg, 2).trim();
@@ -3939,49 +3971,25 @@ public class ReceiverBot extends PircBot {
 		}
 	}
 
-	// private String getStreamList(String key, Channel channelInfo)
-	// throws Exception {
-	// URL feedSource = new URL(
-	// "http://api.justin.tv/api/stream/list.xml?channel="
-	// + channelInfo.getTwitchName());
-	// URLConnection uc = feedSource.openConnection();
-	// DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	// DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-	// Document doc = dBuilder.parse(uc.getInputStream());
-	// doc.getDocumentElement().normalize();
-	//
-	// NodeList nList = doc.getElementsByTagName("stream");
-	// if (nList.getLength() < 1)
-	// throw new Exception();
-	//
-	// for (int temp = 0; temp < nList.getLength(); temp++) {
-	//
-	// Node nNode = nList.item(temp);
-	// if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-	// Element eElement = (Element) nNode;
-	//
-	// return getTagValue(key, eElement);
-	//
-	// }
-	// }
-	//
-	// return "";
-	// }
 
-	public String getTimeStreaming(String uptime, int offset) {
-		DateFormat format = new SimpleDateFormat("EEE MMMM dd HH:mm:ss yyyy");
-		format.setTimeZone(java.util.TimeZone.getTimeZone("US/Pacific"));
-		try {
 
-			Date then = format.parse(uptime);
-			Date newDate = new Date(then.getTime() + offset * 60 * 1000);
-			return this.getTimeTilNow(newDate);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+	public String getTimeStreaming(String uptime) {
+		uptime = uptime.replace("Z", "UTC");
+		       DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-		return "Error getting date.";
-	}
+		       format.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+		       try {
+		             Date then = format.parse(uptime);
+		             return "Streaming for " + this.getTimeTilNow(then)+".";
+		         } catch (ParseException e) {
+		             e.printStackTrace();
+
+		         }
+		 
+		         return "An error occurred or stream is offline.";
+		     }
+
+		
 
 	public boolean checkStalePing() {
 		if (lastPing == -1)
@@ -4044,8 +4052,6 @@ public class ReceiverBot extends PircBot {
 			e.printStackTrace();
 		}
 	}
-
-
 
 	public static boolean isInteger(String str) {
 		try {

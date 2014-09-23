@@ -633,6 +633,26 @@ public class JSONUtil {
 		}
 	}
 
+	    public static String krakenCreated_at(String channel) {
+		        try {
+		            JSONParser parser = new JSONParser();
+		            Object obj = parser.parse(BotManager.getRemoteContentTwitch("https://api.twitch.tv/kraken/streams/" + channel, 2));
+		
+		            JSONObject jsonObject = (JSONObject) obj;
+		
+		            JSONObject stream = (JSONObject) (jsonObject.get("stream"));
+		            if (stream == null)
+		                return "(offline)";
+		
+		            String viewers = (String) stream.get("created_at");
+		            return viewers;
+		        } catch (Exception ex) {
+		            ex.printStackTrace();
+		            return "(error)";
+		        }
+		
+		    }
+		
 	public static String steam(String userID, String retValues) {
 		String api_key = BotManager.getInstance().SteamAPIKey;
 
