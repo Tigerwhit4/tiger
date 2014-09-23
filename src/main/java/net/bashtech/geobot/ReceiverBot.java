@@ -2337,14 +2337,14 @@ public class ReceiverBot extends PircBot {
 				log("RB: Matched command !urban");
 				String fused = fuseArray(msg, 1);
 				fused = fused.replaceAll(" ", "+");
-				if(channelInfo.getUrban()){
-				String result = JSONUtil.defineUrban(fused);
-				if (result.length() > 140)
-					result = result.substring(0, 140);
-				send(channel, "\"" + result + "\"");
-				}
-				else{
-					send(channel, prefix+"urban is currently not enabled on this channel.");
+				if (channelInfo.getUrban()) {
+					String result = JSONUtil.defineUrban(fused);
+					if (result.length() > 140)
+						result = result.substring(0, 140);
+					send(channel, "\"" + result + "\"");
+				} else {
+					send(channel, prefix
+							+ "urban is currently not enabled on this channel.");
 				}
 
 			}
@@ -2973,18 +2973,22 @@ public class ReceiverBot extends PircBot {
 				}
 
 			}
-			//enable/disable urban
-			else if (msg[1].equalsIgnoreCase("urban")&&isOwner) {
+			// enable/disable urban
+			else if (msg[1].equalsIgnoreCase("urban") && isOwner) {
 				if (msg.length > 2) {
 					boolean enabled = false;
-					if(msg[2].equalsIgnoreCase("on")||msg[2].equalsIgnoreCase("enabled")){
+					if (msg[2].equalsIgnoreCase("on")
+							|| msg[2].equalsIgnoreCase("enabled")) {
 						enabled = true;
-						send(channel, "The use of "+prefix+"urban is now enabled.");
-					}else if(msg[2].equalsIgnoreCase("off")||msg[2].equalsIgnoreCase("disabled")){
-						send(channel, "The use of "+prefix+"urban is now disabled.");
+						send(channel, "The use of " + prefix
+								+ "urban is now enabled.");
+					} else if (msg[2].equalsIgnoreCase("off")
+							|| msg[2].equalsIgnoreCase("disabled")) {
+						send(channel, "The use of " + prefix
+								+ "urban is now disabled.");
 					}
 					channelInfo.setUrban(enabled);
-					
+
 				}
 			}
 			// setgamertag
@@ -3971,25 +3975,21 @@ public class ReceiverBot extends PircBot {
 		}
 	}
 
-
-
 	public String getTimeStreaming(String uptime) {
 		uptime = uptime.replace("Z", "UTC");
-		       DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-		       format.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
-		       try {
-		             Date then = format.parse(uptime);
-		             return "Streaming for " + this.getTimeTilNow(then)+".";
-		         } catch (ParseException e) {
-		             e.printStackTrace();
+		format.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+		try {
+			Date then = format.parse(uptime);
+			return "Streaming for " + this.getTimeTilNow(then) + ".";
+		} catch (ParseException e) {
+			e.printStackTrace();
 
-		         }
-		 
-		         return "An error occurred or stream is offline.";
-		     }
+		}
 
-		
+		return "An error occurred or stream is offline.";
+	}
 
 	public boolean checkStalePing() {
 		if (lastPing == -1)

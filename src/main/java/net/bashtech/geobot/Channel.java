@@ -132,7 +132,7 @@ public class Channel {
 	public boolean active;
 	private static Timer commercial;
 	private int lastStrawpoll;
-	//private long timeAliveStart = System.currentTimeMillis();
+	// private long timeAliveStart = System.currentTimeMillis();
 	private boolean streamAlive = false;
 	private boolean urbanEnabled = false;
 
@@ -154,14 +154,14 @@ public class Channel {
 
 		twitchname = channel.substring(1);
 
-//		Timer delayer = new Timer("start", true);
-//		delayer.schedule(new java.util.TimerTask() {
-//			@Override
-//			public void run() {
-//				startCheckers();
-//
-//			}
-//		}, 30000);
+		// Timer delayer = new Timer("start", true);
+		// delayer.schedule(new java.util.TimerTask() {
+		// @Override
+		// public void run() {
+		// startCheckers();
+		//
+		// }
+		// }, 30000);
 
 	}
 
@@ -170,58 +170,58 @@ public class Channel {
 		setMode(mode);
 	}
 
-//	public void startCheckers() {
-		// ScheduledExecutorService service =
-		// Executors.newScheduledThreadPool(1);
-		// AsyncRunner uptimeChecker = new AsyncRunner(twitchname, 1);
-		// service.scheduleAtFixedRate(uptimeChecker, 0, 150, TimeUnit.SECONDS);
-		// AsyncRunner lastFMChecker = new AsyncRunner(twitchname, 2);
-		// service.scheduleAtFixedRate(lastFMChecker, 0, 90, TimeUnit.SECONDS);
+	// public void startCheckers() {
+	// ScheduledExecutorService service =
+	// Executors.newScheduledThreadPool(1);
+	// AsyncRunner uptimeChecker = new AsyncRunner(twitchname, 1);
+	// service.scheduleAtFixedRate(uptimeChecker, 0, 150, TimeUnit.SECONDS);
+	// AsyncRunner lastFMChecker = new AsyncRunner(twitchname, 2);
+	// service.scheduleAtFixedRate(lastFMChecker, 0, 90, TimeUnit.SECONDS);
 
-//		Timer isLiveChecker = new Timer("islivechecker", true);
-//		isLiveChecker.scheduleAtFixedRate(new java.util.TimerTask() {
-//			@Override
-//			public void run() {
-//				handleAsyncIsLive(JSONUtil.krakenIsLive(twitchname));
-//
-//			}
-//		}, 0, 90000);
-//
-//		Timer lastFMChecker = new Timer("lastfmchecker");
-//		lastFMChecker.scheduleAtFixedRate(new java.util.TimerTask() {
-//			@Override
-//			public void run() {
-//				updateSong(JSONUtil.lastFM(getLastfm()));
-//
-//			}
-//		}, 0, 45000);
+	// Timer isLiveChecker = new Timer("islivechecker", true);
+	// isLiveChecker.scheduleAtFixedRate(new java.util.TimerTask() {
+	// @Override
+	// public void run() {
+	// handleAsyncIsLive(JSONUtil.krakenIsLive(twitchname));
+	//
+	// }
+	// }, 0, 90000);
+	//
+	// Timer lastFMChecker = new Timer("lastfmchecker");
+	// lastFMChecker.scheduleAtFixedRate(new java.util.TimerTask() {
+	// @Override
+	// public void run() {
+	// updateSong(JSONUtil.lastFM(getLastfm()));
+	//
+	// }
+	// }, 0, 45000);
 
-//	}
+	// }
 
-//	public void handleAsyncIsLive(boolean output) {
-//
-//		if (output && !streamAlive) {
-//			timeAliveStart = System.currentTimeMillis();
-//			config.put("timeAliveStart", timeAliveStart);
-//			streamAlive = true;
-//			alive(twitchname);
-//			config.put("streamAlive", streamAlive);
-//		} else if (!output && streamAlive) {
-//			dead(twitchname);
-//			streamAlive = false;
-//			config.put("streamAlive", streamAlive);
-//		}
-//		saveConfig();
-//	}
-//
-//	public String getUptime() {
-//		if (streamAlive) {
-//			long deltaTime = System.currentTimeMillis() - timeAliveStart;
-//			return getDurationBreakdown(deltaTime);
-//		} else
-//			return null;
-//
-//	}
+	// public void handleAsyncIsLive(boolean output) {
+	//
+	// if (output && !streamAlive) {
+	// timeAliveStart = System.currentTimeMillis();
+	// config.put("timeAliveStart", timeAliveStart);
+	// streamAlive = true;
+	// alive(twitchname);
+	// config.put("streamAlive", streamAlive);
+	// } else if (!output && streamAlive) {
+	// dead(twitchname);
+	// streamAlive = false;
+	// config.put("streamAlive", streamAlive);
+	// }
+	// saveConfig();
+	// }
+	//
+	// public String getUptime() {
+	// if (streamAlive) {
+	// long deltaTime = System.currentTimeMillis() - timeAliveStart;
+	// return getDurationBreakdown(deltaTime);
+	// } else
+	// return null;
+	//
+	// }
 
 	public String getChannel() {
 		return channel;
@@ -1470,7 +1470,8 @@ public class Channel {
 
 	public void updateSong(String newSong) {
 
-		if (!streamAlive ||newSong.equals(lastSong) || newSong.equals("(Nothing)")
+		if (!streamAlive || newSong.equals(lastSong)
+				|| newSong.equals("(Nothing)")
 				|| newSong.equalsIgnoreCase("(Error querying API)")) {
 			return;
 
@@ -1742,7 +1743,7 @@ public class Channel {
 		// defaults.put("subscribers", new JSONArray());
 		defaults.put("raidWhitelist", new JSONArray());
 		defaults.put("gamerTag", "");
-		//defaults.put("timeAliveStart", System.currentTimeMillis());
+		// defaults.put("timeAliveStart", System.currentTimeMillis());
 
 		Iterator it = defaults.entrySet().iterator();
 		while (it.hasNext()) {
@@ -1853,7 +1854,7 @@ public class Channel {
 	private void loadProperties(String name) {
 
 		setDefaults();
-		urbanEnabled = Boolean.valueOf((Boolean)config.get("urbanEnabled"));
+		urbanEnabled = Boolean.valueOf((Boolean) config.get("urbanEnabled"));
 		gamerTag = (String) config.get("gamerTag");
 		// channel = config.getString("channel");
 		subsRegsMinusLinks = Boolean.valueOf((Boolean) config
@@ -1919,8 +1920,8 @@ public class Channel {
 		emoteSet = (String) config.get("emoteSet");
 		subscriberRegulars = Boolean.valueOf((Boolean) config
 				.get("subscriberRegulars"));
-		
-		//timeAliveStart = (Long)config.get("timeAliveStart");
+
+		// timeAliveStart = (Long)config.get("timeAliveStart");
 
 		JSONArray quotesArray = (JSONArray) config.get("quotes");
 
@@ -2251,9 +2252,10 @@ public class Channel {
 		urbanEnabled = enabled;
 		config.put("urbanEnabled", enabled);
 		saveConfig();
-		
+
 	}
-	public boolean getUrban(){
+
+	public boolean getUrban() {
 		return urbanEnabled;
 	}
 }
