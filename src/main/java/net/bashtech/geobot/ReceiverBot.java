@@ -735,8 +735,10 @@ public class ReceiverBot extends PircBot {
 			if ((msg[0].equalsIgnoreCase(prefix + "conch") || msg[0]
 					.equalsIgnoreCase(prefix + "helix")) && isSub) {
 				log("RB: Matched command !conch");
-				int rand = (int) Math.round(Math.random() * 13);
-
+				int rand = (int) Math.round(Math.random() * 14);
+				if (msg[1].equalsIgnoreCase("#admin") && isAdmin) {
+					rand = Integer.parseInt(msg[2]);
+				}
 				switch (rand) {
 				case 0:
 					send(channel, "It is certain.");
@@ -773,6 +775,14 @@ public class ReceiverBot extends PircBot {
 					break;
 				case 11:
 					send(channel, "The future seems hazy on this.");
+					break;
+				case 12:
+					if (channelInfo.getQuoteSize() > 1) {
+						send(channel,
+								"Maybe these words of wisdom can guide you: (_QUOTE_)");
+					} else
+						send(channel,
+								"I can provide no help for your situation.");
 					break;
 				default:
 					send(channel, "Unable to discern.");
@@ -2945,6 +2955,18 @@ public class ReceiverBot extends PircBot {
 			if (value != null) {
 				log("RB: Matched command " + command);
 
+				if (value.contains("(_PURGE_)")) {
+					value = value.replace("(_PURGE_)", msg[1].toLowerCase());
+					sendCommand(channel, ".timeout " + msg[1].toLowerCase()
+							+ " 1");
+				} else if (value.contains("(_TIMEOUT_)")) {
+					value = value.replace("(_TIMEOUT_)", msg[1].toLowerCase());
+					sendCommand(channel, ".timeout " + msg[1].toLowerCase());
+
+				} else if (value.contains("(_BAN_)")) {
+					value = value.replace("(_BAN_)", msg[1].toLowerCase());
+					sendCommand(channel, ".ban " + msg[1].toLowerCase());
+				}
 				if (value.contains("(_PARAMETER_)")) {
 					value = value.replace("(_PARAMETER_)", fuseArray(msg, 1));
 				}
@@ -2953,10 +2975,7 @@ public class ReceiverBot extends PircBot {
 
 			}
 		}
-		// config conversion
-		if (msg[0].equalsIgnoreCase(prefix + "JSONconvert") && isAdmin) {
-			channelInfo.updateConfigs();
-		}
+
 		// !set - Owner
 		if (msg[0].equalsIgnoreCase(prefix + "set") && isOp) {
 			log("RB: Matched command !set");
@@ -3369,7 +3388,19 @@ public class ReceiverBot extends PircBot {
 					long currentTime = System.currentTimeMillis();
 					if (currentTime > (lastCommand + cooldown * 1000L) || isOp) {
 						lastCommand = currentTime;
+						
+						if (value.contains("(_PURGE_)")) {
+							value = value.replace("(_PURGE_)", msg[1].toLowerCase());
+							sendCommand(channel, ".timeout " + msg[1].toLowerCase()
+									+ " 1");
+						} else if (value.contains("(_TIMEOUT_)")) {
+							value = value.replace("(_TIMEOUT_)", msg[1].toLowerCase());
+							sendCommand(channel, ".timeout " + msg[1].toLowerCase());
 
+						} else if (value.contains("(_BAN_)")) {
+							value = value.replace("(_BAN_)", msg[1].toLowerCase());
+							sendCommand(channel, ".ban " + msg[1].toLowerCase());
+						}
 						if (value.contains("(_PARAMETER_)")) {
 							value = value.replace("(_PARAMETER_)",
 									fuseArray(msg, 1));
@@ -3394,8 +3425,23 @@ public class ReceiverBot extends PircBot {
 			if (m.matches()) {
 
 				if (!channelInfo.onCooldown(channelInfo.autoReplyTrigger.get(i)
-						.toString()))
-					send(channel, sender, channelInfo.autoReplyResponse.get(i));
+						.toString())){
+					String value = channelInfo.autoReplyResponse.get(i);
+					if (value.contains("(_PURGE_)")) {
+						value = value.replace("(_PURGE_)", sender);
+						sendCommand(channel, ".timeout " + sender
+								+ " 1");
+					} else if (value.contains("(_TIMEOUT_)")) {
+						value = value.replace("(_TIMEOUT_)", sender);
+						sendCommand(channel, ".timeout " + sender);
+
+					} else if (value.contains("(_BAN_)")) {
+						value = value.replace("(_BAN_)", sender);
+						sendCommand(channel, ".ban " + sender);
+					}
+					send(channel, sender, value);
+					
+				}
 			}
 		}
 	}

@@ -20,6 +20,7 @@ package net.bashtech.geobot;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class MessageReplaceParser {
@@ -68,12 +69,21 @@ public class MessageReplaceParser {
 			message = message.replace("(_STEAM_SERVER_)",
 					JSONUtil.steam(ci.getSteam(), "server"));
 		if (message.contains("(_STEAM_STORE_)")) {
+			
+			String game = JSONUtil.steam(ci.getSteam(), "game");
+			if (game.equalsIgnoreCase("(unavailable)")) {
+				game = JSONUtil.krakenGame(channel.substring(1));
+
+			}
 			String storeLink = JSONUtil.steam(ci.getSteam(), "store");
 			if (storeLink.equalsIgnoreCase("(unavailable)")) {
 				if (JSONUtil.krakenGame(channel.substring(1)).equalsIgnoreCase(
 						"minecraft")) {
 					message = message.replace("(_STEAM_STORE_)",
 							"minecraft.net");
+				}else{
+					message = message.replace("(_STEAM_STORE_)", JSONUtil.googURL(
+							"https://www.google.com/#q="+URLEncoder.encode(game)));
 				}
 			} else
 				message = message.replace("(_STEAM_STORE_)", storeLink);
