@@ -29,8 +29,18 @@ import java.util.concurrent.TimeUnit;
 public class Tester {
 
     public static void main(String[] args) {
-    	String output = getDurationBreakdown(10000);
-    	System.out.println(output);
+//    	String output = getDurationBreakdown(10000);
+//    	System.out.println(output);
+    	String test = "This is a test, only a test";
+    	String test2 = "this is also a test; only a test";
+    	String[] testArr = test.split(";");
+    	String[] testArr2 = test2.split(";");
+    	for(String s: testArr){
+    		System.out.println(s);
+    	}
+    	for(String s: testArr2){
+    		System.out.println(s);
+    	}
     }
     
     

@@ -789,11 +789,13 @@ public class JSONUtil {
 
 	}
 
-	public static String mindcrackExtraLife() {
+	public static String extraLifeAmount(String channel) {
 		String source = BotManager
 				.getInstance()
 				.getRemoteContent(
-						"http://www.extra-life.org/index.cfm?fuseaction=donorDrive.participant&participantID=96292");
+						"http://www.extra-life.org/index.cfm?fuseaction=donorDrive.participant&participantID="
+								+ BotManager.getInstance().getChannel(channel)
+										.getExtraLifeID());
 		int indexStart = source.indexOf("actualAmount=") + 13;
 		int indexEnd = source.indexOf("&", indexStart);
 		String amount = source.substring(indexStart, indexEnd);

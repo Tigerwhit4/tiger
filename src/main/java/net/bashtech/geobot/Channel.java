@@ -135,6 +135,8 @@ public class Channel {
 	// private long timeAliveStart = System.currentTimeMillis();
 	private boolean streamAlive = false;
 	private boolean urbanEnabled = false;
+	private ArrayList<String> ignoredUsers = new ArrayList<String>();
+	private long extraLifeID;
 
 	public Channel(String name) {
 		channel = name;
@@ -1625,7 +1627,7 @@ public class Channel {
 		}
 	}
 
-	private void registerCommandUsage(String command) {
+	public void registerCommandUsage(String command) {
 		synchronized (commandCooldown) {
 			System.out.println("DEBUG: Adding command " + command
 					+ " to cooldown list");
@@ -1641,7 +1643,7 @@ public class Channel {
 				// Over
 				System.out.println("DEBUG: Cooldown for " + command
 						+ " is over");
-				registerCommandUsage(command);
+				
 				return false;
 			} else {
 				// Not Over
@@ -1650,7 +1652,7 @@ public class Channel {
 				return true;
 			}
 		} else {
-			registerCommandUsage(command);
+			
 			return false;
 		}
 	}
@@ -1669,7 +1671,9 @@ public class Channel {
 	private void setDefaults() {
 
 		// defaults.put("channel", channel);
+		defaults.put("ignoredUsers",new JSONArray());
 		defaults.put("urbanEnabled", true);
+		defaults.put("extraLifeID", 0);
 		defaults.put("subsRegsMinusLinks", new Boolean(false));
 		defaults.put("filterCaps", new Boolean(false));
 		defaults.put("filterOffensive", new Boolean(true));
@@ -1854,7 +1858,9 @@ public class Channel {
 	private void loadProperties(String name) {
 
 		setDefaults();
+		
 		urbanEnabled = Boolean.valueOf((Boolean) config.get("urbanEnabled"));
+		extraLifeID = ((Long)config.get("extraLifeID"));
 		gamerTag = (String) config.get("gamerTag");
 		// channel = config.getString("channel");
 		subsRegsMinusLinks = Boolean.valueOf((Boolean) config
@@ -1922,6 +1928,11 @@ public class Channel {
 				.get("subscriberRegulars"));
 
 		// timeAliveStart = (Long)config.get("timeAliveStart");
+		
+		JSONArray jsonignoredUsers = (JSONArray) config.get("ignoredUsers");
+		for (int i = 0; i<jsonignoredUsers.size();i++){
+			ignoredUsers.add((String)jsonignoredUsers.get(i));
+		}
 
 		JSONArray quotesArray = (JSONArray) config.get("quotes");
 
@@ -2140,14 +2151,24 @@ public class Channel {
 	}
 
 	public void scheduleCommercial() {
-		BotManager.getInstance().receiverBot
-				.send(getChannel(),
-						"A commercial will be run in 45 seconds. Thank you for supporting the channel!");
+
 		commercial = new java.util.Timer();
 		commercial.schedule(new java.util.TimerTask() {
 			@Override
 			public void run() {
 				runCommercial();
+				
+			}
+		}, 45000);
+	}
+	public void scheduleCommercial(final int commercialTime) {
+
+		commercial = new java.util.Timer();
+		commercial.schedule(new java.util.TimerTask() {
+			@Override
+			public void run() {
+				runCommercial(commercialTime);
+				
 			}
 		}, 45000);
 	}
@@ -2176,6 +2197,20 @@ public class Channel {
 					"https://api.twitch.tv/kraken/channels/"
 							+ getChannel().substring(1) + "/commercial",
 					"length=" + commercialLength, 2);
+
+		} else {
+			System.out.println(getChannel().substring(1)
+					+ " is not live. Skipping commercial.");
+		}
+	}
+	public void runCommercial(int commercialTime) {
+
+		if (JSONUtil.krakenIsLive(getChannel().substring(1))) {
+			String dataIn = "";
+			dataIn = BotManager.postRemoteDataTwitch(
+					"https://api.twitch.tv/kraken/channels/"
+							+ getChannel().substring(1) + "/commercial",
+					"length=" + commercialTime, 2);
 
 		} else {
 			System.out.println(getChannel().substring(1)
@@ -2257,5 +2292,44 @@ public class Channel {
 
 	public boolean getUrban() {
 		return urbanEnabled;
+	}
+
+	public void setExtraLifeID(String string) {
+		extraLifeID = Long.parseLong(string);
+		config.put("extraLifeID", Long.parseLong(string));
+		saveConfig();
+		
+	}
+
+	
+	
+	public Long getExtraLifeID() {
+		
+		return extraLifeID;
+	}
+	
+	public ArrayList<String> getIgnoredUsers(){
+		return ignoredUsers;
+	}
+	public boolean addIgnoredUser(String user){
+		if(ignoredUsers.contains(user)){
+			return false;
+		}
+		else{
+		ignoredUsers.add(user);
+		config.put("ignoredUsers", ignoredUsers);
+		saveConfig();
+		return true;
+		}
+		
+	}
+	public boolean removeIgnoredUser(String user){
+	if(ignoredUsers.contains(user)){
+		ignoredUsers.remove(user);
+		config.put("ignoredUsers", ignoredUsers);
+		saveConfig();
+		return true;
+	}else
+		return false;
 	}
 }

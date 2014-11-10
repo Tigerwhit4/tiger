@@ -130,6 +130,12 @@ public class BotManager {
 					|| entry.getValue().staticChannel) {
 				log("BM: Joining channel " + channel);
 				receiverBot.joinChannel(channel);
+				try {
+					Thread.sleep(350);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			} else {
 				outdatedChannels.add(channel);
 			}
@@ -289,7 +295,7 @@ public class BotManager {
 			c.setRequestMethod("POST");
 			c.setRequestProperty("Content-Type",
 					"application/x-www-form-urlencoded; charset=UTF-8");
-			c.setRequestProperty("User-Agent", "CoeBot");
+			c.setRequestProperty("User-Agent", "CB1");
 
 			c.setDoOutput(true);
 			c.setDoInput(true);
@@ -310,6 +316,7 @@ public class BotManager {
 			try {
 				data = c.getInputStream();
 			} catch (Exception e) {
+				e.printStackTrace();
 				data = c.getErrorStream();
 			}
 
@@ -702,6 +709,12 @@ public class BotManager {
 
 		log("BM: Joining channel " + tempChan.getChannel());
 		receiverBot.joinChannel(tempChan.getChannel());
+		try {
+			Thread.sleep(350);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		log("BM: Joined channel " + tempChan.getChannel());
 

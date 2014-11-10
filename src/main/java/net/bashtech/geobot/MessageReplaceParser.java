@@ -83,7 +83,7 @@ public class MessageReplaceParser {
 							"minecraft.net");
 				}else{
 					message = message.replace("(_STEAM_STORE_)", JSONUtil.googURL(
-							"https://www.google.com/#q="+URLEncoder.encode(game)));
+							"https://www.google.com/#q="+URLEncoder.encode("buy "+game)));
 				}
 			} else
 				message = message.replace("(_STEAM_STORE_)", storeLink);
@@ -106,7 +106,7 @@ public class MessageReplaceParser {
 			if (JSONUtil.krakenIsLive(channel.substring(1)))
 				ci.scheduleCommercial();
 
-			message = "";
+			message = message.replace("(_COMMERCIAL_)", "");
 
 		}
 		if (message.contains("(_ONLINE_CHECK_)")) {
@@ -146,9 +146,9 @@ public class MessageReplaceParser {
 			message = message.replace("(_XBOX_PROGRESS_)", progress);
 		}
 
-		if (message.contains("(_MINDCRACK_EXTRALIFE_AMOUNT_)")) {
-			String amount = JSONUtil.mindcrackExtraLife();
-			message = message.replace("(_MINDCRACK_EXTRALIFE_AMOUNT_)", "$"
+		if (message.contains("(_EXTRALIFE_AMOUNT_)")) {
+			String amount = JSONUtil.extraLifeAmount(channel);
+			message = message.replace("(_EXTRALIFE_AMOUNT_)", "$"
 					+ amount);
 			System.out.println(message);
 		}
