@@ -81,6 +81,8 @@ public class MessageReplaceParser {
 						"minecraft")) {
 					message = message.replace("(_STEAM_STORE_)",
 							"minecraft.net");
+				}else if(JSONUtil.krakenGame(channel.substring(1)).equalsIgnoreCase("(Not set)")){
+					message = message.replace("(_STEAM_STORE_)","");
 				}else{
 					message = message.replace("(_STEAM_STORE_)", JSONUtil.googURL(
 							"https://www.google.com/#q="+URLEncoder.encode("buy "+game)));

@@ -554,7 +554,7 @@ public class BotManager {
 
 		if (!config.keyExists("bothelpMessage")) {
 			config.setString("bothelpMessage",
-					"You can find info about CoeBot's default commands at: http://help.coebot.tv");
+					"You can find info about CoeBot's default commands at: http://coebot.tv");
 		}
 
 		// API KEYS

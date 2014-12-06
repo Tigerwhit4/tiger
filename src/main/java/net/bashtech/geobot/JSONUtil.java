@@ -317,7 +317,57 @@ public class JSONUtil {
 		}
 
 	}
+	public static String getXKCDTitle(int number){
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://xkcd.com/"+number+"/info.0.json"));
 
+			JSONObject jsonObject = (JSONObject) obj;
+			String safe_title = (String) jsonObject.get("safe_title");
+			
+
+			return safe_title;
+
+		} catch (Exception ex) {
+			System.out.println("Failed to get chatters");
+			return null;
+		}
+	}
+	public static String getXKCDImage(int number){
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://xkcd.com/"+number+"/info.0.json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+			String imagelink = (String) jsonObject.get("img");
+			
+
+			return imagelink;
+
+		} catch (Exception ex) {
+			System.out.println("Failed to get chatters");
+			return null;
+		}
+	}
+	public static String getXKCDAltText(int number){
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://xkcd.com/"+number+"/info.0.json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+			String alt = (String) jsonObject.get("alt");
+			
+
+			return alt;
+
+		} catch (Exception ex) {
+			System.out.println("Failed to get chatters");
+			return null;
+		}
+	}
 	public static String getRace(String channel) {
 		String raceID = "";
 
@@ -719,7 +769,7 @@ public class JSONUtil {
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return "Error";
+			return url;
 		}
 	}
 

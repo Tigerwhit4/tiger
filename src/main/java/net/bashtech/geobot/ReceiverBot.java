@@ -105,6 +105,7 @@ public class ReceiverBot extends PircBot {
 		this.setMessageDelay(0);
 
 		this.setVerbose(BotManager.getInstance().verboseLogging);
+
 		try {
 			this.connect(server, port,
 					BotManager.getInstance().getInstance().password);
@@ -211,10 +212,10 @@ public class ReceiverBot extends PircBot {
 	protected void onMessage(String channel, String sender, String login,
 			String hostname, String message) {
 		if (!BotManager.getInstance().useEventFeed)
-			onChannelMessage(channel, sender, message);
+			onChannelMessage(channel, channel,sender, message);
 	}
 
-	protected void onChannelMessage(String channel, String sender,
+	protected void onChannelMessage(String channel, String targetChannel, String sender,
 			String message) {
 		if (!BotManager.getInstance().verboseLogging
 				&& !message.startsWith("USERCOLOR")
@@ -223,9 +224,9 @@ public class ReceiverBot extends PircBot {
 				&& !message.startsWith("HISTORYEND")
 				&& !message.startsWith("CLEARCHAT")
 				&& !message.startsWith("Your color"))
-			logMain("MSG: " + channel + " " + sender + " : " + message);
+			logMain("MSG: " + targetChannel + " " + sender + " : " + message);
 
-		Channel channelInfo = getChannelObject(channel);
+		Channel channelInfo = getChannelObject(targetChannel);
 		String twitchName = channelInfo.getTwitchName();
 		String prefix = channelInfo.getPrefix();
 		bullet[0] = channelInfo.getChannelBullet();
@@ -343,7 +344,34 @@ public class ReceiverBot extends PircBot {
 			}
 
 		}
+		// verbose logging on/off
+		if (isAdmin && msg[0].equalsIgnoreCase(prefix + "verboseLogging")) {
+			if (msg.length > 1) {
+				if (msg[1].equalsIgnoreCase("true")
+						|| msg[1].equalsIgnoreCase("on")) {
+					this.setVerbose(true);
+					send(channel, "Verbose Logging turned on.");
+				} else if (msg[1].equalsIgnoreCase("false")
+						|| msg[1].equalsIgnoreCase("off")) {
+					this.setVerbose(false);
+					send(channel, "Verbose Logging turned off.");
 
+				}
+			}
+		}
+		// xkcd
+		if (msg[0].equalsIgnoreCase(prefix + "xkcd") && msg.length > 1 && isSub) {
+			if (isInteger(msg[1])) {
+				int number = Integer.parseInt(msg[1]);
+				send(channel,
+						"XKCD Comic #" + msg[1] + " Title: "
+								+ JSONUtil.getXKCDTitle(number) + "; Image: "
+								+ JSONUtil.getXKCDImage(number)
+								+ " ; Alt-Text: "
+								+ JSONUtil.getXKCDAltText(number));
+			} else
+				send(channel, "Please enter an integer comic number.");
+		}
 		// Impersonation command
 		if (isAdmin && msg[0].equalsIgnoreCase(prefix + "imp")) {
 			if (msg.length >= 3) {
@@ -679,7 +707,7 @@ public class ReceiverBot extends PircBot {
 		// ********************************************************************************
 
 		// Command cooldown check
-		if (msg[0].substring(0, 1).equalsIgnoreCase("!")
+		if (msg[0].substring(0, 1).equalsIgnoreCase(prefix)
 				&& channelInfo.onCooldown(msg[0])) {
 			if (!isOp)
 				return;
@@ -1574,7 +1602,8 @@ public class ReceiverBot extends PircBot {
 				}
 				String url = "http://lmgtfy.com/?q=" + encodedQuery;
 				send(channel,
-						"Link to \"" + rawQuery + ": " + JSONUtil.googURL(url));
+						"Link to \"" + rawQuery + "\": "
+								+ JSONUtil.googURL(url));
 			}
 			return;
 		}
@@ -2132,7 +2161,29 @@ public class ReceiverBot extends PircBot {
 		// !random - Ops
 		if (msg[0].equalsIgnoreCase(prefix + "random") && isSub) {
 			log("RB: Matched command !random");
-			if (msg.length >= 2) {
+
+			if (msg.length > 1) {
+				if (msg[1].equalsIgnoreCase("regular") && isOp) {
+					logMain("Matched command random regular");
+					ArrayList<String> onlineRegs = new ArrayList<String>();
+					ArrayList<String> chatters = JSONUtil
+							.tmiChatters(twitchName);
+					Set<String> regs = channelInfo.getRegulars();
+					for (String s : chatters) {
+						if (regs.contains(s.toLowerCase())) {
+							onlineRegs.add(s);
+						}
+					}
+					if (onlineRegs.size() > 0) {
+						String selected = onlineRegs
+								.get((int) (Math.random() * onlineRegs.size()));
+
+						send(channel, selected
+								+ " is the lucky random regular!");
+					} else
+						send(channel,
+								"No regulars are connected to chat right now.");
+				}
 				if (msg[1].equalsIgnoreCase("coin")) {
 					Random rand = new Random();
 					boolean coin = rand.nextBoolean();
@@ -2176,7 +2227,7 @@ public class ReceiverBot extends PircBot {
 						if (isSub && msg.length > 2) {
 							int index = Integer.parseInt(msg[2]);
 							send(channel, "Quote #" + index + ": "
-									+ channelInfo.getQuote(index));
+									+ channelInfo.getQuote(index-1));
 							lastQuoted = System.currentTimeMillis();
 						} else {
 							send(channel, "Syntax is " + prefix
@@ -2195,7 +2246,8 @@ public class ReceiverBot extends PircBot {
 							int randQuotes = (int) (Math.random() * channelInfo
 									.getQuoteSize());
 							if (randQuotes > -1) {
-								send(channel, "Quote #" + randQuotes + ": "
+								int tempNum = randQuotes+1;
+								send(channel, "Quote #" + tempNum + ": "
 										+ channelInfo.getQuote(randQuotes));
 								lastQuoted1 = System.currentTimeMillis();
 							} else
@@ -2218,9 +2270,11 @@ public class ReceiverBot extends PircBot {
 						} else {
 							quoteReceived.trim();
 							int numQuote = channelInfo.addQuote(quoteReceived);
-							if (numQuote > -1)
+							if (numQuote > -1){
+								numQuote++;
 								send(channel, quoteReceived
 										+ " added, this is quote #" + numQuote);
+							}
 							else
 								send(channel, "Quote already exists.");
 						}
@@ -2236,6 +2290,7 @@ public class ReceiverBot extends PircBot {
 						quoteReceived.trim();
 						int index = channelInfo.getQuoteIndex(quoteReceived);
 						if (index > -1) {
+							index++;
 							send(channel, "This quote's index is " + index);
 						} else {
 							send(channel,
@@ -2258,7 +2313,8 @@ public class ReceiverBot extends PircBot {
 										fuseArray(msg, 2).toLowerCase().trim())) {
 
 							num++;
-							containers += i + ",";
+							int tempNum = i+1;
+							containers += tempNum + ",";
 						}
 					}
 					if (num > 0) {
@@ -2275,7 +2331,7 @@ public class ReceiverBot extends PircBot {
 					log("RB: Matched command !delQuote");
 					if (isOp && msg.length > 2) {
 						int index = Integer.parseInt(msg[2]);
-						if (channelInfo.deleteQuote(index)) {
+						if (channelInfo.deleteQuote(index-1)) {
 							send(channel, "Quote #" + index
 									+ " deleted successfully.");
 						} else {
@@ -2869,7 +2925,7 @@ public class ReceiverBot extends PircBot {
 					}
 					send(channel, tempList);
 				}
-			}else if (msg.length > 2) {
+			} else if (msg.length > 2) {
 				if (msg[1].equalsIgnoreCase("add")) {
 					if (channelInfo.addIgnoredUser(msg[2].toLowerCase())) {
 						send(channel,
@@ -3510,6 +3566,11 @@ public class ReceiverBot extends PircBot {
 						send(channel, toSpam + " " + (i + 1));
 					return;
 				}
+			}else if(msg[1].startsWith("#")){
+				if(msg.length>2){
+					
+					onChannelMessage(channel, msg[1], sender, fuseArray(msg,2));
+				}
 			}
 		}
 		// ********************************************************************************
@@ -3590,10 +3651,15 @@ public class ReceiverBot extends PircBot {
 		// *********************************** Auto Reply
 		// *********************************
 		// ********************************************************************************
+		boolean matched = false;
 		for (int i = 0; i < channelInfo.autoReplyTrigger.size(); i++) {
 			Matcher m = channelInfo.autoReplyTrigger.get(i).matcher(message);
 			if (m.matches()) {
-
+				if (matched) {
+					matched = false;
+					break;
+				}
+				matched = true;
 				if (!channelInfo.onCooldown(channelInfo.autoReplyTrigger.get(i)
 						.toString())) {
 					String value = channelInfo.autoReplyResponse.get(i);
@@ -3682,8 +3748,8 @@ public class ReceiverBot extends PircBot {
 				String channel = msg[1];
 				Channel ci = BotManager.getInstance().getChannel("#" + channel);
 				ci.active = true;
-				System.out.println("DEBUG: Channel " + ci.getChannel()
-						+ " marked active.");
+				// System.out.println("DEBUG: Channel " + ci.getChannel()
+				// + " marked active.");
 			} else if (msg[0].equalsIgnoreCase("EMOTESET")) {
 				String user = msg[1];
 				String setsList = msg[2].replaceAll("(\\[|\\])", "");
@@ -3818,8 +3884,9 @@ public class ReceiverBot extends PircBot {
 
 	public void send(String target, String sender, String message, String[] args) {
 		if (msgTimer.size() > 19) {
-
+			
 			msgTimer.add(System.currentTimeMillis());
+			System.out.println(msgTimer.size());
 			long diff = msgTimer.get(20) - msgTimer.get(0);
 			log("RB: There are " + msgTimer.size()
 					+ " times in msgTimer. Diff = " + diff);
@@ -3913,6 +3980,7 @@ public class ReceiverBot extends PircBot {
 
 	public void sendCommand(String target, String message) {
 		if (msgTimer.size() > 19) {
+			System.out.println(msgTimer.size());
 			msgTimer.add(System.currentTimeMillis());
 			long diff = msgTimer.get(19) - msgTimer.get(0);
 			log("RB: There are " + msgTimer.size()

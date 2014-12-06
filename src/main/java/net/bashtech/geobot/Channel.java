@@ -2270,6 +2270,7 @@ public class Channel {
 		try {
 
 			FileWriter file = new FileWriter(channel + ".json");
+			
 			StringWriter out = new StringWriter();
 			JSONValue.writeJSONString(config, out);
 			String jsonText = out.toString();
