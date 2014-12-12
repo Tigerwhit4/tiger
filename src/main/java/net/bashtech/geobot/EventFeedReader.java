@@ -39,7 +39,7 @@ public class EventFeedReader implements Runnable {
                         System.out.println(inputLine);
                         String nick = (String) jo.get("nick");
                         String message = (String) jo.get("body");
-                        BotManager.getInstance().receiverBot.onChannelMessage(room, nick, message);
+                        BotManager.getInstance().receiverBot.onChannelMessage(room, room, nick, message);
                     }
 
                 } else if (inputLine.startsWith(":ping")) {

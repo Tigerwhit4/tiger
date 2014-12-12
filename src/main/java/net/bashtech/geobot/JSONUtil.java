@@ -317,15 +317,16 @@ public class JSONUtil {
 		}
 
 	}
-	public static String getXKCDTitle(int number){
+
+	public static String getXKCDTitle(int number) {
 		try {
 			JSONParser parser = new JSONParser();
 			Object obj = parser.parse(BotManager
-					.getRemoteContent("http://xkcd.com/"+number+"/info.0.json"));
+					.getRemoteContent("http://xkcd.com/" + number
+							+ "/info.0.json"));
 
 			JSONObject jsonObject = (JSONObject) obj;
 			String safe_title = (String) jsonObject.get("safe_title");
-			
 
 			return safe_title;
 
@@ -334,15 +335,16 @@ public class JSONUtil {
 			return null;
 		}
 	}
-	public static String getXKCDImage(int number){
+
+	public static String getXKCDImage(int number) {
 		try {
 			JSONParser parser = new JSONParser();
 			Object obj = parser.parse(BotManager
-					.getRemoteContent("http://xkcd.com/"+number+"/info.0.json"));
+					.getRemoteContent("http://xkcd.com/" + number
+							+ "/info.0.json"));
 
 			JSONObject jsonObject = (JSONObject) obj;
 			String imagelink = (String) jsonObject.get("img");
-			
 
 			return imagelink;
 
@@ -351,15 +353,16 @@ public class JSONUtil {
 			return null;
 		}
 	}
-	public static String getXKCDAltText(int number){
+
+	public static String getXKCDAltText(int number) {
 		try {
 			JSONParser parser = new JSONParser();
 			Object obj = parser.parse(BotManager
-					.getRemoteContent("http://xkcd.com/"+number+"/info.0.json"));
+					.getRemoteContent("http://xkcd.com/" + number
+							+ "/info.0.json"));
 
 			JSONObject jsonObject = (JSONObject) obj;
 			String alt = (String) jsonObject.get("alt");
-			
 
 			return alt;
 
@@ -368,6 +371,7 @@ public class JSONUtil {
 			return null;
 		}
 	}
+
 	public static String getRace(String channel) {
 		String raceID = "";
 
@@ -835,6 +839,59 @@ public class JSONUtil {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return false;
+		}
+
+	}
+
+	public static String BOIItemName(String searchTerm) {
+		String urlEncoded = urlEncode(searchTerm);
+		String searchURL = "http://bindingofisaac.wikia.com/api/v1/Search/List/?query="
+				+ urlEncoded + "&limit=1";
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager.getRemoteContent(searchURL));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			JSONArray items = (JSONArray) jsonObject.get("items");
+			JSONObject item = (JSONObject) items.get(0);
+			String itemName = (String) item.get("title");
+			return (itemName);
+		} catch (Exception ex) {
+			// ex.printStackTrace();
+			return "";
+		}
+	}
+
+	public static String BOIItem(String searchTerm) {
+		String urlEncoded = urlEncode(searchTerm);
+		String searchURL = "http://bindingofisaac.wikia.com/api/v1/Search/List/?query="
+				+ urlEncoded + "&limit=1";
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager.getRemoteContent(searchURL));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			JSONArray items = (JSONArray) jsonObject.get("items");
+			JSONObject item = (JSONObject) items.get(0);
+
+			Long itemID = (Long) item.get("id");
+			Object obj1 = parser
+					.parse(BotManager
+							.getRemoteContent("http://bindingofisaac.wikia.com/api/v1/Articles/Details/?ids="
+									+ itemID + "&abstract=140"));
+			JSONObject itemResponse = (JSONObject) obj1;
+			JSONObject items1 = (JSONObject) itemResponse.get("items");
+			JSONObject item1 = (JSONObject) items1.get(itemID + "");
+			String description = (String) item1.get("abstract");
+
+			return (description);
+		} catch (Exception ex) {
+			// ex.printStackTrace();
+			return "Error fetching item data";
 		}
 
 	}
