@@ -18,8 +18,13 @@
 
 package net.bashtech.geobot.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+
 
 
 public class BotGUI extends JFrame {
@@ -30,7 +35,7 @@ public class BotGUI extends JFrame {
 
     public BotGUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setTitle("GeoBot");
+        setTitle("CoeBot");
         this.setSize(650, 410);
 
         statuspane.setEditable(false);

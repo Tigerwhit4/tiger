@@ -33,18 +33,6 @@ import java.util.regex.Pattern;
 
 public class JSONUtil {
 
-	// public static void krakenStreams() throws Exception{
-	// JSONParser parser = new JSONParser();
-	// Object obj =
-	// parser.parse(BotManager.getRemoteContent("https://api.twitch.tv/kraken/streams/mlglol"));
-	//
-	// JSONObject jsonObject = (JSONObject) obj;
-	//
-	// JSONObject stream = (JSONObject)(jsonObject.get("stream"));
-	// Long viewers = (Long)stream.get("viewers");
-	// System.out.println("Viewers: " + viewers);
-	// }
-
 	public static Long krakenViewers(String channel) {
 		try {
 			JSONParser parser = new JSONParser();
@@ -67,24 +55,161 @@ public class JSONUtil {
 
 	}
 
-	// public static Long jtvViewers(String channel) {
-	// try {
-	// JSONParser parser = new JSONParser();
-	// Object obj = parser
-	// .parse(BotManager
-	// .getRemoteContent("http://api.justin.tv/api/stream/summary.json?channel="
-	// + channel));
-	//
-	// JSONObject jsonObject = (JSONObject) obj;
-	//
-	// Long viewers = (Long) jsonObject.get("viewers_count");
-	// return viewers;
-	// } catch (Exception ex) {
-	// ex.printStackTrace();
-	// return (long) 0;
-	// }
-	//
-	// }
+	public static String BOICharacter(String channel) {
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/configs/boir/"
+							+ channel.substring(1) + ".json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			String character = (String) jsonObject.get("character");
+
+			return character;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public static String BOISeed(String channel) {
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/configs/boir/"
+							+ channel.substring(1) + ".json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			String seed = (String) jsonObject.get("seed");
+
+			return seed;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public static String BOIFloor(String channel) {
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/configs/boir/"
+							+ channel.substring(1) + ".json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			String floor = (String) jsonObject.get("floor");
+
+			return floor;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public static ArrayList<String> BOIItems(String channel) {
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/configs/boir/"
+							+ channel.substring(1) + ".json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			JSONArray items = (JSONArray) jsonObject.get("items");
+			ArrayList<String> itemList = new ArrayList<String>();
+			for (int i = 0; i < items.size(); i++) {
+				itemList.add((String) items.get(i));
+			}
+
+			return itemList;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public static ArrayList<String> BOIGuppyItems(String channel) {
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/configs/boir/"
+							+ channel.substring(1) + ".json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			JSONArray items = (JSONArray) jsonObject.get("guppyItems");
+			ArrayList<String> itemList = new ArrayList<String>();
+			for (int i = 0; i < items.size(); i++) {
+				itemList.add((String) items.get(i));
+			}
+
+			return itemList;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public static ArrayList<String> BOIFlyItems(String channel) {
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/configs/boir/"
+							+ channel.substring(1) + ".json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			JSONArray items = (JSONArray) jsonObject.get("flyItems");
+			ArrayList<String> itemList = new ArrayList<String>();
+			for (int i = 0; i < items.size(); i++) {
+				itemList.add((String) items.get(i));
+			}
+
+			return itemList;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public static Long BOIGuppyProgress(String channel) {
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/configs/boir/"
+							+ channel.substring(1) + ".json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			Long progress = (Long) jsonObject.get("guppyProgress");
+
+			return progress;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public static Long BOIFlyProgress(String channel) {
+
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/configs/boir/"
+							+ channel.substring(1) + ".json"));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			Long progress = (Long) jsonObject.get("flyProgress");
+
+			return progress;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
 
 	public static String getGameChannel(String gameName) {
 		gameName = gameName.replaceAll(" ", "+");
@@ -208,9 +333,6 @@ public class JSONUtil {
 				return getWiki(newSearch, tries++);
 			}
 
-			// content = content.replaceAll("\\[", "");
-			// content = content.replaceAll("\\]", "");
-			// content = content.replaceAll("\\|", "");
 			content = content.replaceAll("\\\\", "");
 			content = content.replaceAll("\\{", "");
 			content = content.replaceAll("\\}", "");
@@ -251,30 +373,15 @@ public class JSONUtil {
 				content = content.replace(match0, match);
 
 			}
+			if (content.equals("")) {
+				content = "Malformed article abstract on Wikipedia's end.";
+			}
 			return content;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return "Unable to find that article.";
 		}
 	}
-
-	// public static String jtvStatus(String channel) {
-	// try {
-	// JSONParser parser = new JSONParser();
-	// Object obj = parser.parse(BotManager
-	// .getRemoteContent("http://api.justin.tv/api/channel/show/"
-	// + channel + ".json"));
-	//
-	// JSONObject jsonObject = (JSONObject) obj;
-	//
-	// String status = (String) jsonObject.get("status");
-	// return status;
-	// } catch (Exception ex) {
-	// ex.printStackTrace();
-	// return "Unable to query API";
-	// }
-	//
-	// }
 
 	public static String krakenStatus(String channel) {
 		try {
@@ -384,8 +491,6 @@ public class JSONUtil {
 			JSONObject jsonObject = (JSONObject) obj;
 			int count = Integer.parseInt((String) jsonObject.get("count"));
 			JSONArray raceList = (JSONArray) jsonObject.get("races");
-			// JSONObject[] raceArr= (JSONObject[]) raceList.toArray();
-			// BotManager.getInstance().log(raceList.toJSONString());
 
 			for (int i = 0; i < count; i++) {
 				JSONObject races = (JSONObject) raceList.get(i);
@@ -465,30 +570,6 @@ public class JSONUtil {
 			return (long) 0;
 		}
 	}
-
-	// public static String defineWord(String word) {
-	// String returned = BotManager
-	// .getRemoteContent("http://www.dictionaryapi.com/api/v1/references/collegiate/xml/"
-	// + word + "?key=21f734f4-3d5f-4266-9c20-d6be5909c81a");
-	// int start = returned.indexOf(":");
-	// if (start > -1) {
-	// int end = returned.indexOf("</", start + 1);
-	// returned = "\"" + returned.substring(start + 1, end) + "\"";
-	// return returned;
-	// } else {
-	// start = returned.indexOf("<suggestion>");
-	// if (start > -1) {
-	// int end = returned.indexOf("</", start);
-	// returned =
-	// "Couldn't find a definition for that word, maybe try this one: \""
-	// + returned.substring(start + 12, end) + "\"";
-	// return returned;
-	// } else
-	// return "Couldn't find any results, sorry";
-	//
-	// }
-	//
-	// }
 
 	public static String defineUrban(String word) {
 
@@ -777,41 +858,6 @@ public class JSONUtil {
 		}
 	}
 
-	// public static String shortenURL(String url) {
-	// String login = BotManager.getInstance().bitlyLogin;
-	// String api_key = BotManager.getInstance().bitlyAPIKey;
-	//
-	// try {
-	// String encodedURL = "";
-	// try {
-	// encodedURL = URLEncoder.encode(url, "UTF-8");
-	// } catch (UnsupportedEncodingException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	//
-	// JSONParser parser = new JSONParser();
-	// Object obj = parser.parse(BotManager
-	// .getRemoteContent("http://api.bitly.com/v3/shorten?login="
-	// + login + "&apiKey=" + api_key + "&longUrl="
-	// + encodedURL + "&format=json"));
-	//
-	// JSONObject jsonObject = (JSONObject) obj;
-	// String status_txt = (String) jsonObject.get("status_txt");
-	//
-	// if (status_txt.equalsIgnoreCase("OK")) {
-	// JSONObject data = (JSONObject) jsonObject.get("data");
-	// String shortenedUrl = (String) data.get("url");
-	// return shortenedUrl;
-	// } else {
-	// return url;
-	// }
-	// } catch (Exception ex) {
-	// ex.printStackTrace();
-	// return url;
-	// }
-	// }
-
 	public static String urlEncode(String data) {
 		try {
 			data = URLEncoder.encode(data, "UTF-8");
@@ -843,57 +889,56 @@ public class JSONUtil {
 
 	}
 
-	public static String BOIItemName(String searchTerm) {
-		String urlEncoded = urlEncode(searchTerm);
-		String searchURL = "http://bindingofisaac.wikia.com/api/v1/Search/List/?query="
-				+ urlEncoded + "&limit=1";
-
+	public static String BOIItemInfo(String searchTerm) {
+		String modified = searchTerm.toLowerCase().replace(" a ", "")
+				.replace(" ", "").replace("/", "").replace("'", "")
+				.replace("the", "").replace("&lt;", "<").replace("1", "one")
+				.replace("2", "two").replace("3", "three")
+				.replace("20", "twenty").replace("-", "").replace(".", "")
+				.replace("!", "").replace("=", "").replace("equals", "");
+		int found = -1;
 		try {
 			JSONParser parser = new JSONParser();
-			Object obj = parser.parse(BotManager.getRemoteContent(searchURL));
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/boiitemsarray.json"));
+			JSONArray topArray = (JSONArray) obj;
+			for (int i = 0; i < topArray.size(); i++) {
+				JSONObject tempobj = (JSONObject) topArray.get(i);
+				String orig = (String) tempobj.get("title");
+				if (modified.equalsIgnoreCase(orig.toLowerCase()
+						.replace(" a ", "").replace(" ", "").replace("/", "")
+						.replace("'", "").replace("the", "")
+						.replace("&lt;", "<").replace("1", "one")
+						.replace("2", "two").replace("3", "three")
+						.replace("20", "twenty").replace("-", "")
+						.replace(".", "").replace("!", "").replace("=", "")
+						.replace("equals", ""))) {
+					found = i;
+					break;
+				}
+			}
+			if (found > -1) {
+				JSONObject item = (JSONObject) topArray.get(found);
+				JSONArray info = (JSONArray) item.get("info");
+				String retString = "";
+				for (int i = 0; i < info.size(); i++) {
+					if (retString.length() + ((String) info.get(i)).length() < 245)
+						retString += info.get(i) + "; ";
+					else
+						break;
+				}
+				retString = retString.trim();
+				retString = retString.substring(0, retString.length() - 1);
+				return retString;
+			} else {
 
-			JSONObject jsonObject = (JSONObject) obj;
+				return "Item Not Found";
+			}
 
-			JSONArray items = (JSONArray) jsonObject.get("items");
-			JSONObject item = (JSONObject) items.get(0);
-			String itemName = (String) item.get("title");
-			return (itemName);
-		} catch (Exception ex) {
-			// ex.printStackTrace();
-			return "";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Error";
 		}
-	}
-
-	public static String BOIItem(String searchTerm) {
-		String urlEncoded = urlEncode(searchTerm);
-		String searchURL = "http://bindingofisaac.wikia.com/api/v1/Search/List/?query="
-				+ urlEncoded + "&limit=1";
-
-		try {
-			JSONParser parser = new JSONParser();
-			Object obj = parser.parse(BotManager.getRemoteContent(searchURL));
-
-			JSONObject jsonObject = (JSONObject) obj;
-
-			JSONArray items = (JSONArray) jsonObject.get("items");
-			JSONObject item = (JSONObject) items.get(0);
-
-			Long itemID = (Long) item.get("id");
-			Object obj1 = parser
-					.parse(BotManager
-							.getRemoteContent("http://bindingofisaac.wikia.com/api/v1/Articles/Details/?ids="
-									+ itemID + "&abstract=140"));
-			JSONObject itemResponse = (JSONObject) obj1;
-			JSONObject items1 = (JSONObject) itemResponse.get("items");
-			JSONObject item1 = (JSONObject) items1.get(itemID + "");
-			String description = (String) item1.get("abstract");
-
-			return (description);
-		} catch (Exception ex) {
-			// ex.printStackTrace();
-			return "Error fetching item data";
-		}
-
 	}
 
 	public static String extraLifeAmount(String channel) {
@@ -954,7 +999,6 @@ public class JSONUtil {
 			}
 
 			String updatedAtString = (String) jsonObject.get("updated_at");
-			// System.out.println("Time: " + updatedAtString);
 
 			DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			format.setTimeZone(java.util.TimeZone.getTimeZone("US/Pacific"));
@@ -1028,55 +1072,6 @@ public class JSONUtil {
 
 	}
 
-	// public static Double getSourceBitrate(String channel) {
-	// try {
-	// JSONParser parser = new JSONParser();
-	// Object obj = parser
-	// .parse(BotManager
-	// .getRemoteContent("http://api.justin.tv/api/stream/list.json?channel="
-	// + channel));
-	//
-	// JSONArray outerArray = (JSONArray) obj;
-	//
-	// if (outerArray.size() == 1) {
-	// JSONObject channelObject = (JSONObject) outerArray.get(0);
-	// Double bitrate = (Double) channelObject.get("video_bitrate");
-	// return bitrate;
-	// }
-	//
-	// return new Double(0);
-	// } catch (Exception ex) {
-	// ex.printStackTrace();
-	// return new Double(0);
-	// }
-	//
-	// }
-
-	// public static String getSourceRes(String channel) {
-	// try {
-	// JSONParser parser = new JSONParser();
-	// Object obj = parser
-	// .parse(BotManager
-	// .getRemoteContent("http://api.justin.tv/api/stream/list.json?channel="
-	// + channel));
-	//
-	// JSONArray outerArray = (JSONArray) obj;
-	//
-	// if (outerArray.size() == 1) {
-	// JSONObject channelObject = (JSONObject) outerArray.get(0);
-	// Long width = (Long) channelObject.get("video_width");
-	// Long height = (Long) channelObject.get("video_height");
-	// return width + "x" + height;
-	// }
-	//
-	// return "Unable to retrieve data";
-	// } catch (Exception ex) {
-	// ex.printStackTrace();
-	// return "Unable to retrieve data";
-	// }
-	//
-	// }
-
 	public static String getChatProperties(String channel) {
 		try {
 			JSONParser parser = new JSONParser();
@@ -1125,6 +1120,17 @@ public class JSONUtil {
 			return emotes;
 		}
 
+	}
+
+	public static String toTitleCase(String givenString) {
+		String[] arr = givenString.split(" ");
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < arr.length; i++) {
+			sb.append(Character.toUpperCase(arr[i].charAt(0)))
+					.append(arr[i].substring(1)).append(" ");
+		}
+		return sb.toString().trim();
 	}
 
 }

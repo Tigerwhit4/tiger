@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Andrew Bashore
+f * Copyright 2012 Andrew Bashore
  * This file is part of GeoBot.
  * 
  * GeoBot is free software: you can redistribute it and/or modify
@@ -48,6 +48,7 @@ public class BotManager {
 	public String krakenOAuthToken;
 	public String krakenClientID;
 	public String YoutubeAPIKey;
+	public String CoeBotTVAPIKey;
 	String nick;
 	String server;
 	int port;
@@ -129,7 +130,7 @@ public class BotManager {
 							channel.substring(1))
 					|| entry.getValue().staticChannel) {
 				log("BM: Joining channel " + channel);
-				receiverBot.joinChannel(channel);
+				receiverBot.joinChannel(channel.toLowerCase());
 				try {
 					Thread.sleep(350);
 				} catch (InterruptedException e) {
@@ -174,27 +175,15 @@ public class BotManager {
 	}
 
 	public static String getRemoteContent(String urlString) {
-		
-//		ExecutorService executor = Executors.newFixedThreadPool(1);
-//		AsyncChecker checker = new AsyncChecker(urlString, 0);
-//		Future<String> future = executor.submit(checker);
-//		try {
-//			return future.get();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		} catch (ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		}
-		
-		
+
 		String dataIn = "";
 		try {
 			URL url = new URL(urlString);
 			// System.out.println("DEBUG: Getting data from " + url.toString());
 			URLConnection conn = url.openConnection();
 			conn.setRequestProperty("User-Agent", "CoeBot");
+			conn.setConnectTimeout(5 * 1000);
+			conn.setReadTimeout(5 * 1000);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					conn.getInputStream()));
 			String inputLine;
@@ -203,6 +192,9 @@ public class BotManager {
 			in.close();
 
 		} catch (Exception ex) {
+			if (ex instanceof SocketTimeoutException) {
+				return "API took too long to respond.";
+			}
 			ex.printStackTrace();
 		}
 
@@ -211,26 +203,15 @@ public class BotManager {
 
 	public static String getRemoteContentTwitch(String urlString,
 			int krakenVersion) {
-		
-//		ExecutorService executor = Executors.newFixedThreadPool(1);
-//		AsyncChecker checker = new AsyncChecker(urlString,1,krakenVersion);
-//		Future<String> future = executor.submit(checker);
-//		try {
-//			return future.get();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		} catch (ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-		
+
 		String dataIn = "";
 		try {
 			URL url = new URL(urlString);
 			// System.out.println("DEBUG: Getting data from " + url.toString());
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			// conn.setConnectTimeout(connectTimeout);
-			// conn.setReadTimeout(socketTimeout);
+
+			conn.setConnectTimeout(5 * 1000);
+			conn.setReadTimeout(5 * 1000);
 
 			if (BotManager.getInstance().krakenClientID.length() > 0)
 				conn.setRequestProperty("Client-ID",
@@ -264,29 +245,9 @@ public class BotManager {
 
 		return dataIn;
 	}
-		
-		
-		
 
 	public static String postRemoteDataStrawpoll(String urlString) {
 
-//		ExecutorService executor = Executors.newFixedThreadPool(1);
-//		AsyncChecker checker = new AsyncChecker(urlString,2);
-//		Future<String> future = executor.submit(checker);
-//		try {
-//			return future.get();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		} catch (ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		}
-		
-		
-		
-		
-	
 		String line = null;
 		try {
 			HttpURLConnection c = (HttpURLConnection) (new URL(
@@ -338,22 +299,6 @@ public class BotManager {
 
 	public static String postRemoteDataTwitch(String urlString,
 			String postData, int krakenVersion) {
-//		
-//		ExecutorService executor = Executors.newFixedThreadPool(1);
-//		AsyncChecker checker = new AsyncChecker(urlString,3,krakenVersion,postData);
-//		Future<String> future = executor.submit(checker);
-//		try {
-//			return future.get();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		} catch (ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		}
-//	}
-			
-			
 		URL url;
 		HttpURLConnection conn;
 
@@ -373,6 +318,8 @@ public class BotManager {
 					"OAuth " + BotManager.getInstance().krakenOAuthToken);
 			conn.setRequestProperty("Client-ID",
 					BotManager.getInstance().krakenClientID);
+			conn.setConnectTimeout(5 * 1000);
+			conn.setReadTimeout(5 * 1000);
 
 			PrintWriter out = new PrintWriter(conn.getOutputStream());
 			out.print(postData);
@@ -396,11 +343,11 @@ public class BotManager {
 
 		return "";
 	}
-	
-	public static String postDataLinkShortener(String postData){
+
+	public static String postDataLinkShortener(String postData) {
 		URL url;
 		HttpURLConnection conn;
-		postData="{\"longUrl\": \""+postData+"\"}";
+		postData = "{\"longUrl\": \"" + postData + "\"}";
 
 		try {
 			url = new URL("https://www.googleapis.com/urlshortener/v1/url");
@@ -409,12 +356,9 @@ public class BotManager {
 			conn.setDoOutput(true);
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("User-Agent", "CoeBot");
-			conn.setRequestProperty("Content-Type",
-					"application/json");
-			conn.setRequestProperty("Content-Length", "" + Integer.toString(postData.getBytes().length));
-			//conn.setFixedLengthStreamingMode(postData.getBytes().length);
-			
-		
+			conn.setRequestProperty("Content-Type", "application/json");
+			conn.setRequestProperty("Content-Length",
+					"" + Integer.toString(postData.getBytes().length));
 
 			PrintWriter out = new PrintWriter(conn.getOutputStream());
 			System.out.println(postData);
@@ -438,29 +382,110 @@ public class BotManager {
 		}
 
 		return "";
-	
+
+	}
+
+	public static String postCoebotConfig(String postData, String channel) {
+		if (BotManager.getInstance().CoeBotTVAPIKey.length() > 4) {
+			URL url;
+			HttpURLConnection conn;
+
+			try {
+				url = new URL("http://coebot.tv/api/v1/channel/update/config/"
+						+ channel.toLowerCase() + "$"
+						+ BotManager.getInstance().CoeBotTVAPIKey + "$"
+						+ BotManager.getInstance().nick);
+
+				conn = (HttpURLConnection) url.openConnection();
+				conn.setDoOutput(true);
+				conn.setRequestMethod("POST");
+				conn.setRequestProperty("User-Agent", "CoeBot");
+				conn.setRequestProperty("Content-Type", "application/json");
+				conn.setRequestProperty("Content-Length",
+						"" + Integer.toString(postData.getBytes().length));
+
+				conn.setConnectTimeout(5 * 1000);
+				conn.setReadTimeout(5 * 1000);
+
+				PrintWriter out = new PrintWriter(conn.getOutputStream());
+				out.print(postData);
+				out.close();
+
+				String response = "";
+
+				Scanner inStream = new Scanner(conn.getInputStream());
+
+				while (inStream.hasNextLine())
+					response += (inStream.nextLine());
+
+				inStream.close();
+				return response;
+
+			} catch (MalformedURLException ex) {
+				ex.printStackTrace();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+
+			return "";
+		}else
+			return "";
+	}
+
+	public String coebotJoinChannel(String channel, String botName) {
+		if (BotManager.getInstance().CoeBotTVAPIKey.length() > 4) {
+
+			try {
+				JSONParser parser = new JSONParser();
+				Object obj = parser
+						.parse(BotManager
+								.getRemoteContent("http://coebot.tv/api/v1/channel/join/"
+										+ channel.toLowerCase()
+										+ "$"
+										+ BotManager.getInstance().CoeBotTVAPIKey
+										+ "$"
+										+ BotManager.getInstance()
+												.getInstance().nick));
+
+				JSONObject response = (JSONObject) obj;
+				String resp = (String) response.get("status");
+				return resp;
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				return "Error";
+			}
+		} else
+			return "Error";
+	}
+
+	public String coebotPartChannel(String channel, String botName) {
+		if (BotManager.getInstance().CoeBotTVAPIKey.length() > 4) {
+			try {
+				JSONParser parser = new JSONParser();
+				Object obj = parser
+						.parse(BotManager
+								.getRemoteContent("http://coebot.tv/api/v1/channel/part/"
+										+ channel.toLowerCase()
+										+ "$"
+										+ BotManager.getInstance().CoeBotTVAPIKey
+										+ "$" + botName));
+
+				JSONObject response = (JSONObject) obj;
+				String resp = (String) response.get("status");
+				return resp;
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				return "Error";
+			}
+		} else
+			return "Error";
 	}
 
 	public static String putRemoteData(String urlString, String postData)
 			throws IOException {
-		
-//		ExecutorService executor = Executors.newFixedThreadPool(1);
-//		AsyncChecker checker = new AsyncChecker(urlString,4,0,postData);
-//		Future<String> future = executor.submit(checker);
-//		try {
-//			return future.get();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		} catch (ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			return null;
-//		}
-//		
-//	}
-		
-		
-		
+
 		URL url;
 		HttpURLConnection conn;
 
@@ -479,6 +504,8 @@ public class BotManager {
 					"OAuth " + BotManager.getInstance().krakenOAuthToken);
 			conn.setRequestProperty("Client-ID",
 					BotManager.getInstance().krakenClientID);
+			conn.setConnectTimeout(5 * 1000);
+			conn.setReadTimeout(5 * 1000);
 
 			PrintWriter out = new PrintWriter(conn.getOutputStream());
 			out.print(postData);
@@ -559,14 +586,6 @@ public class BotManager {
 
 		// API KEYS
 
-		if (!config.keyExists("bitlyAPIKey")) {
-			config.setString("bitlyAPIKey", "");
-		}
-
-		if (!config.keyExists("bitlyLogin")) {
-			config.setString("bitlyLogin", "");
-		}
-
 		if (!config.keyExists("LastFMAPIKey")) {
 			config.setString("LastFMAPIKey", "");
 		}
@@ -625,8 +644,11 @@ public class BotManager {
 		if (!config.keyExists("youtubeAPIKey")) {
 			config.setString("youtubeAPIKey", "");
 		}
+		if (!config.keyExists("CoeBotTVAPIKey")) {
+			config.setString("CoeBotTVAPIKey", "");
+		}
 		// ********
-		YoutubeAPIKey = config.getString("youtubeAPIKey");
+
 		nick = config.getString("nick");
 		server = config.getString("server");
 		port = Integer.parseInt(config.getString("port"));
@@ -655,13 +677,12 @@ public class BotManager {
 
 		// API KEYS
 
-		bitlyAPIKey = config.getString("bitlyAPIKey");
-		bitlyLogin = config.getString("bitlyLogin");
 		LastFMAPIKey = config.getString("LastFMAPIKey");
 		SteamAPIKey = config.getString("SteamAPIKey");
 		krakenOAuthToken = config.getString("krakenOAuthToken");
 		krakenClientID = config.getString("krakenClientID");
-
+		YoutubeAPIKey = config.getString("youtubeAPIKey");
+		CoeBotTVAPIKey = config.getString("CoeBotTVAPIKey");
 		// ********
 
 		for (String s : config.getString("channelList").split(",")) {
@@ -967,5 +988,4 @@ public class BotManager {
 			getGUI().log(line);
 		}
 	}
-
 }

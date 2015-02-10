@@ -14,62 +14,52 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GeoBot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package net.bashtech.geobot;
 
-
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 public class Tester {
 
-    public static void main(String[] args) {
-//    	String output = getDurationBreakdown(10000);
-//    	System.out.println(output);
-    	String test = "This is a test, only a test";
-    	String test2 = "this is also a test; only a test";
-    	String[] testArr = test.split(";");
-    	String[] testArr2 = test2.split(";");
-    	for(String s: testArr){
-    		System.out.println(s);
-    	}
-    	for(String s: testArr2){
-    		System.out.println(s);
-    	}
-    }
-    
-    
-    public static String getDurationBreakdown(long millis)
-    {
-        if(millis < 0)
-        {
-            throw new IllegalArgumentException("Duration must be greater than zero!");
-        }
+	static ArrayList<String>responses = new ArrayList<String>();
+	static ArrayList<String>patterns = new ArrayList<String>();
+	public static void main(String[] args) {
+		for(int i = 0; i<5;i++){
+			responses.add("test"+i);
+			patterns.add("pattern"+i);
+		}
+		System.out.println(responses.toString());
+		System.out.println(patterns.toString());
+		responses.remove(2);
+		responses.add(2,"test2");
+		System.out.println(responses.toString());
+	}
 
-        long days = TimeUnit.MILLISECONDS.toDays(millis);
-        millis -= TimeUnit.DAYS.toMillis(days);
-        long hours = TimeUnit.MILLISECONDS.toHours(millis);
-        millis -= TimeUnit.HOURS.toMillis(hours);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
-        millis -= TimeUnit.MINUTES.toMillis(minutes);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+	
 
-        StringBuilder sb = new StringBuilder(64);
-        sb.append(days);
-        sb.append(" Days ");
-        sb.append(hours);
-        sb.append(" Hours ");
-        sb.append(minutes);
-        sb.append(" Minutes ");
-        sb.append(seconds);
-        sb.append(" Seconds");
+	public static String toTitleCase(String givenString) {
+		String[] arr = givenString.split(" ");
+		StringBuffer sb = new StringBuffer();
 
-        return(sb.toString());
-    }
+		for (int i = 0; i < arr.length; i++) {
+			sb.append(Character.toUpperCase(arr[i].charAt(0)))
+					.append(arr[i].substring(1)).append(" ");
+		}
+		return sb.toString().trim();
+	}
 
 }
