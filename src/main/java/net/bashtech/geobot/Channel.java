@@ -18,7 +18,7 @@
 
 package net.bashtech.geobot;
 
-import org.java_websocket.WebSocket;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -29,8 +29,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,7 +100,7 @@ public class Channel {
 	private int timeoutDuration;
 	private boolean enableWarnings;
 	Map<String, Long> commandCooldown;
-	Set<WebSocket> wsSubscribers = new HashSet<WebSocket>();
+	
 	String prefix;
 	String emoteSet;
 	boolean subscriberRegulars;
@@ -140,6 +138,11 @@ public class Channel {
 	private boolean urbanEnabled = false;
 	private ArrayList<String> ignoredUsers = new ArrayList<String>();
 	private long extraLifeID;
+	public boolean resubAlerts;
+	public String resubMessage;
+
+	public Boolean subscriberAlerts;
+	public String subscriberMessage;
 
 	public Channel(String name) {
 		channel = name;
@@ -396,7 +399,7 @@ public class Channel {
 
 	}
 
-	public void removeCommand(String key) {
+	public boolean removeCommand(String key) {
 		if (commands.containsKey(key)) {
 			commands.remove(key);
 			commandsRestrictions.remove(key);
@@ -404,8 +407,9 @@ public class Channel {
 			commandAdders.remove(key);
 
 			saveCommands(true);
-
-		}
+			return true;
+		}else
+			return false;
 
 	}
 
@@ -699,20 +703,48 @@ public class Channel {
 		saveConfig(false);
 	}
 
-	public void updateGame(String game) throws IOException {
-		System.out.println(BotManager.putRemoteData(
+	public boolean updateGame(String game) throws IOException {
+		String resp = BotManager.putRemoteData(
 				"https://api.twitch.tv/kraken/channels/"
 						+ this.channel.substring(1),
 				"{\"channel\": {\"game\": \"" + JSONObject.escape(game)
-						+ "\"}}"));
+						+ "\"}}");
+		if (game.equals("-")) {
+			game = null;
+		}
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(resp);
+			JSONObject jsonObject = (JSONObject) obj;
+			try {
+				String newStatus = (String) jsonObject.get("game");
+				return game.equalsIgnoreCase(newStatus);
+			} catch (Exception e) {
+				return true;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
-	public void updateStatus(String status) throws IOException {
-		System.out.println(BotManager.putRemoteData(
+	public boolean updateStatus(String status) throws IOException {
+		String resp = BotManager.putRemoteData(
 				"https://api.twitch.tv/kraken/channels/"
 						+ this.channel.substring(1),
 				"{\"channel\": {\"status\": \"" + JSONObject.escape(status)
-						+ "\"}}"));
+						+ "\"}}");
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(resp);
+			JSONObject jsonObject = (JSONObject) obj;
+			String newStatus = (String) jsonObject.get("status");
+			return status.equalsIgnoreCase(newStatus);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public String getTopicTime() {
@@ -1673,6 +1705,9 @@ public class Channel {
 		defaults.put("filterEmotesSingle", new Boolean(false));
 		defaults.put("subMessage", "(_1_) has subscribed!");
 		defaults.put("subscriberAlert", new Boolean(false));
+		defaults.put("resubAlert", new Boolean(false));
+		defaults.put("resubMessage",
+				"Welcome back, (_1_) has just resubscribed!");
 		defaults.put("banPhraseSeverity", 99);
 
 		defaults.put("wpTimer", new Boolean(false));
@@ -1712,8 +1747,28 @@ public class Channel {
 
 		urbanEnabled = Boolean.valueOf((Boolean) config.get("urbanEnabled"));
 		extraLifeID = ((Long) config.get("extraLifeID"));
+		resubAlerts = Boolean.valueOf((Boolean) config.get("resubAlert"));
+		resubMessage = (String) config.get("resubMessage");
+		try {
+			subscriberAlerts = Boolean.valueOf((String) config
+					.get("subscriberAlert"));
+		} catch (Exception e) {
+			subscriberAlerts = Boolean.valueOf((Boolean) config
+					.get("subscriberAlert"));
+			config.put("subscriberAlert", subscriberAlerts);
+		}
+		try {
+			subscriberAlerts = Boolean.valueOf((Boolean) config
+					.get("subscriberAlert"));
+		} catch (Exception e) {
+			subscriberAlerts = Boolean.valueOf((String) config
+					.get("subscriberAlert"));
+			config.put("subscriberAlert", subscriberAlerts);
+		}
+		subscriberMessage = (String) config.get("subMessage");
 		gamerTag = (String) config.get("gamerTag");
 		// channel = config.getString("channel");
+
 		subsRegsMinusLinks = Boolean.valueOf((Boolean) config
 				.get("subsRegsMinusLinks"));
 		updateDelay = ((Long) config.get("updateDelay")).intValue();
@@ -2183,5 +2238,45 @@ public class Channel {
 		System.out.println(BotManager.getInstance().postCoebotConfig(
 				config.toJSONString(), twitchname));
 
+	}
+
+	public boolean getResubAlert() {
+
+		return resubAlerts;
+	}
+
+	public String getResubMessage() {
+
+		return resubMessage;
+	}
+
+	public void setResubAlert(boolean status) {
+		resubAlerts = status;
+		config.put("resubAlert", status);
+		saveConfig(false);
+	}
+
+	public void setResubMessage(String newMessage) {
+		resubMessage = newMessage;
+		config.put("resubMessage", newMessage);
+		saveConfig(false);
+	}
+
+	public Boolean getSubAlert() {
+		return subscriberAlerts;
+	}
+
+	public String getSubMessage() {
+		return subscriberMessage;
+	}
+
+	public void setSubAlert(boolean status) {
+		config.put("subscriberAlert", status);
+		saveConfig(false);
+	}
+
+	public void setSubMessage(String newMessage) {
+		config.put("subMessage", newMessage);
+		saveConfig(false);
 	}
 }

@@ -1,102 +1,112 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.bashtech</groupId>
-	<artifactId>GeoBot</artifactId>
+	<artifactId>CoeBot</artifactId>
 	<version>1.3.0-tmi-SNAPSHOT</version>
-	<name>GeoBot</name>
-	<url>http://bashtech.net/wiki/Geobot</url>
-    <repositories>
-        <repository>
-          <id>gson</id>
-          <url>http://google-gson.googlecode.com/svn/mavenrepo</url>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </repository>
-        <repository>
-  			<id>codehaus</id>
-  			<url>http://repository.codehaus.org/org/codehaus</url>
-  			<snapshots>
-    			<enabled>true</enabled>
-  			</snapshots>
-  			<releases>
-    			<enabled>true</enabled>
-  			</releases>
+	<name>CoeBot</name>
+	<url>http://coebot.tv</url>
+	
+	<repositories>
+		<repository>
+			<id>gson</id>
+			<url>http://google-gson.googlecode.com/svn/mavenrepo</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
 		</repository>
-        <repository>
-            <id>mavenorg</id>
-            <url>http://central.maven.org/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>   
-    </repositories>
-    <dependencies>
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1</version>
-        </dependency>
-    </dependencies>
+		<repository>
+			<id>codehaus</id>
+			<url>http://repository.codehaus.org/org/codehaus</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>mavenorg</id>
+			<url>http://central.maven.org/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.pusher</groupId>
+			<artifactId>pusher-java-client</artifactId>
+			<version>0.3.3</version>
+		</dependency>
+	</dependencies>
 	<build>
 		<finalName>${project.name}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<encoding>UTF-8</encoding>
-					<showDeprecation>true</showDeprecation>
-					<showWarnings>true</showWarnings>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.4.3</version>
-				<configuration>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.1</version>
 				<configuration>
+					
 					<archive>
-						<manifestFile>src/main/resources/MANIFEST.MF</manifestFile>
+						<manifestEntries>
+							<Main-Class>net.bashtech.geobot.Main</Main-Class>
+						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>2.0.1</version>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<findbugsXmlOutput>true</findbugsXmlOutput>
-					<findbugsXmlWithMessages>true</findbugsXmlWithMessages>
-					<xmlOutput>true</xmlOutput>
+					
+					<archive>
+						<manifest>
+							<mainClass>net.bashtech.geobot.Main</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.2</version>
+				<configuration>
+					
+					<source>1.7</source>
+					<target>1.7</target>
+					<compilerArgument></compilerArgument>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	<description>Geobot is a Java-based IRC bot based on the PIRC framework designed for Justin.tv as moobot alternative.</description>
+	<description>CoeBot is a Java-based IRC bot based on the PIRC framework designed for twitch.tv as a moobot and nightbot
+		alternative.
+	</description>
 	<organization>
-		<url>http://bashtech.net/</url>
-		<name>Bashore Technologies</name>
+		<url>http://coebot.tv</url>
+		<name>TG Software Services</name>
 	</organization>
-	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://dev.bashtech.net:8080/job/GeoBot/</url>
-	</ciManagement>
 </project>

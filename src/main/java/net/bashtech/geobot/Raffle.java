@@ -49,9 +49,11 @@ public class Raffle {
     }
 
     public String pickWinner() {
+    	
         if (entries.size() < 1)
             return "No users entered";
 
+     
         Random generator = new Random();
         int randomIndex = generator.nextInt(entries.size());
 

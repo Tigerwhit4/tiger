@@ -20,21 +20,11 @@ package net.bashtech.geobot;
 
 import net.bashtech.geobot.gui.BotGUI;
 import net.bashtech.geobot.modules.BotModule;
-import net.bashtech.geobot.modules.Logger;
-
-import org.java_websocket.WebSocketImpl;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 public class BotManager {
@@ -49,6 +39,7 @@ public class BotManager {
 	public String krakenClientID;
 	public String YoutubeAPIKey;
 	public String CoeBotTVAPIKey;
+	public String pusherAppKey;
 	String nick;
 	String server;
 	int port;
@@ -67,7 +58,7 @@ public class BotManager {
 	ReceiverBot receiverBot;
 	String bothelpMessage;
 	boolean ignoreHistory;
-	WSServer ws;
+	
 	boolean wsEnabled;
 	int wsPort;
 	String wsAdminPassword;
@@ -107,19 +98,7 @@ public class BotManager {
 			gui = new BotGUI();
 		}
 
-		// Start WebSocket server
-		if (wsEnabled) {
-			WebSocketImpl.DEBUG = false;
-			ws = null;
-			try {
-				ws = new WSServer(wsPort);
-				ws.start();
-				System.out.println("WebSocket server started on port: "
-						+ ws.getPort());
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			}
-		}
+		
 
 		receiverBot = new ReceiverBot(server, port);
 		List<String> outdatedChannels = new LinkedList<String>();
@@ -182,8 +161,8 @@ public class BotManager {
 			// System.out.println("DEBUG: Getting data from " + url.toString());
 			URLConnection conn = url.openConnection();
 			conn.setRequestProperty("User-Agent", "CoeBot");
-			conn.setConnectTimeout(5 * 1000);
-			conn.setReadTimeout(5 * 1000);
+//			conn.setConnectTimeout(5 * 1000);
+//			conn.setReadTimeout(5 * 1000);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					conn.getInputStream()));
 			String inputLine;
@@ -210,8 +189,8 @@ public class BotManager {
 			// System.out.println("DEBUG: Getting data from " + url.toString());
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-			conn.setConnectTimeout(5 * 1000);
-			conn.setReadTimeout(5 * 1000);
+//			conn.setConnectTimeout(5 * 1000);
+//			conn.setReadTimeout(5 * 1000);
 
 			if (BotManager.getInstance().krakenClientID.length() > 0)
 				conn.setRequestProperty("Client-ID",
@@ -318,8 +297,8 @@ public class BotManager {
 					"OAuth " + BotManager.getInstance().krakenOAuthToken);
 			conn.setRequestProperty("Client-ID",
 					BotManager.getInstance().krakenClientID);
-			conn.setConnectTimeout(5 * 1000);
-			conn.setReadTimeout(5 * 1000);
+//			conn.setConnectTimeout(5 * 1000);
+//			conn.setReadTimeout(5 * 1000);
 
 			PrintWriter out = new PrintWriter(conn.getOutputStream());
 			out.print(postData);
@@ -404,8 +383,8 @@ public class BotManager {
 				conn.setRequestProperty("Content-Length",
 						"" + Integer.toString(postData.getBytes().length));
 
-				conn.setConnectTimeout(5 * 1000);
-				conn.setReadTimeout(5 * 1000);
+//				conn.setConnectTimeout(5 * 1000);
+//				conn.setReadTimeout(5 * 1000);
 
 				PrintWriter out = new PrintWriter(conn.getOutputStream());
 				out.print(postData);
@@ -504,8 +483,8 @@ public class BotManager {
 					"OAuth " + BotManager.getInstance().krakenOAuthToken);
 			conn.setRequestProperty("Client-ID",
 					BotManager.getInstance().krakenClientID);
-			conn.setConnectTimeout(5 * 1000);
-			conn.setReadTimeout(5 * 1000);
+//			conn.setConnectTimeout(5 * 1000);
+//			conn.setReadTimeout(5 * 1000);
 
 			PrintWriter out = new PrintWriter(conn.getOutputStream());
 			out.print(postData);
@@ -581,7 +560,7 @@ public class BotManager {
 
 		if (!config.keyExists("bothelpMessage")) {
 			config.setString("bothelpMessage",
-					"You can find info about CoeBot's default commands at: http://coebot.tv");
+					"You can find info about CoeBot's default commands at: http://coebot.tv/commands");
 		}
 
 		// API KEYS
@@ -647,6 +626,10 @@ public class BotManager {
 		if (!config.keyExists("CoeBotTVAPIKey")) {
 			config.setString("CoeBotTVAPIKey", "");
 		}
+		if (!config.keyExists("pusherAppKey")) {
+			config.setString("pusherAppKey", "");
+		}
+		
 		// ********
 
 		nick = config.getString("nick");
@@ -683,6 +666,7 @@ public class BotManager {
 		krakenClientID = config.getString("krakenClientID");
 		YoutubeAPIKey = config.getString("youtubeAPIKey");
 		CoeBotTVAPIKey = config.getString("CoeBotTVAPIKey");
+		pusherAppKey = config.getString("pusherAppKey");
 		// ********
 
 		for (String s : config.getString("channelList").split(",")) {
@@ -981,8 +965,7 @@ public class BotManager {
 	public void log(String line) {
 		System.out.println(line);
 
-		if (wsEnabled && !line.startsWith("MSG:") && !line.startsWith("SEND:"))
-			ws.sendToAdmin(line);
+		
 
 		if (useGUI) {
 			getGUI().log(line);

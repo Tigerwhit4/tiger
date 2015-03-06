@@ -18,10 +18,7 @@
 
 package net.bashtech.geobot;
 
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 public class MessageReplaceParser {
 
