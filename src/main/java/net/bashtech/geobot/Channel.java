@@ -193,13 +193,13 @@ public class Channel {
 		saveConfig(true);
 	}
 
-	// public void setLastStrawpoll(int newId) {
-	// lastStrawpoll = newId;
-	// }
-	//
-	// public int getLastStrawpoll() {
-	// return lastStrawpoll;
-	// }
+	 public void setLastStrawpoll(int newId) {
+	 lastStrawpoll = newId;
+	 }
+	
+	 public int getLastStrawpoll() {
+	 return lastStrawpoll;
+	 }
 
 	public boolean getWp() {
 		return wpOn;

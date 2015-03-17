@@ -58,7 +58,7 @@ public class BotManager {
 	ReceiverBot receiverBot;
 	String bothelpMessage;
 	boolean ignoreHistory;
-	
+
 	boolean wsEnabled;
 	int wsPort;
 	String wsAdminPassword;
@@ -97,8 +97,6 @@ public class BotManager {
 		if (useGUI) {
 			gui = new BotGUI();
 		}
-
-		
 
 		receiverBot = new ReceiverBot(server, port);
 		List<String> outdatedChannels = new LinkedList<String>();
@@ -161,8 +159,8 @@ public class BotManager {
 			// System.out.println("DEBUG: Getting data from " + url.toString());
 			URLConnection conn = url.openConnection();
 			conn.setRequestProperty("User-Agent", "CoeBot");
-//			conn.setConnectTimeout(5 * 1000);
-//			conn.setReadTimeout(5 * 1000);
+			// conn.setConnectTimeout(5 * 1000);
+			// conn.setReadTimeout(5 * 1000);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					conn.getInputStream()));
 			String inputLine;
@@ -189,8 +187,8 @@ public class BotManager {
 			// System.out.println("DEBUG: Getting data from " + url.toString());
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-//			conn.setConnectTimeout(5 * 1000);
-//			conn.setReadTimeout(5 * 1000);
+			// conn.setConnectTimeout(5 * 1000);
+			// conn.setReadTimeout(5 * 1000);
 
 			if (BotManager.getInstance().krakenClientID.length() > 0)
 				conn.setRequestProperty("Client-ID",
@@ -227,14 +225,13 @@ public class BotManager {
 
 	public static String postRemoteDataStrawpoll(String urlString) {
 
-		String line = null;
+		String line = "";
 		try {
 			HttpURLConnection c = (HttpURLConnection) (new URL(
-					"http://strawpoll.me/ajax/new-poll").openConnection());
+					"http://strawpoll.me/api/v2/polls").openConnection());
 
 			c.setRequestMethod("POST");
-			c.setRequestProperty("Content-Type",
-					"application/x-www-form-urlencoded; charset=UTF-8");
+			c.setRequestProperty("Content-Type", "application/json");
 			c.setRequestProperty("User-Agent", "CB1");
 
 			c.setDoOutput(true);
@@ -252,19 +249,21 @@ public class BotManager {
 			wr.flush();
 			wr.close();
 
-			InputStream data = null;
+			Scanner inStream = new Scanner(c.getInputStream());
+
+			while (inStream.hasNextLine())
+				line += (inStream.nextLine());
+
+			inStream.close();
+			System.out.println(line);
 			try {
-				data = c.getInputStream();
+				JSONParser parser = new JSONParser();
+				Object obj = parser.parse(line);
+				JSONObject jsonObject = (JSONObject) obj;
+				line = (Long)jsonObject.get("id")+"";
+
 			} catch (Exception e) {
 				e.printStackTrace();
-				data = c.getErrorStream();
-			}
-
-			BufferedReader b = new BufferedReader(new InputStreamReader(data));
-
-			if ((line = b.readLine()) != null) {
-				line = line.substring(line.indexOf(":") + 1, line.indexOf("}"));
-				System.out.println(line);
 			}
 
 		} catch (MalformedURLException ex) {
@@ -297,8 +296,8 @@ public class BotManager {
 					"OAuth " + BotManager.getInstance().krakenOAuthToken);
 			conn.setRequestProperty("Client-ID",
 					BotManager.getInstance().krakenClientID);
-//			conn.setConnectTimeout(5 * 1000);
-//			conn.setReadTimeout(5 * 1000);
+			// conn.setConnectTimeout(5 * 1000);
+			// conn.setReadTimeout(5 * 1000);
 
 			PrintWriter out = new PrintWriter(conn.getOutputStream());
 			out.print(postData);
@@ -383,8 +382,8 @@ public class BotManager {
 				conn.setRequestProperty("Content-Length",
 						"" + Integer.toString(postData.getBytes().length));
 
-//				conn.setConnectTimeout(5 * 1000);
-//				conn.setReadTimeout(5 * 1000);
+				// conn.setConnectTimeout(5 * 1000);
+				// conn.setReadTimeout(5 * 1000);
 
 				PrintWriter out = new PrintWriter(conn.getOutputStream());
 				out.print(postData);
@@ -407,7 +406,7 @@ public class BotManager {
 			}
 
 			return "";
-		}else
+		} else
 			return "";
 	}
 
@@ -483,8 +482,8 @@ public class BotManager {
 					"OAuth " + BotManager.getInstance().krakenOAuthToken);
 			conn.setRequestProperty("Client-ID",
 					BotManager.getInstance().krakenClientID);
-//			conn.setConnectTimeout(5 * 1000);
-//			conn.setReadTimeout(5 * 1000);
+			// conn.setConnectTimeout(5 * 1000);
+			// conn.setReadTimeout(5 * 1000);
 
 			PrintWriter out = new PrintWriter(conn.getOutputStream());
 			out.print(postData);
@@ -559,7 +558,8 @@ public class BotManager {
 		}
 
 		if (!config.keyExists("bothelpMessage")) {
-			config.setString("bothelpMessage",
+			config.setString(
+					"bothelpMessage",
 					"You can find info about CoeBot's default commands at: http://coebot.tv/commands");
 		}
 
@@ -629,7 +629,7 @@ public class BotManager {
 		if (!config.keyExists("pusherAppKey")) {
 			config.setString("pusherAppKey", "");
 		}
-		
+
 		// ********
 
 		nick = config.getString("nick");
@@ -964,8 +964,6 @@ public class BotManager {
 
 	public void log(String line) {
 		System.out.println(line);
-
-		
 
 		if (useGUI) {
 			getGUI().log(line);

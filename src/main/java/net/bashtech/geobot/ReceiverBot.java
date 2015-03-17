@@ -21,11 +21,11 @@ package net.bashtech.geobot;
 import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.NickAlreadyInUseException;
 import org.jibble.pircbot.PircBot;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import com.pusher.client.Pusher;
-import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.ChannelEventListener;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
@@ -88,7 +88,7 @@ public class ReceiverBot extends PircBot {
 				.compile(".*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\s+|:|/|$).*");
 
 		symbolsPatterns[0] = Pattern
-				.compile("(\\p{InPhonetic_Extensions}|\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|つ|°|ຈ|░|▀|▄|̰̦̮̠ę̟̹ͦͯͯ́ͮ̊̐͌̉͑ͨ̊́́̚|U̶̧ͩͭͧ͊̅̊ͥͩ̿̔̔ͥ͌ͬ͊͋ͬ҉|Ọ̵͇̖̖|A̴͍̥̳̠̞̹ͩ̋̆ͤͅ|E̡̛͚̺̖̪͈̲̻̠̰̳̐̿)");
+				.compile("(\\p{InPhonetic_Extensions}|\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|ã�¤|Â°|àºˆ|â–‘|â–€|â–„|Ì°Ì¦Ì®Ì eÍ¦ÌšÍ¯Í¯Ì�Í®ÌŠÌ�ÍŒÌ‰Í‘Í¨ÌŠÍ�Í�Ì¨ÌŸÌ¹|UÌ¶Ì§Í©Í­Í§ÍŠÌ…ÌŠÍ¥Í©Ì¿Ì”Ì”Í¥ÍŒÍ¬ÍŠÍ‹Í¬Ò‰|á»ŒÌµÍ‡Ì–Ì–|AÌ´Í�Ì¥Ì³Ì ÌžÌ¹Í©Ì‹Ì†Í¤Í…|EÌ¡Ì›ÍšÌºÌ–ÌªÍˆÌ²Ì»Ì Ì°Ì³Ì�Ì¿)");
 		symbolsPatterns[1] = Pattern.compile("[!-/:-@\\[-`{-~]");
 
 		this.setName(BotManager.getInstance().nick);
@@ -112,7 +112,7 @@ public class ReceiverBot extends PircBot {
 
 		startJoinCheck();
 		if (!BotManager.getInstance().pusherAppKey.equalsIgnoreCase("")) {
-			
+
 			pusher = new Pusher(BotManager.getInstance().pusherAppKey);
 			startEventParser();
 		}
@@ -143,13 +143,13 @@ public class ReceiverBot extends PircBot {
 					@Override
 					public void onEvent(String channelName, String eventName,
 							String data) {
-//						BotManager.getInstance().getGUI().log(data);
+						// BotManager.getInstance().getGUI().log(data);
 						parseEvent(data);
 					}
 				}, "e");
 
 	}
-	
+
 	public void parseEvent(String data) {
 		try {
 			JSONParser parser = new JSONParser();
@@ -158,10 +158,10 @@ public class ReceiverBot extends PircBot {
 			JSONObject jsonObject = (JSONObject) obj;
 
 			String action = (String) jsonObject.get("action");
-			Channel channelInfo = getChannelObject("#"+(String) jsonObject
-					.get("channel"));
+			Channel channelInfo = getChannelObject("#"
+					+ (String) jsonObject.get("channel"));
 			String target = (String) jsonObject.get("target");
-			if(channelInfo == null){
+			if (channelInfo == null&&!action.equals("join")) {
 				return;
 			}
 
@@ -179,15 +179,15 @@ public class ReceiverBot extends PircBot {
 
 					BotManager.getInstance().coebotJoinChannel(target,
 							getNick());
-					BotManager.getInstance().getGUI().log("Recieved join command for "+target);
+					BotManager.getInstance().getGUI()
+							.log("Recieved join command for " + target);
 				}
 				break;
 			}
 			case "part": {
-				BotManager.getInstance().getGUI().log("Recieved part command for "+target);
-				BotManager.getInstance().removeChannel("#"+target);
-				BotManager.getInstance().coebotPartChannel(target,
-						getNick());
+				
+				BotManager.getInstance().removeChannel("#" + target);
+				BotManager.getInstance().coebotPartChannel(target, getNick());
 				break;
 			}
 			case "add command": {
@@ -411,26 +411,30 @@ public class ReceiverBot extends PircBot {
 					status = true;
 				channelInfo.setSubscriberRegulars(status);
 				break;
-			}case "set subscriberalerts":{
+			}
+			case "set subscriberalerts": {
 				boolean status = false;
 				if (((String) jsonObject.get("value")).equalsIgnoreCase("on"))
 					status = true;
 				channelInfo.setSubAlert(status);
 				break;
-			}case "set submessage":{
-				channelInfo.setSubMessage((String)jsonObject.get("value"));
+			}
+			case "set submessage": {
+				channelInfo.setSubMessage((String) jsonObject.get("value"));
 				break;
-			}case "set resubalerts":{
+			}
+			case "set resubalerts": {
 				boolean status = false;
 				if (((String) jsonObject.get("value")).equalsIgnoreCase("on"))
 					status = true;
 				channelInfo.setResubAlert(status);
 				break;
-			}case "set resubmessage":{
-				channelInfo.setResubMessage((String)jsonObject.get("value"));
+			}
+			case "set resubmessage": {
+				channelInfo.setResubMessage((String) jsonObject.get("value"));
 				break;
 			}
-			case "testcase":{
+			case "testcase": {
 				System.out.println("Test Case Activated");
 				break;
 			}
@@ -1197,12 +1201,12 @@ public class ReceiverBot extends PircBot {
 			send(channel, "CoeTime is currently: " + time);
 		}
 		// !hug
-//		if (msg[0].equalsIgnoreCase(prefix + "hug") && isSub) {
-//			if (msg.length > 1) {
-//				send(channel, "(>ಠ_ಠ)> " + fuseArray(msg, 1));
-//			} else
-//				send(channel, "Syntax is " + prefix + "hug <single word>");
-//		}
+		// if (msg[0].equalsIgnoreCase(prefix + "hug") && isSub) {
+		// if (msg.length > 1) {
+		// send(channel, "(>à² _à² )> " + fuseArray(msg, 1));
+		// } else
+		// send(channel, "Syntax is " + prefix + "hug <single word>");
+		// }
 
 		// !uptime - All
 
@@ -1222,7 +1226,7 @@ public class ReceiverBot extends PircBot {
 		if (msg[0].equalsIgnoreCase(prefix + "music")) {
 			log("RB: Matched command !music");
 			String currBullet = bullet[0];
-			bullet[0] = "♫";
+			bullet[0] = "â™«";
 			send(channel,
 					"Now playing: " + JSONUtil.lastFM(channelInfo.getLastfm()));
 			bullet[0] = currBullet;
@@ -1304,6 +1308,7 @@ public class ReceiverBot extends PircBot {
 				&& !sender.equalsIgnoreCase(senderTriggered)) {
 
 			channelInfo.increaseWpCount();
+			channelInfo.timeSinceSaid();
 
 		}
 
@@ -1655,6 +1660,76 @@ public class ReceiverBot extends PircBot {
 			return;
 		}
 
+		if ((msg[0].equalsIgnoreCase(prefix + "strawpoll") && isOp && msg.length > 1)) {
+			if (msg.length > 3) {
+				String newString = fuseArray(msg, 1);
+				String[] params = newString.split(";");
+				String[] options = params[1].split(",");
+				String title = params[0];
+				boolean multi = false;
+				boolean permissive = false;
+				if (params.length > 2) {
+
+					multi = Boolean.valueOf(Boolean.parseBoolean(params[2]
+							.trim()));
+
+					if (params.length > 3) {
+
+						permissive = Boolean.valueOf(Boolean
+								.parseBoolean(params[3].trim()));
+
+					}
+				}
+
+				JSONObject postObject = new JSONObject();
+				postObject.put("title", title);
+				JSONArray optionsArr = new JSONArray();
+
+				for (String s : options) {
+					optionsArr.add(s.trim());
+				}
+				postObject.put("options", optionsArr);
+				postObject.put("multi", multi);
+				postObject.put("permissive", permissive);
+				String postData = postObject.toJSONString();
+				System.out.println(postData);
+				String id = BotManager.postRemoteDataStrawpoll(postData);
+				if (id != null) {
+					channelInfo.setLastStrawpoll(Integer.parseInt(id));
+					send(channel, "Strawpoll.me/" + id);
+				}
+			} else if (msg[1].equalsIgnoreCase("results")) {
+
+				String strawpollHtml = BotManager
+						.getRemoteContent("http://strawpoll.me/api/v2/polls/"
+								+ channelInfo.getLastStrawpoll());
+
+				try {
+
+					JSONParser parser = new JSONParser();
+					Object obj = parser.parse(strawpollHtml);
+					JSONObject jsonObject = (JSONObject) obj;
+					JSONArray optionsArr = (JSONArray) jsonObject
+							.get("options");
+					JSONArray votesArr = (JSONArray) jsonObject.get("votes");
+					String resultsString = "";
+					for (int i = 0; i < optionsArr.size(); i++) {
+						resultsString += "\""
+								+ ((String) optionsArr.get(i)).trim() + "\": "
+								+ votesArr.get(i);
+						if (i < optionsArr.size() - 1)
+							resultsString += ", ";
+
+					}
+					send(channel, resultsString);
+				} catch (Exception e) {
+					e.printStackTrace();
+					send(channel, "Error parsing the results.");
+				}
+
+			}
+		}
+
 		// !properties - Owner
 		if (msg[0].equalsIgnoreCase(prefix + "properties") && isOp
 				&& BotManager.getInstance().twitchChannels) {
@@ -1748,14 +1823,14 @@ public class ReceiverBot extends PircBot {
 			}
 		}
 		// !throw - All
-//		if (msg[0].equalsIgnoreCase(prefix + "throw") && (isSub)) {
-//			log("RB: Matched command !throw");
-//			if (msg.length > 1) {
-//
-//				send(channel, " (╯°□°）╯彡 " + fuseArray(msg, 1));
-//			}
-//
-//		}
+		// if (msg[0].equalsIgnoreCase(prefix + "throw") && (isSub)) {
+		// log("RB: Matched command !throw");
+		// if (msg.length > 1) {
+		//
+		// send(channel, " (â•¯Â°â–¡Â°ï¼‰â•¯å½¡ " + fuseArray(msg, 1));
+		// }
+		//
+		// }
 
 		// !topic
 		if (msg[0].equalsIgnoreCase(prefix + "topic") && channelInfo.useTopic) {
@@ -4526,8 +4601,6 @@ public class ReceiverBot extends PircBot {
 			}, delay);
 		}
 
-		
-
 	}
 
 	private void secondaryBan(final String channel, final String name,
@@ -4549,7 +4622,6 @@ public class ReceiverBot extends PircBot {
 			}, delay);
 		}
 
-	
 	}
 
 	private void startGaTimer(int seconds, Channel channelInfo) {
