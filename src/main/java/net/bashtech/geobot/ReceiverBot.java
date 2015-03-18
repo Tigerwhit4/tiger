@@ -161,7 +161,7 @@ public class ReceiverBot extends PircBot {
 			Channel channelInfo = getChannelObject("#"
 					+ (String) jsonObject.get("channel"));
 			String target = (String) jsonObject.get("target");
-			if (channelInfo == null&&!action.equals("join")) {
+			if (channelInfo == null && !action.equals("join")) {
 				return;
 			}
 
@@ -185,7 +185,7 @@ public class ReceiverBot extends PircBot {
 				break;
 			}
 			case "part": {
-				
+
 				BotManager.getInstance().removeChannel("#" + target);
 				BotManager.getInstance().coebotPartChannel(target, getNick());
 				break;
@@ -1551,7 +1551,7 @@ public class ReceiverBot extends PircBot {
 					}
 
 				} else {
-					if (JSONUtil.krakenIsLive(msg[1])) {
+					if (JSONUtil.krakenChannelExist((msg[1]))) {
 						send(channel, "Now hosting: " + msg[1]);
 						sendCommand(channel, ".host " + msg[1]);
 					} else
@@ -2472,26 +2472,43 @@ public class ReceiverBot extends PircBot {
 						}
 					}
 				}
+				// !editquote
+				if (msg[1].equalsIgnoreCase("edit")) {
+					log("RB: Matched command !editquote");
+					if (isOp && msg.length > 3) {
+						int index = Integer.parseInt(msg[2]) - 1;
+						String quoteReceived = this.fuseArray(msg, 3);
+						quoteReceived = quoteReceived.trim();
+						boolean edited = channelInfo.editQuote(index,
+								quoteReceived,sender);
+						if (edited) {
+							index+=1;
+							send(channel, "Quote #" + index
+									+ " edited successfully.");
+						} else {
+							send(channel,
+									"No quote at requested index to edit.");
+						}
 
+					}
+				}
 				// !addQuote
 				if (msg[1].equalsIgnoreCase("add")) {
 					log("RB: Matched command !addQuote");
 					if (isOp && msg.length > 2) {
 
 						String quoteReceived = this.fuseArray(msg, 2);
-						if (quoteReceived.contains("&&&")) {
-							send(channel, "Quotes cannot contain &&&");
-						} else {
-							quoteReceived.trim();
-							int numQuote = channelInfo.addQuote(quoteReceived,
-									sender);
-							if (numQuote > -1) {
-								numQuote++;
-								send(channel, quoteReceived
-										+ " added, this is quote #" + numQuote);
-							} else
-								send(channel, "Quote already exists.");
-						}
+
+						quoteReceived = quoteReceived.trim();
+						int numQuote = channelInfo.addQuote(quoteReceived,
+								sender);
+						if (numQuote > -1) {
+							numQuote++;
+							send(channel, quoteReceived
+									+ " added, this is quote #" + numQuote);
+						} else
+							send(channel, "Quote already exists.");
+
 					}
 				}
 
@@ -2501,7 +2518,7 @@ public class ReceiverBot extends PircBot {
 					if (isSub && msg.length > 2
 							&& BotManager.getInstance().twitchChannels) {
 						String quoteReceived = this.fuseArray(msg, 2);
-						quoteReceived.trim();
+						quoteReceived = quoteReceived.trim();
 						int index = channelInfo.getQuoteIndex(quoteReceived);
 						if (index > -1) {
 							index++;
@@ -2550,6 +2567,17 @@ public class ReceiverBot extends PircBot {
 									+ " deleted successfully.");
 						} else {
 							send(channel, "Error deleting quote");
+						}
+					}
+				}
+				// getquote without get
+				if ((newQuoted >= (lastQuoted + 30 * 1000L)) || isOp) {
+					if (isInteger(msg[1])) {
+						if (isSub) {
+							int index = Integer.parseInt(msg[1]);
+							send(channel, "Quote #" + index + ": "
+									+ channelInfo.getQuote(index - 1));
+							lastQuoted = System.currentTimeMillis();
 						}
 					}
 				}

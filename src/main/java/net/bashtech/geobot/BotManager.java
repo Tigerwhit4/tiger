@@ -109,7 +109,7 @@ public class BotManager {
 				log("BM: Joining channel " + channel);
 				receiverBot.joinChannel(channel.toLowerCase());
 				try {
-					Thread.sleep(350);
+					Thread.sleep(450);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

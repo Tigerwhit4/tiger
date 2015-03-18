@@ -344,6 +344,23 @@ public class Channel {
 		else
 			return "No quote at requested index.";
 	}
+	public boolean editQuote(int index, String newQuote,String editor){
+		if (index > quotes.size() - 1)
+			return false;
+		String oldquote = quotes.get(index);
+		quoteAdders.remove(oldquote);
+		quoteTimestamps.remove(oldquote);
+		quoteAdders.put(newQuote, editor);
+		quoteTimestamps.put(newQuote, System.currentTimeMillis());
+		quotes.remove(index);
+		quotes.add(index, newQuote);
+
+		saveQuotes(true);
+
+		return true;
+		
+		
+	}
 
 	public boolean deleteQuote(int index) {
 		if (index > quotes.size() - 1)
@@ -2088,11 +2105,12 @@ public class Channel {
 	public void runCommercial() {
 
 		if (JSONUtil.krakenIsLive(getChannel().substring(1))) {
-			String dataIn = "";
-			dataIn = BotManager.postRemoteDataTwitch(
-					"https://api.twitch.tv/kraken/channels/"
-							+ getChannel().substring(1) + "/commercial",
-					"length=" + commercialLength, 2);
+			BotManager.getInstance().receiverBot.sendCommand(getChannel(), ".commercial "+commercialLength);
+//			String dataIn = "";
+//			dataIn = BotManager.postRemoteDataTwitch(
+//					"https://api.twitch.tv/kraken/channels/"
+//							+ getChannel().substring(1) + "/commercial",
+//					"length=" + commercialLength, 2);
 
 		} else {
 			System.out.println(getChannel().substring(1)
@@ -2103,11 +2121,12 @@ public class Channel {
 	public void runCommercial(int commercialTime) {
 
 		if (JSONUtil.krakenIsLive(getChannel().substring(1))) {
-			String dataIn = "";
-			dataIn = BotManager.postRemoteDataTwitch(
-					"https://api.twitch.tv/kraken/channels/"
-							+ getChannel().substring(1) + "/commercial",
-					"length=" + commercialTime, 2);
+			BotManager.getInstance().receiverBot.sendCommand(getChannel(), ".commercial "+commercialTime);
+//			String dataIn = "";
+//			dataIn = BotManager.postRemoteDataTwitch(
+//					"https://api.twitch.tv/kraken/channels/"
+//							+ getChannel().substring(1) + "/commercial",
+//					"length=" + commercialTime, 2);
 
 		} else {
 			System.out.println(getChannel().substring(1)
