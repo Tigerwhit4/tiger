@@ -22,7 +22,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -303,85 +302,85 @@ public class JSONUtil {
 
 	}
 
-	public static String getWiki(String query, int tries) {
-		try {
-			query = query.replaceAll(" ", "_");
-			JSONParser parser = new JSONParser();
-			Object obj = parser
-					.parse(BotManager
-							.getRemoteContent("http://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvsection=0&titles="
-									+ query + "&format=json"));
-
-			JSONObject jsonObject = (JSONObject) obj;
-
-			JSONObject jsonquery = (JSONObject) jsonObject.get("query");
-			JSONObject pages = (JSONObject) jsonquery.get("pages");
-			Set<String> keys = (Set<String>) pages.keySet();
-			ArrayList<String> keyList = new ArrayList<String>();
-			for (String s : keys)
-				keyList.add(s);
-
-			JSONObject id = (JSONObject) pages.get(keyList.get(0));
-			JSONArray revisions = (JSONArray) id.get("revisions");
-			JSONObject index0 = (JSONObject) revisions.get(0);
-
-			String content = (String) index0.get("*");
-			if (content.contains("#REDIRECT") && tries < 3) {
-				String newSearch = content.substring(content.indexOf("[") + 2,
-						content.indexOf("]"));
-
-				return getWiki(newSearch, tries++);
-			}
-
-			content = content.replaceAll("\\\\", "");
-			content = content.replaceAll("\\{", "");
-			content = content.replaceAll("\\}", "");
-			int start = content.indexOf("'''");
-			content = content.substring(start + 3);
-			content = content.replaceAll("'''", "");
-			int refIndex = content.indexOf("<ref");
-			int refEndIndex = content.indexOf("</ref>");
-			int commentIndex = content.indexOf("<!--");
-			int commentEndIndex = content.indexOf("-->");
-			String firstPart;
-			String lastPart;
-
-			while (refIndex > 0) {
-
-				firstPart = content.substring(0, refIndex);
-				lastPart = content.substring(refEndIndex + 6);
-				content = firstPart + lastPart;
-				refIndex = content.indexOf("<ref");
-				refEndIndex = content.indexOf("</ref>", refEndIndex + 1);
-			}
-			while (commentIndex > 0) {
-
-				firstPart = content.substring(0, commentIndex);
-				lastPart = content.substring(commentEndIndex + 3);
-				content = firstPart + lastPart;
-				commentIndex = content.indexOf("<!--");
-				commentEndIndex = content.indexOf("-->");
-			}
-			Pattern r = Pattern
-					.compile("\\[\\[(?:[^\\|\\]]*\\|)?([^\\]]+)\\]\\]");
-			Matcher m = r.matcher(content);
-			while (m.find()) {
-				String match = m.group(1);
-				String match0 = m.group();
-				// System.out.println(match0);
-				// System.out.println(match);
-				content = content.replace(match0, match);
-
-			}
-			if (content.equals("")) {
-				content = "Malformed article abstract on Wikipedia's end.";
-			}
-			return content;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return "Unable to find that article.";
-		}
-	}
+//	public static String getWiki(String query, int tries) {
+//		try {
+//			query = query.replaceAll(" ", "_");
+//			JSONParser parser = new JSONParser();
+//			Object obj = parser
+//					.parse(BotManager
+//							.getRemoteContent("http://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvsection=0&titles="
+//									+ query + "&format=json"));
+//
+//			JSONObject jsonObject = (JSONObject) obj;
+//
+//			JSONObject jsonquery = (JSONObject) jsonObject.get("query");
+//			JSONObject pages = (JSONObject) jsonquery.get("pages");
+//			Set<String> keys = (Set<String>) pages.keySet();
+//			ArrayList<String> keyList = new ArrayList<String>();
+//			for (String s : keys)
+//				keyList.add(s);
+//
+//			JSONObject id = (JSONObject) pages.get(keyList.get(0));
+//			JSONArray revisions = (JSONArray) id.get("revisions");
+//			JSONObject index0 = (JSONObject) revisions.get(0);
+//
+//			String content = (String) index0.get("*");
+//			if (content.contains("#REDIRECT") && tries < 3) {
+//				String newSearch = content.substring(content.indexOf("[") + 2,
+//						content.indexOf("]"));
+//
+//				return getWiki(newSearch, tries++);
+//			}
+//
+//			content = content.replaceAll("\\\\", "");
+//			content = content.replaceAll("\\{", "");
+//			content = content.replaceAll("\\}", "");
+//			int start = content.indexOf("'''");
+//			content = content.substring(start + 3);
+//			content = content.replaceAll("'''", "");
+//			int refIndex = content.indexOf("<ref");
+//			int refEndIndex = content.indexOf("</ref>");
+//			int commentIndex = content.indexOf("<!--");
+//			int commentEndIndex = content.indexOf("-->");
+//			String firstPart;
+//			String lastPart;
+//
+//			while (refIndex > 0) {
+//
+//				firstPart = content.substring(0, refIndex);
+//				lastPart = content.substring(refEndIndex + 6);
+//				content = firstPart + lastPart;
+//				refIndex = content.indexOf("<ref");
+//				refEndIndex = content.indexOf("</ref>", refEndIndex + 1);
+//			}
+//			while (commentIndex > 0) {
+//
+//				firstPart = content.substring(0, commentIndex);
+//				lastPart = content.substring(commentEndIndex + 3);
+//				content = firstPart + lastPart;
+//				commentIndex = content.indexOf("<!--");
+//				commentEndIndex = content.indexOf("-->");
+//			}
+//			Pattern r = Pattern
+//					.compile("\\[\\[(?:[^\\|\\]]*\\|)?([^\\]]+)\\]\\]");
+//			Matcher m = r.matcher(content);
+//			while (m.find()) {
+//				String match = m.group(1);
+//				String match0 = m.group();
+//				// System.out.println(match0);
+//				// System.out.println(match);
+//				content = content.replace(match0, match);
+//
+//			}
+//			if (content.equals("")) {
+//				content = "Malformed article abstract on Wikipedia's end.";
+//			}
+//			return content;
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			return "Unable to find that article.";
+//		}
+//	}
 
 	public static String krakenStatus(String channel) {
 		try {
@@ -814,7 +813,7 @@ public class JSONUtil {
 				String gameid = (String) index0.get("gameid");
 
 				if (retValues.equals("profile"))
-					return JSONUtil.googURL(profileurl);
+					return JSONUtil.shortenUrlTinyURL(profileurl);
 				else if (retValues.equals("game"))
 					return (gameextrainfo != null ? gameextrainfo
 							: "(unavailable)");
@@ -827,7 +826,7 @@ public class JSONUtil {
 							: "(unavailable)");
 				else
 					return "Profile: "
-							+ JSONUtil.googURL(profileurl)
+							+ JSONUtil.shortenUrlTinyURL(profileurl)
 							+ (gameextrainfo != null ? ", Game: "
 									+ gameextrainfo : "")
 							+ (gameserverip != null ? ", Server: "
@@ -842,21 +841,21 @@ public class JSONUtil {
 		}
 	}
 
-	public static String googURL(String url) {
-		try {
-
-			JSONParser parser = new JSONParser();
-			Object obj = parser.parse(BotManager.postDataLinkShortener(url));
-
-			JSONObject jsonObject = (JSONObject) obj;
-			String response = (String) jsonObject.get("id");
-			return response;
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return url;
-		}
-	}
+//	public static String googURL(String url) {
+//		try {
+//
+//			JSONParser parser = new JSONParser();
+//			Object obj = parser.parse(BotManager.postDataLinkShortener(url));
+//
+//			JSONObject jsonObject = (JSONObject) obj;
+//			String response = (String) jsonObject.get("id");
+//			return response;
+//
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			return url;
+//		}
+//	}
 
 	public static String urlEncode(String data) {
 		try {
@@ -941,16 +940,24 @@ public class JSONUtil {
 		}
 	}
 
+	public static String shortenUrlTinyURL(String longUrl) {
+		String shortUrl = BotManager
+				.getRemoteContent("http://tinyurl.com/api-create.php?url="
+						+ longUrl);
+		return shortUrl;
+	}
+
 	public static String extraLifeAmount(String channel) {
 		String source = BotManager
-				.getInstance()
-				.getRemoteContent(
-						"http://www.extra-life.org/index.cfm?fuseaction=donorDrive.participant&participantID="
-								+ BotManager.getInstance().getChannel(channel)
-										.getExtraLifeID());
+				.getRemoteContent("http://www.extra-life.org/index.cfm?fuseaction=donorDrive.participant&participantID="
+						+ BotManager.getInstance().getChannel(channel)
+								.getExtraLifeID());
 		int indexStart = source.indexOf("actualAmount=") + 13;
 		int indexEnd = source.indexOf("&", indexStart);
 		String amount = source.substring(indexStart, indexEnd);
+		if (amount.length() > 40) {
+			amount = "";
+		}
 		return amount;
 	}
 
@@ -1114,6 +1121,23 @@ public class JSONUtil {
 				if (name.length() > 0)
 					emotes.add(name);
 			}
+			emotes.add("<3");
+			emotes.add(":)");
+			emotes.add(":o");
+			emotes.add(":(");
+			emotes.add(";)");
+			emotes.add(":/");
+			emotes.add(";p");
+			emotes.add(">(");
+			emotes.add("B)");
+			emotes.add("O_o");
+			emotes.add("O_O");
+			emotes.add("R)");
+			emotes.add(":D");
+			emotes.add(":z");
+			emotes.add("D:");
+			emotes.add(":p");
+			emotes.add(":P");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		} finally {

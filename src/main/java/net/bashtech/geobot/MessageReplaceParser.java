@@ -81,7 +81,7 @@ public class MessageReplaceParser {
 				}else if(JSONUtil.krakenGame(channel.substring(1)).equalsIgnoreCase("(Not set)")){
 					message = message.replace("(_STEAM_STORE_)","");
 				}else{
-					message = message.replace("(_STEAM_STORE_)", JSONUtil.googURL(
+					message = message.replace("(_STEAM_STORE_)", JSONUtil.shortenUrlTinyURL(
 							"https://www.google.com/#q="+URLEncoder.encode("buy "+game)));
 				}
 			} else
@@ -95,7 +95,7 @@ public class MessageReplaceParser {
 					"twitch.tv/" + channel.substring(1));
 		if (message.contains("(_TWEET_URL_)")) {
 			String url = JSONUtil
-					.googURL("https://twitter.com/intent/tweet?text="
+					.shortenUrlTinyURL("https://twitter.com/intent/tweet?text="
 							+ JSONUtil.urlEncode(MessageReplaceParser
 									.parseMessage(channel, sender,
 											ci.getClickToTweetFormat(), args)));
@@ -147,8 +147,13 @@ public class MessageReplaceParser {
 
 		if (message.contains("(_EXTRALIFE_AMOUNT_)")) {
 			String amount = JSONUtil.extraLifeAmount(channel);
-			message = message.replace("(_EXTRALIFE_AMOUNT_)", "$"
-					+ amount);
+			if(!amount.equals("")){
+				message = message.replace("(_EXTRALIFE_AMOUNT_)", "$"
+						+ amount);
+			}else
+				message = message.replace("(_EXTRALIFE_AMOUNT_)", 
+						"(Error getting amount)");
+			
 			System.out.println(message);
 		}
 		if (message.contains("(_LAST_SONG_)")) {
