@@ -302,85 +302,85 @@ public class JSONUtil {
 
 	}
 
-//	public static String getWiki(String query, int tries) {
-//		try {
-//			query = query.replaceAll(" ", "_");
-//			JSONParser parser = new JSONParser();
-//			Object obj = parser
-//					.parse(BotManager
-//							.getRemoteContent("http://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvsection=0&titles="
-//									+ query + "&format=json"));
-//
-//			JSONObject jsonObject = (JSONObject) obj;
-//
-//			JSONObject jsonquery = (JSONObject) jsonObject.get("query");
-//			JSONObject pages = (JSONObject) jsonquery.get("pages");
-//			Set<String> keys = (Set<String>) pages.keySet();
-//			ArrayList<String> keyList = new ArrayList<String>();
-//			for (String s : keys)
-//				keyList.add(s);
-//
-//			JSONObject id = (JSONObject) pages.get(keyList.get(0));
-//			JSONArray revisions = (JSONArray) id.get("revisions");
-//			JSONObject index0 = (JSONObject) revisions.get(0);
-//
-//			String content = (String) index0.get("*");
-//			if (content.contains("#REDIRECT") && tries < 3) {
-//				String newSearch = content.substring(content.indexOf("[") + 2,
-//						content.indexOf("]"));
-//
-//				return getWiki(newSearch, tries++);
-//			}
-//
-//			content = content.replaceAll("\\\\", "");
-//			content = content.replaceAll("\\{", "");
-//			content = content.replaceAll("\\}", "");
-//			int start = content.indexOf("'''");
-//			content = content.substring(start + 3);
-//			content = content.replaceAll("'''", "");
-//			int refIndex = content.indexOf("<ref");
-//			int refEndIndex = content.indexOf("</ref>");
-//			int commentIndex = content.indexOf("<!--");
-//			int commentEndIndex = content.indexOf("-->");
-//			String firstPart;
-//			String lastPart;
-//
-//			while (refIndex > 0) {
-//
-//				firstPart = content.substring(0, refIndex);
-//				lastPart = content.substring(refEndIndex + 6);
-//				content = firstPart + lastPart;
-//				refIndex = content.indexOf("<ref");
-//				refEndIndex = content.indexOf("</ref>", refEndIndex + 1);
-//			}
-//			while (commentIndex > 0) {
-//
-//				firstPart = content.substring(0, commentIndex);
-//				lastPart = content.substring(commentEndIndex + 3);
-//				content = firstPart + lastPart;
-//				commentIndex = content.indexOf("<!--");
-//				commentEndIndex = content.indexOf("-->");
-//			}
-//			Pattern r = Pattern
-//					.compile("\\[\\[(?:[^\\|\\]]*\\|)?([^\\]]+)\\]\\]");
-//			Matcher m = r.matcher(content);
-//			while (m.find()) {
-//				String match = m.group(1);
-//				String match0 = m.group();
-//				// System.out.println(match0);
-//				// System.out.println(match);
-//				content = content.replace(match0, match);
-//
-//			}
-//			if (content.equals("")) {
-//				content = "Malformed article abstract on Wikipedia's end.";
-//			}
-//			return content;
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//			return "Unable to find that article.";
-//		}
-//	}
+	// public static String getWiki(String query, int tries) {
+	// try {
+	// query = query.replaceAll(" ", "_");
+	// JSONParser parser = new JSONParser();
+	// Object obj = parser
+	// .parse(BotManager
+	// .getRemoteContent("http://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvsection=0&titles="
+	// + query + "&format=json"));
+	//
+	// JSONObject jsonObject = (JSONObject) obj;
+	//
+	// JSONObject jsonquery = (JSONObject) jsonObject.get("query");
+	// JSONObject pages = (JSONObject) jsonquery.get("pages");
+	// Set<String> keys = (Set<String>) pages.keySet();
+	// ArrayList<String> keyList = new ArrayList<String>();
+	// for (String s : keys)
+	// keyList.add(s);
+	//
+	// JSONObject id = (JSONObject) pages.get(keyList.get(0));
+	// JSONArray revisions = (JSONArray) id.get("revisions");
+	// JSONObject index0 = (JSONObject) revisions.get(0);
+	//
+	// String content = (String) index0.get("*");
+	// if (content.contains("#REDIRECT") && tries < 3) {
+	// String newSearch = content.substring(content.indexOf("[") + 2,
+	// content.indexOf("]"));
+	//
+	// return getWiki(newSearch, tries++);
+	// }
+	//
+	// content = content.replaceAll("\\\\", "");
+	// content = content.replaceAll("\\{", "");
+	// content = content.replaceAll("\\}", "");
+	// int start = content.indexOf("'''");
+	// content = content.substring(start + 3);
+	// content = content.replaceAll("'''", "");
+	// int refIndex = content.indexOf("<ref");
+	// int refEndIndex = content.indexOf("</ref>");
+	// int commentIndex = content.indexOf("<!--");
+	// int commentEndIndex = content.indexOf("-->");
+	// String firstPart;
+	// String lastPart;
+	//
+	// while (refIndex > 0) {
+	//
+	// firstPart = content.substring(0, refIndex);
+	// lastPart = content.substring(refEndIndex + 6);
+	// content = firstPart + lastPart;
+	// refIndex = content.indexOf("<ref");
+	// refEndIndex = content.indexOf("</ref>", refEndIndex + 1);
+	// }
+	// while (commentIndex > 0) {
+	//
+	// firstPart = content.substring(0, commentIndex);
+	// lastPart = content.substring(commentEndIndex + 3);
+	// content = firstPart + lastPart;
+	// commentIndex = content.indexOf("<!--");
+	// commentEndIndex = content.indexOf("-->");
+	// }
+	// Pattern r = Pattern
+	// .compile("\\[\\[(?:[^\\|\\]]*\\|)?([^\\]]+)\\]\\]");
+	// Matcher m = r.matcher(content);
+	// while (m.find()) {
+	// String match = m.group(1);
+	// String match0 = m.group();
+	// // System.out.println(match0);
+	// // System.out.println(match);
+	// content = content.replace(match0, match);
+	//
+	// }
+	// if (content.equals("")) {
+	// content = "Malformed article abstract on Wikipedia's end.";
+	// }
+	// return content;
+	// } catch (Exception ex) {
+	// ex.printStackTrace();
+	// return "Unable to find that article.";
+	// }
+	// }
 
 	public static String krakenStatus(String channel) {
 		try {
@@ -841,21 +841,21 @@ public class JSONUtil {
 		}
 	}
 
-//	public static String googURL(String url) {
-//		try {
-//
-//			JSONParser parser = new JSONParser();
-//			Object obj = parser.parse(BotManager.postDataLinkShortener(url));
-//
-//			JSONObject jsonObject = (JSONObject) obj;
-//			String response = (String) jsonObject.get("id");
-//			return response;
-//
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//			return url;
-//		}
-//	}
+	// public static String googURL(String url) {
+	// try {
+	//
+	// JSONParser parser = new JSONParser();
+	// Object obj = parser.parse(BotManager.postDataLinkShortener(url));
+	//
+	// JSONObject jsonObject = (JSONObject) obj;
+	// String response = (String) jsonObject.get("id");
+	// return response;
+	//
+	// } catch (Exception ex) {
+	// ex.printStackTrace();
+	// return url;
+	// }
+	// }
 
 	public static String urlEncode(String data) {
 		try {
@@ -1031,6 +1031,122 @@ public class JSONUtil {
 		}
 
 		return false;
+
+	}
+
+	public static String getVar(String channel, String varName) {
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/api/v1/vars/get/"
+							+ varName + "/" + channel));
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			String status = (String) (jsonObject.get("status"));
+			if (status.equals("ok")) {
+				String value = (String) jsonObject.get("value");
+				return value;
+			} else {
+				return null;
+			}
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public static boolean setVar(String channel, String varName, String newValue) {
+		JSONObject postData = new JSONObject();
+		postData.put("value", newValue);
+		try {
+
+			JSONParser parser = new JSONParser();
+			String resp = BotManager.postCoebotVars(postData.toJSONString(),
+					"http://coebot.tv/api/v1/vars/set/" + varName + "/"
+							+ channel);
+			if (!resp.equals("")) {
+				Object obj = parser.parse(resp);
+
+				JSONObject jsonObject = (JSONObject) obj;
+
+				String status = (String) (jsonObject.get("status"));
+				return status.equals("ok");
+
+			} else
+				return false;
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+
+	}
+
+	public static String incVar(String channel, String varName, int incValue) {
+		JSONObject postData = new JSONObject();
+		postData.put("incAmount", incValue);
+		try {
+
+			JSONParser parser = new JSONParser();
+			String resp = BotManager.postCoebotVars(postData.toJSONString(),
+					"http://coebot.tv/api/v1/vars/increment/" + varName + "/"
+							+ channel);
+			if (!resp.equals("")) {
+				Object obj = parser.parse(resp);
+
+				JSONObject jsonObject = (JSONObject) obj;
+
+				String status = (String) (jsonObject.get("status"));
+				if (status.equals("ok")) {
+					String newValue = (String) jsonObject.get("newValue");
+					return newValue;
+				} else {
+					return null;
+				}
+			} else {
+				return null;
+			}
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public static String decVar(String channel, String varName, int incValue) {
+		incValue *= -1;
+		JSONObject postData = new JSONObject();
+		postData.put("incAmount", incValue);
+		try {
+
+			JSONParser parser = new JSONParser();
+			String resp = BotManager.postCoebotVars(postData.toJSONString(),
+					"http://coebot.tv/api/v1/vars/increment/" + varName + "/"
+							+ channel);
+			if (!resp.equals("")) {
+				Object obj = parser.parse(resp);
+
+				JSONObject jsonObject = (JSONObject) obj;
+
+				String status = (String) (jsonObject.get("status"));
+				if (status.equals("ok")) {
+					String newValue = (String) jsonObject.get("newValue");
+					return newValue;
+				} else {
+					return null;
+				}
+			} else {
+				return null;
+			}
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return null;
+		}
 
 	}
 

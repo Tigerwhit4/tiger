@@ -88,7 +88,7 @@ public class ReceiverBot extends PircBot {
 				.compile(".*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\s+|:|/|$).*");
 
 		symbolsPatterns[0] = Pattern
-				.compile("(\\p{InPhonetic_Extensions}|\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|ã�¤|Â°|àºˆ|â–‘|â–€|â–„|Ì°Ì¦Ì®Ì eÍ¦ÌšÍ¯Í¯Ì�Í®ÌŠÌ�ÍŒÌ‰Í‘Í¨ÌŠÍ�Í�Ì¨ÌŸÌ¹|UÌ¶Ì§Í©Í­Í§ÍŠÌ…ÌŠÍ¥Í©Ì¿Ì”Ì”Í¥ÍŒÍ¬ÍŠÍ‹Í¬Ò‰|á»ŒÌµÍ‡Ì–Ì–|AÌ´Í�Ì¥Ì³Ì ÌžÌ¹Í©Ì‹Ì†Í¤Í…|EÌ¡Ì›ÍšÌºÌ–ÌªÍˆÌ²Ì»Ì Ì°Ì³Ì�Ì¿)");
+				.compile("(\\p{InPhonetic_Extensions}|\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|Ã£ï¿½Â¤|Ã‚Â°|Ã ÂºË†|Ã¢â€“â€˜|Ã¢â€“â‚¬|Ã¢â€“â€ž|ÃŒÂ°ÃŒÂ¦ÃŒÂ®ÃŒÂ eÃ�Â¦ÃŒÅ¡Ã�Â¯Ã�Â¯ÃŒï¿½Ã�Â®ÃŒÅ ÃŒï¿½Ã�Å’ÃŒâ€°Ã�â€˜Ã�Â¨ÃŒÅ Ã�ï¿½Ã�ï¿½ÃŒÂ¨ÃŒÅ¸ÃŒÂ¹|UÃŒÂ¶ÃŒÂ§Ã�Â©Ã�Â­Ã�Â§Ã�Å ÃŒâ€¦ÃŒÅ Ã�Â¥Ã�Â©ÃŒÂ¿ÃŒâ€�ÃŒâ€�Ã�Â¥Ã�Å’Ã�Â¬Ã�Å Ã�â€¹Ã�Â¬Ã’â€°|Ã¡Â»Å’ÃŒÂµÃ�â€¡ÃŒâ€“ÃŒâ€“|AÃŒÂ´Ã�ï¿½ÃŒÂ¥ÃŒÂ³ÃŒÂ ÃŒÅ¾ÃŒÂ¹Ã�Â©ÃŒâ€¹ÃŒâ€ Ã�Â¤Ã�â€¦|EÃŒÂ¡ÃŒâ€ºÃ�Å¡ÃŒÂºÃŒâ€“ÃŒÂªÃ�Ë†ÃŒÂ²ÃŒÂ»ÃŒÂ ÃŒÂ°ÃŒÂ³ÃŒï¿½ÃŒÂ¿)");
 		symbolsPatterns[1] = Pattern.compile("[!-/:-@\\[-`{-~]");
 
 		this.setName(BotManager.getInstance().nick);
@@ -1216,7 +1216,7 @@ public class ReceiverBot extends PircBot {
 		// !hug
 		// if (msg[0].equalsIgnoreCase(prefix + "hug") && isSub) {
 		// if (msg.length > 1) {
-		// send(channel, "(>à² _à² )> " + fuseArray(msg, 1));
+		// send(channel, "(>Ã Â²Â _Ã Â²Â )> " + fuseArray(msg, 1));
 		// } else
 		// send(channel, "Syntax is " + prefix + "hug <single word>");
 		// }
@@ -1239,7 +1239,7 @@ public class ReceiverBot extends PircBot {
 		if (msg[0].equalsIgnoreCase(prefix + "music")) {
 			log("RB: Matched command !music");
 			String currBullet = bullet[0];
-			bullet[0] = "â™«";
+			bullet[0] = "Ã¢â„¢Â«";
 			send(channel,
 					"Now playing: " + JSONUtil.lastFM(channelInfo.getLastfm()));
 			bullet[0] = currBullet;
@@ -1488,7 +1488,7 @@ public class ReceiverBot extends PircBot {
 
 					e.printStackTrace();
 				}
-				String url = "http://google.com/#q=" + encodedQuery;
+				String url = "https://www.google.com/search?q=" + encodedQuery;
 				send(channel, JSONUtil.shortenUrlTinyURL(url));
 			}
 		}
@@ -1840,7 +1840,8 @@ public class ReceiverBot extends PircBot {
 		// log("RB: Matched command !throw");
 		// if (msg.length > 1) {
 		//
-		// send(channel, " (â•¯Â°â–¡Â°ï¼‰â•¯å½¡ " + fuseArray(msg, 1));
+		// send(channel, " (Ã¢â€¢Â¯Ã‚Â°Ã¢â€“Â¡Ã‚Â°Ã¯Â¼â€°Ã¢â€¢Â¯Ã¥Â½Â¡ " +
+		// fuseArray(msg, 1));
 		// }
 		//
 		// }
@@ -1955,7 +1956,10 @@ public class ReceiverBot extends PircBot {
 					if (value.contains("(_PURGE_)")
 							|| value.contains("(_TIMEOUT_)")
 							|| value.contains("(_BAN_)")
-							|| value.contains("(_COMMERCIAL_)")) {
+							|| value.contains("(_COMMERCIAL_)")
+							|| (value.contains("(_VARS_") && (value
+									.contains("_INCREMENT_") || value
+									.contains("_DECREMENT_")))) {
 						channelInfo.setCommandsRestriction(key, 2);
 					} else
 						channelInfo.setCommandsRestriction(key, 1);
@@ -3269,7 +3273,7 @@ public class ReceiverBot extends PircBot {
 		}
 		// !sendupdate
 		if (msg[0].equalsIgnoreCase(prefix + "sendUpdate") && isAdmin) {
-			channelInfo.testChannelPost();
+			channelInfo.updateSite();
 			send(channel,
 					"Channel config has been manually pushed to coebot.tv/c/"
 							+ twitchName);
@@ -3732,6 +3736,8 @@ public class ReceiverBot extends PircBot {
 				if (msg.length > 2) {
 					if (msg[2].length() > 1) {
 						send(channel, "Prefix may only be 1 character.");
+					} else if (msg[2].equals("/") || msg[2].equals(".")) {
+						send(channel, "Command prefix cannot be / or .");
 					} else {
 						channelInfo.setPrefix(msg[2]);
 						send(channel,

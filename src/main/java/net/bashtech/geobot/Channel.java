@@ -1258,12 +1258,12 @@ public class Channel {
 		synchronized (offensiveWordsRegex) {
 			if (word.startsWith("REGEX:")) {
 				String line = word.substring(6);
-				System.out.println("Adding: " + line);
+				
 				Pattern tempP = Pattern.compile(line);
 				offensiveWordsRegex.add(tempP);
 			} else {
 				String line = ".*" + Pattern.quote(word) + ".*";
-				System.out.println("Adding: " + line);
+				
 				Pattern tempP = Pattern.compile(line, Pattern.CASE_INSENSITIVE);
 				offensiveWordsRegex.add(tempP);
 			}
@@ -1729,7 +1729,7 @@ public class Channel {
 
 		defaults.put("wpTimer", new Boolean(false));
 		defaults.put("wpCount", 0);
-		defaults.put("bullet", "coeBot");
+		defaults.put("bullet", BotManager.getInstance().defaultBullet);
 		defaults.put("cooldown", 5);
 
 		defaults.put("maxViewers", 0);
@@ -2105,12 +2105,13 @@ public class Channel {
 	public void runCommercial() {
 
 		if (JSONUtil.krakenIsLive(getChannel().substring(1))) {
-			BotManager.getInstance().receiverBot.sendCommand(getChannel(), ".commercial "+commercialLength);
-//			String dataIn = "";
-//			dataIn = BotManager.postRemoteDataTwitch(
-//					"https://api.twitch.tv/kraken/channels/"
-//							+ getChannel().substring(1) + "/commercial",
-//					"length=" + commercialLength, 2);
+			
+			String dataIn = "";
+			dataIn = BotManager.postRemoteDataTwitch(
+					"https://api.twitch.tv/kraken/channels/"
+							+ getChannel().substring(1) + "/commercial",
+					"length=" + commercialLength, 3);
+			System.out.println(dataIn);
 
 		} else {
 			System.out.println(getChannel().substring(1)
@@ -2121,12 +2122,13 @@ public class Channel {
 	public void runCommercial(int commercialTime) {
 
 		if (JSONUtil.krakenIsLive(getChannel().substring(1))) {
-			BotManager.getInstance().receiverBot.sendCommand(getChannel(), ".commercial "+commercialTime);
-//			String dataIn = "";
-//			dataIn = BotManager.postRemoteDataTwitch(
-//					"https://api.twitch.tv/kraken/channels/"
-//							+ getChannel().substring(1) + "/commercial",
-//					"length=" + commercialTime, 2);
+
+			String dataIn = "";
+			dataIn = BotManager.postRemoteDataTwitch(
+					"https://api.twitch.tv/kraken/channels/"
+							+ getChannel().substring(1) + "/commercial",
+					"length=" + commercialTime, 3);
+			System.out.println(dataIn);
 
 		} else {
 			System.out.println(getChannel().substring(1)
@@ -2253,7 +2255,7 @@ public class Channel {
 			return false;
 	}
 
-	public void testChannelPost() {
+	public void updateSite() {
 		System.out.println(BotManager.getInstance().postCoebotConfig(
 				config.toJSONString(), twitchname));
 
@@ -2295,6 +2297,7 @@ public class Channel {
 	}
 
 	public void setSubMessage(String newMessage) {
+		subscriberMessage = newMessage;
 		config.put("subMessage", newMessage);
 		saveConfig(false);
 	}

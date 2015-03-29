@@ -66,7 +66,7 @@ public class MessageReplaceParser {
 			message = message.replace("(_STEAM_SERVER_)",
 					JSONUtil.steam(ci.getSteam(), "server"));
 		if (message.contains("(_STEAM_STORE_)")) {
-			
+
 			String game = JSONUtil.steam(ci.getSteam(), "game");
 			if (game.equalsIgnoreCase("(unavailable)")) {
 				game = JSONUtil.krakenGame(channel.substring(1));
@@ -78,11 +78,13 @@ public class MessageReplaceParser {
 						"minecraft")) {
 					message = message.replace("(_STEAM_STORE_)",
 							"minecraft.net");
-				}else if(JSONUtil.krakenGame(channel.substring(1)).equalsIgnoreCase("(Not set)")){
-					message = message.replace("(_STEAM_STORE_)","");
-				}else{
-					message = message.replace("(_STEAM_STORE_)", JSONUtil.shortenUrlTinyURL(
-							"https://www.google.com/#q="+URLEncoder.encode("buy "+game)));
+				} else if (JSONUtil.krakenGame(channel.substring(1))
+						.equalsIgnoreCase("(Not set)")) {
+					message = message.replace("(_STEAM_STORE_)", "");
+				} else {
+					message = message.replace("(_STEAM_STORE_)", JSONUtil
+							.shortenUrlTinyURL("https://www.google.com/#q="
+									+ URLEncoder.encode("buy " + game)));
 				}
 			} else
 				message = message.replace("(_STEAM_STORE_)", storeLink);
@@ -147,18 +149,21 @@ public class MessageReplaceParser {
 
 		if (message.contains("(_EXTRALIFE_AMOUNT_)")) {
 			String amount = JSONUtil.extraLifeAmount(channel);
-			if(!amount.equals("")){
-				message = message.replace("(_EXTRALIFE_AMOUNT_)", "$"
-						+ amount);
-			}else
-				message = message.replace("(_EXTRALIFE_AMOUNT_)", 
+			if (!amount.equals("")) {
+				message = message.replace("(_EXTRALIFE_AMOUNT_)", "$" + amount);
+			} else
+				message = message.replace("(_EXTRALIFE_AMOUNT_)",
 						"(Error getting amount)");
-			
+
 			System.out.println(message);
 		}
 		if (message.contains("(_LAST_SONG_)")) {
 			String songName = JSONUtil.lastSongLastFM(ci.getLastfm());
 			message = message.replace("(_LAST_SONG_)", songName);
+		}
+		if (message.contains("(_UPDATE_SITE_)")) {
+			message = message.replace("(_UPDATE_SITE_)", "");
+			ci.updateSite();
 		}
 
 		if (args != null) {
@@ -192,8 +197,69 @@ public class MessageReplaceParser {
 						"No count for that command...");
 			}
 		}
+		if (message.contains("(_VARS_")) {
+
+			int begName = message.indexOf("(_VARS_") + 7;
+			int endName = message.indexOf("_", begName);
+			String varName = message.substring(begName, endName);
+			System.out.println("varName = " + varName);
+			int endMethod = message.indexOf("_", endName + 1);
+			String method = message.substring(endName + 1, endMethod);
+			System.out.println("method = " + method);
+
+			if (method.equals("INCREMENT")) {
+				int endInc = message.indexOf("_)", endMethod);
+				System.out.println("index endInc =" + endInc);
+				String inc = message.substring(endMethod + 1, endInc);
+				System.out.println("inc = " + inc);
+				int incValue = Integer.valueOf(inc);
+
+				String response = JSONUtil.incVar(channel.substring(1),
+						varName, incValue);
+				if (response != null) {
+					message = message.replace("(_VARS_" + varName
+							+ "_INCREMENT_" + inc + "_)", response);
+				} else {
+					message = message.replace("(_VARS_" + varName + "_INCREMENT_" + inc
+							+ "_)", "(error)");
+				}
+			}
+
+			else if (method.equals("DECREMENT")) {
+				int endDec = message.indexOf("_)", endMethod);
+				String dec = message.substring(endMethod + 1, endDec);
+				System.out.println("dec = " + dec);
+				int decValue = Integer.valueOf(dec);
+				String response = JSONUtil.decVar(channel.substring(1),
+						varName, decValue);
+				if (response != null) {
+					message = message.replace("(_VARS_" + varName
+							+ "_DECREMENT_" + dec + "_)", response);
+				} else {
+					message = message.replace("(_VARS_" + varName + "_DECREMENT_" + dec
+							+ "_)", "(error)");
+				}
+			}
+
+			else if (method.equals("GET")) {
+				int endChannel = message.indexOf("_)", endMethod);
+
+				String otherChannel = message.substring(endMethod + 1,
+						endChannel);
+				System.out.println(otherChannel);
+				String response = JSONUtil.getVar(otherChannel, varName);
+				if (response != null) {
+					message = message.replace("(_VARS_" + varName + "_GET_"
+							+ otherChannel + "_)", response);
+				} else {
+					message = message.replace("(_VARS_" + varName + "_GET_"
+							+ otherChannel + "_)", "(error)");
+				}
+
+			}
+
+		}
 
 		return message;
 	}
-
 }

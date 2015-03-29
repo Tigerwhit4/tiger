@@ -72,6 +72,7 @@ public class BotManager {
 	int randomNickColorDiff;
 	boolean useEventFeed;
 	String eventFeedURL;
+	String defaultBullet;
 
 	Map<Integer, List<Pattern>> banPhraseLists;
 	// ********
@@ -119,6 +120,7 @@ public class BotManager {
 			}
 
 		}
+		log("BM: Done Joining Channels");
 
 		// Start EventFeedReader
 		if (useEventFeed) {
@@ -260,7 +262,7 @@ public class BotManager {
 				JSONParser parser = new JSONParser();
 				Object obj = parser.parse(line);
 				JSONObject jsonObject = (JSONObject) obj;
-				line = (Long)jsonObject.get("id")+"";
+				line = (Long) jsonObject.get("id") + "";
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -321,7 +323,7 @@ public class BotManager {
 
 		return "";
 	}
-	
+
 	public static String postDataLinkShortener(String postData) {
 		URL url;
 		HttpURLConnection conn;
@@ -371,6 +373,53 @@ public class BotManager {
 			try {
 				url = new URL("http://coebot.tv/api/v1/channel/update/config/"
 						+ channel.toLowerCase() + "$"
+						+ BotManager.getInstance().CoeBotTVAPIKey + "$"
+						+ BotManager.getInstance().nick);
+
+				conn = (HttpURLConnection) url.openConnection();
+				conn.setDoOutput(true);
+				conn.setRequestMethod("POST");
+				conn.setRequestProperty("User-Agent", "CoeBot");
+				conn.setRequestProperty("Content-Type", "application/json");
+				conn.setRequestProperty("Content-Length",
+						"" + Integer.toString(postData.getBytes().length));
+
+				// conn.setConnectTimeout(5 * 1000);
+				// conn.setReadTimeout(5 * 1000);
+
+				PrintWriter out = new PrintWriter(conn.getOutputStream());
+				out.print(postData);
+				out.close();
+
+				String response = "";
+
+				Scanner inStream = new Scanner(conn.getInputStream());
+
+				while (inStream.hasNextLine())
+					response += (inStream.nextLine());
+
+				inStream.close();
+				return response;
+
+			} catch (MalformedURLException ex) {
+				ex.printStackTrace();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+
+			return "";
+		} else
+			return "";
+	}
+
+	public static String postCoebotVars(String postData,
+			String requestURL) {
+		if (BotManager.getInstance().CoeBotTVAPIKey.length() > 4) {
+			URL url;
+			HttpURLConnection conn;
+
+			try {
+				url = new URL(requestURL + "$"
 						+ BotManager.getInstance().CoeBotTVAPIKey + "$"
 						+ BotManager.getInstance().nick);
 
@@ -629,9 +678,12 @@ public class BotManager {
 		if (!config.keyExists("pusherAppKey")) {
 			config.setString("pusherAppKey", "");
 		}
+		if(!config.keyExists("defaultbullet")){
+			config.setString("defaultbullet", "#!");
+		}
 
 		// ********
-
+		defaultBullet = config.getString("defaultbullet");
 		nick = config.getString("nick");
 		server = config.getString("server");
 		port = Integer.parseInt(config.getString("port"));
@@ -923,8 +975,8 @@ public class BotManager {
 						if (!banPhraseLists.containsKey(c))
 							banPhraseLists.put(c, new LinkedList<Pattern>());
 						banPhraseLists.get(c).add(tempP);
-						System.out.println("Adding " + tempP.toString()
-								+ " to s=" + c);
+						// System.out.println("Adding " + tempP.toString()
+						// + " to s=" + c);
 					}
 				}
 			}
