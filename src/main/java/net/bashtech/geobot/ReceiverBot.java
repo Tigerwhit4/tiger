@@ -143,7 +143,7 @@ public class ReceiverBot extends PircBot {
 					@Override
 					public void onEvent(String channelName, String eventName,
 							String data) {
-						// BotManager.getInstance().getGUI().log(data);
+
 						parseEvent(data);
 					}
 				}, "e");
@@ -183,8 +183,7 @@ public class ReceiverBot extends PircBot {
 
 						BotManager.getInstance().coebotJoinChannel(channel,
 								getNick());
-						BotManager.getInstance().getGUI()
-								.log("Recieved join command for " + channel);
+
 					}
 					break;
 				}
@@ -2602,6 +2601,78 @@ public class ReceiverBot extends PircBot {
 				send(channel,
 						"Your syntax is incorrect, please check the documentation.");
 			}
+		}
+
+		if (msg[0].equalsIgnoreCase(prefix + "var")) {
+			if (msg[1].equalsIgnoreCase("set") && isOp && msg.length > 3) {
+				String varName = msg[2];
+				String newValue = fuseArray(msg,3);
+				boolean result = JSONUtil.setVar(channel.substring(1), varName,
+						newValue);
+				if (result) {
+					send(channel, "Variable " + varName + " set to " + newValue
+							+ ".");
+				} else {
+					send(channel, "Failed to set variable " + varName + ".");
+				}
+			} else if ((msg[1].equalsIgnoreCase("delete") || msg[1]
+					.equalsIgnoreCase("remove")) && isOp && msg.length > 2) {
+				String varName = msg[2];
+				boolean result = JSONUtil.deleteVar(channel.substring(1),
+						varName);
+				if (result) {
+					send(channel, "Variable " + varName
+							+ " deleted successfully.");
+				} else {
+					send(channel, "Unable to delete variable " + varName + ".");
+				}
+
+			} else if (msg[1].equalsIgnoreCase("get") && isSub
+					&& msg.length > 2) {
+				String varName = msg[2];
+				String channelName = channel.substring(1);
+				if(msg.length>3){
+					channelName = msg[3];
+				}
+				String result = JSONUtil.getVar(channelName, varName);
+				if (result != null) {
+					send(channel, "Variable " + varName + "'s value is "
+							+ result);
+				} else {
+					send(channel, "Variable " + varName + " doesn't exist.");
+				}
+			} else if (msg[1].equalsIgnoreCase("increment") && isOp
+					&& msg.length > 2) {
+				int incVal = 1;
+				String varName = msg[2];
+				if (msg.length > 3) {
+					incVal = Integer.parseInt(msg[3]);
+				}
+				String result = JSONUtil.incVar(channel.substring(1), varName,
+						incVal);
+				if (result != null) {
+					send(channel, "Variable " + varName + "'s value is now "
+							+ result);
+				} else {
+					send(channel, "Variable " + varName + " doesn't exist.");
+				}
+			}else if (msg[1].equalsIgnoreCase("decrement") && isOp
+					&& msg.length > 2) {
+				int incVal = 1;
+				String varName = msg[2];
+				if (msg.length > 3) {
+					incVal = Integer.parseInt(msg[3]);
+				}
+				String result = JSONUtil.decVar(channel.substring(1), varName,
+						incVal);
+				if (result != null) {
+					send(channel, "Variable " + varName + "'s value is now "
+							+ result);
+				} else {
+					send(channel, "Variable " + varName + " doesn't exist.");
+				}
+			}
+
 		}
 
 		// ********************************************************************************

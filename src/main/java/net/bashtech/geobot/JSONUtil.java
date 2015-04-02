@@ -1033,7 +1033,26 @@ public class JSONUtil {
 		return false;
 
 	}
+	public static boolean deleteVar(String channel, String varName) {
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://coebot.tv/api/v1/vars/unset/"
+							+ varName + "/" + channel+ "$"
+							+ BotManager.getInstance().CoeBotTVAPIKey + "$"
+							+ BotManager.getInstance().nick));
 
+			JSONObject jsonObject = (JSONObject) obj;
+
+			String status = (String) (jsonObject.get("status"));
+			return(status.equalsIgnoreCase("ok"));
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+
+	}
 	public static String getVar(String channel, String varName) {
 		try {
 			JSONParser parser = new JSONParser();
