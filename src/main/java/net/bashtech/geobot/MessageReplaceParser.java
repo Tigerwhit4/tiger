@@ -256,6 +256,18 @@ public class MessageReplaceParser {
 							+ otherChannel + "_)", "(error)");
 				}
 
+			}else if(method.equals("SET")){
+				int endNewVal = message.indexOf("_)", endMethod);
+				String newVal = message.substring(endMethod + 1, endNewVal);
+				System.out.println("New Value = " + newVal);
+				boolean response = JSONUtil.setVar(channel.substring(1), varName, newVal);
+				if(response){
+					message = message.replace("(_VARS_" + varName
+							+ "_SET_" + newVal + "_)", newVal);
+				}else{
+					message = message.replace("(_VARS_" + varName
+							+ "_SET_" + newVal + "_)", "(error)");
+				}
 			}
 
 		}

@@ -412,8 +412,7 @@ public class BotManager {
 			return "";
 	}
 
-	public static String postCoebotVars(String postData,
-			String requestURL) {
+	public static String postCoebotVars(String postData, String requestURL) {
 		if (BotManager.getInstance().CoeBotTVAPIKey.length() > 4) {
 			URL url;
 			HttpURLConnection conn;
@@ -470,16 +469,14 @@ public class BotManager {
 										+ channel.toLowerCase()
 										+ "$"
 										+ BotManager.getInstance().CoeBotTVAPIKey
-										+ "$"
-										+ BotManager.getInstance()
-												.getInstance().nick));
+										+ "$" + BotManager.getInstance().nick));
 
 				JSONObject response = (JSONObject) obj;
 				String resp = (String) response.get("status");
 				return resp;
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				
 				return "Error";
 			}
 		} else
@@ -678,7 +675,7 @@ public class BotManager {
 		if (!config.keyExists("pusherAppKey")) {
 			config.setString("pusherAppKey", "");
 		}
-		if(!config.keyExists("defaultbullet")){
+		if (!config.keyExists("defaultbullet")) {
 			config.setString("defaultbullet", "#!");
 		}
 

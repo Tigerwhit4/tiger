@@ -429,6 +429,30 @@ public class Channel {
 			return false;
 
 	}
+	public boolean renameCommand(String key, String newKey, String adder){
+		if(commands.containsKey(key)){
+			//save old stuff
+			String response = commands.get(key);
+			Integer restriction = commandsRestrictions.get(key);
+			int count = commandCounts.get(key);
+			
+			//delete old stuff
+			commands.remove(key);
+			commandsRestrictions.remove(key);
+			commandCounts.remove(key);
+			commandAdders.remove(key);
+			
+			//add renamed command
+			commands.put(newKey, response);
+			commandsRestrictions.put(newKey, restriction);
+			commandCounts.put(newKey, count);
+			commandAdders.put(newKey, adder);
+			saveCommands(true);
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 	public void saveCommands(Boolean shouldSendUpdate) {
 		JSONArray commandsArr = new JSONArray();
@@ -478,6 +502,7 @@ public class Channel {
 		} else
 			return -1;
 	}
+	
 
 	public boolean setCommandsRestriction(String command, int level) {
 		command = command.toLowerCase();

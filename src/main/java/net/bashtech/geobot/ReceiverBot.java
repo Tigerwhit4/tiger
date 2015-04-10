@@ -70,6 +70,7 @@ public class ReceiverBot extends PircBot {
 	private boolean delete;
 	private boolean permitted;
 	private long lastConch = System.currentTimeMillis();
+
 	String botName;
 	Pusher pusher;
 
@@ -123,8 +124,18 @@ public class ReceiverBot extends PircBot {
 			@Override
 			public void onConnectionStateChange(ConnectionStateChange change) {
 				System.out.println("State changed to "
-						+ change.getCurrentState() + " from "
-						+ change.getPreviousState());
+						+ change.getCurrentState().toString() + " from "
+						+ change.getPreviousState().toString());
+				if (change.getCurrentState().toString()
+						.equalsIgnoreCase("disconnected")
+						&& (change.getPreviousState().toString()
+								.equalsIgnoreCase("connected") || change
+								.getPreviousState().toString()
+								.equalsIgnoreCase("disconnecting"))) {
+					System.out
+							.println("Disconnected, attempting to reconnect.");
+					pusher.connect();
+				}
 			}
 
 			@Override
@@ -170,6 +181,10 @@ public class ReceiverBot extends PircBot {
 				}
 
 				switch (action) {
+				case "disconnect": {
+					pusher.disconnect();
+					break;
+				}
 				case "join": {
 
 					if (!BotManager.getInstance().publicJoin) {
@@ -209,6 +224,13 @@ public class ReceiverBot extends PircBot {
 						channelInfo.setCommandsRestriction(key, 2);
 					} else
 						channelInfo.setCommandsRestriction(key, 1);
+					break;
+				}
+				case "rename command": {
+					String oldName = ((String) actionObject.get("oldName"));
+					String newName = ((String) actionObject.get("newName"))
+							.replaceAll("[^a-zA-Z0-9]", "");
+					channelInfo.renameCommand(oldName, newName, editor);
 					break;
 				}
 				case "delete command": {
@@ -1957,8 +1979,9 @@ public class ReceiverBot extends PircBot {
 							|| value.contains("(_BAN_)")
 							|| value.contains("(_COMMERCIAL_)")
 							|| (value.contains("(_VARS_") && (value
-									.contains("_INCREMENT_") || value
-									.contains("_DECREMENT_")))) {
+									.contains("_INCREMENT_")
+									|| value.contains("_DECREMENT_") || value
+										.contains("_SET_")))) {
 						channelInfo.setCommandsRestriction(key, 2);
 					} else
 						channelInfo.setCommandsRestriction(key, 1);
@@ -2003,6 +2026,18 @@ public class ReceiverBot extends PircBot {
 							send(channel, "Error setting restriction.");
 					} else {
 						send(channel, "Command does not exist.");
+					}
+				} else if (msg[1].equalsIgnoreCase("rename") && msg.length > 3) {
+					String key = msg[2].toLowerCase();
+					String newKey = msg[3].toLowerCase();
+					boolean result = channelInfo.renameCommand(key, newKey,
+							sender);
+					if (result) {
+						send(channel, "Command " + key + " renamed to "
+								+ newKey + " successfully.");
+					} else {
+						send(channel,
+								"Unable to rename a command that doesn't exist.");
 					}
 				}
 			}
@@ -2606,7 +2641,7 @@ public class ReceiverBot extends PircBot {
 		if (msg[0].equalsIgnoreCase(prefix + "var")) {
 			if (msg[1].equalsIgnoreCase("set") && isOp && msg.length > 3) {
 				String varName = msg[2];
-				String newValue = fuseArray(msg,3);
+				String newValue = fuseArray(msg, 3);
 				boolean result = JSONUtil.setVar(channel.substring(1), varName,
 						newValue);
 				if (result) {
@@ -2631,7 +2666,7 @@ public class ReceiverBot extends PircBot {
 					&& msg.length > 2) {
 				String varName = msg[2];
 				String channelName = channel.substring(1);
-				if(msg.length>3){
+				if (msg.length > 3) {
 					channelName = msg[3];
 				}
 				String result = JSONUtil.getVar(channelName, varName);
@@ -2656,7 +2691,7 @@ public class ReceiverBot extends PircBot {
 				} else {
 					send(channel, "Variable " + varName + " doesn't exist.");
 				}
-			}else if (msg[1].equalsIgnoreCase("decrement") && isOp
+			} else if (msg[1].equalsIgnoreCase("decrement") && isOp
 					&& msg.length > 2) {
 				int incVal = 1;
 				String varName = msg[2];
@@ -3927,14 +3962,19 @@ public class ReceiverBot extends PircBot {
 
 			if (JSONUtil.krakenChannelExist(sender)) {
 				send(channel, "Joining channel #" + sender + ".");
-				boolean joinStatus = BotManager.getInstance().addChannel(
-						"#" + sender, 2);
+				// boolean joinStatus = BotManager.getInstance().addChannel(
+				// "#" + sender, 2);
+
 				boolean createStatus = false;
 				String created = BotManager.getInstance().coebotJoinChannel(
 						sender, getNick());
-				if (created.equalsIgnoreCase("ok"))
+				if (created.equalsIgnoreCase("ok")) {
 					createStatus = true;
-				if (joinStatus && createStatus) {
+				}
+				boolean joinStatus = BotManager.getInstance().checkChannel(
+						"#" + sender);
+				if (!joinStatus && createStatus) {
+					BotManager.getInstance().addChannel("#" + sender, 2);
 					send(channel, "Channel #" + sender + " joined.");
 
 				} else {
@@ -4008,15 +4048,18 @@ public class ReceiverBot extends PircBot {
 						mode = Integer.parseInt(msg[3]);
 					send(channel, "Joining channel " + toJoin + " with mode ("
 							+ mode + ").");
-					boolean joinStatus = BotManager.getInstance().addChannel(
-							toJoin, 2);
+					
 
 					boolean createStatus = false;
 					String created = BotManager.getInstance()
 							.coebotJoinChannel(toJoin.substring(1), getNick());
-					if (created.equalsIgnoreCase("ok"))
+					if (created.equalsIgnoreCase("ok")) {
 						createStatus = true;
-					if (joinStatus && createStatus) {
+					}
+					boolean joinStatus = BotManager.getInstance().checkChannel(
+							toJoin);
+					if (!joinStatus && createStatus) {
+						BotManager.getInstance().addChannel(toJoin, 2);
 						send(channel, "Channel #" + toJoin + " joined.");
 
 					} else {
