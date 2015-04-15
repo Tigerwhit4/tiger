@@ -1972,8 +1972,8 @@ public class ReceiverBot extends PircBot {
 					String key = msg[2].replaceAll("[^a-zA-Z0-9]", "");
 					key = key.toLowerCase();
 					String value = fuseArray(msg, 3);
-
-					channelInfo.setCommand(key, value, sender);
+					int restriction = 1;
+					
 					if (value.contains("(_PURGE_)")
 							|| value.contains("(_TIMEOUT_)")
 							|| value.contains("(_BAN_)")
@@ -1982,10 +1982,12 @@ public class ReceiverBot extends PircBot {
 									.contains("_INCREMENT_")
 									|| value.contains("_DECREMENT_") || value
 										.contains("_SET_")))) {
-						channelInfo.setCommandsRestriction(key, 2);
-					} else
+						restriction = 2;
+					} else {
 						channelInfo.setCommandsRestriction(key, 1);
+					}
 
+					channelInfo.setCommand(key, value, sender, restriction);
 					send(channel, "Command added/updated.");
 
 				} else if (msg[1].equalsIgnoreCase("delete")
@@ -2038,6 +2040,34 @@ public class ReceiverBot extends PircBot {
 					} else {
 						send(channel,
 								"Unable to rename a command that doesn't exist.");
+					}
+				} else if (msg[1].equalsIgnoreCase("clone") && msg.length > 3) {
+					if (msg[2].startsWith("#")) {
+						String otherchan = msg[2].toLowerCase();
+						Channel otherChannel = getChannelObject(otherchan);
+						if (otherChannel != null) {
+							String key = msg[3].toLowerCase().replaceAll(
+									"[^a-zA-Z0-9]", "");
+							String response = otherChannel.getCommand(key);
+							if (response != null) {
+								int restriction = otherChannel
+										.getRestriction(msg[3]);
+								channelInfo.setCommand(key, response, sender,
+										restriction);
+								send(channel, "Command " + key
+										+ " cloned from channel " + otherchan);
+							} else {
+								send(channel, "Command " + key
+										+ " doesn't exist in channel "
+										+ otherchan);
+							}
+						} else {
+							send(channel, otherchan
+									+ " doesn't have a config with this bot.");
+						}
+					} else {
+						send(channel,
+								"Channel to be cloned from must be in format: #channel");
 					}
 				}
 			}
@@ -4048,7 +4078,6 @@ public class ReceiverBot extends PircBot {
 						mode = Integer.parseInt(msg[3]);
 					send(channel, "Joining channel " + toJoin + " with mode ("
 							+ mode + ").");
-					
 
 					boolean createStatus = false;
 					String created = BotManager.getInstance()

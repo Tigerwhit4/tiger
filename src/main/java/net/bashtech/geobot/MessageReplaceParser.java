@@ -20,6 +20,15 @@ package net.bashtech.geobot;
 
 import java.net.URLEncoder;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.PeriodFormatter;
+import org.joda.time.format.PeriodFormatterBuilder;
+
 public class MessageReplaceParser {
 
 	public static String parseMessage(String channel, String sender,
@@ -166,6 +175,61 @@ public class MessageReplaceParser {
 			ci.updateSite();
 		}
 
+		if (message.contains("(_DATE_") && message.contains("_)")) {
+			message = handleDatetime(message, "(_DATE_", "_)", "MMM d, yyyy");
+		}
+
+		if (message.contains("(_TIME_") && message.contains("_)")) {
+			message = handleDatetime(message, "(_TIME_", "_)", "h:mm a");
+		}
+
+		if (message.contains("(_TIME24_") && message.contains("_)")) {
+			message = handleDatetime(message, "(_TIME24_", "_)", "k:mm");
+		}
+
+		if (message.contains("(_DATETIME_") && message.contains("_)")) {
+			message = handleDatetime(message, "(_DATETIME_", "_)",
+					"MMM d, yyyy h:mm a");
+		}
+
+		if (message.contains("(_DATETIME24_") && message.contains("_)")) {
+			message = handleDatetime(message, "(_DATETIME24_", "_)",
+					"MMM d, yyyy k:mm");
+		}
+
+		if (message.contains("(_UNTIL_") && message.contains("_)")) {
+			PeriodFormatter formatDHM = new PeriodFormatterBuilder()
+					.printZeroNever().appendDays()
+					.appendSuffix(" day", " days").appendSeparator(", ")
+					.printZeroNever().appendHours().appendSuffix(" hr", " hrs")
+					.appendSeparator(", ").printZeroRarelyLast()
+					.appendMinutes().appendSuffix(" min", " mins")
+					.toFormatter();
+			message = handleUntil(message, "(_UNTIL_", "_)", formatDHM);
+		}
+
+		if (message.contains("(_UNTILSHORT_") && message.contains("_)")) {
+			PeriodFormatter formatShortDHM = new PeriodFormatterBuilder()
+					.printZeroNever().appendDays().appendSuffix("d")
+					.printZeroNever().appendHours().appendSuffix("h")
+					.printZeroRarelyLast().appendMinutes().appendSuffix("m")
+					.toFormatter();
+			message = handleUntil(message, "(_UNTILSHORT_", "_)",
+					formatShortDHM);
+		}
+
+		if (message.contains("(_UNTILLONG_") && message.contains("_)")) {
+			PeriodFormatter formatLongDHM = new PeriodFormatterBuilder()
+					.printZeroNever().appendDays()
+					.appendSuffix(" day", " days")
+					.appendSeparator(", ", " and ").printZeroNever()
+					.appendHours().appendSuffix(" hour", " hours")
+					.appendSeparator(", ", " and ").printZeroRarelyLast()
+					.appendMinutes().appendSuffix(" minute", " minutes")
+					.toFormatter();
+			message = handleUntil(message, "(_UNTILLONG_", "_)", formatLongDHM);
+		}
+
 		if (args != null) {
 			int argCounter = 1;
 			for (String argument : args) {
@@ -220,8 +284,8 @@ public class MessageReplaceParser {
 					message = message.replace("(_VARS_" + varName
 							+ "_INCREMENT_" + inc + "_)", response);
 				} else {
-					message = message.replace("(_VARS_" + varName + "_INCREMENT_" + inc
-							+ "_)", "(error)");
+					message = message.replace("(_VARS_" + varName
+							+ "_INCREMENT_" + inc + "_)", "(error)");
 				}
 			}
 
@@ -236,8 +300,8 @@ public class MessageReplaceParser {
 					message = message.replace("(_VARS_" + varName
 							+ "_DECREMENT_" + dec + "_)", response);
 				} else {
-					message = message.replace("(_VARS_" + varName + "_DECREMENT_" + dec
-							+ "_)", "(error)");
+					message = message.replace("(_VARS_" + varName
+							+ "_DECREMENT_" + dec + "_)", "(error)");
 				}
 			}
 
@@ -256,22 +320,95 @@ public class MessageReplaceParser {
 							+ otherChannel + "_)", "(error)");
 				}
 
-			}else if(method.equals("SET")){
+			} else if (method.equals("SET")) {
 				int endNewVal = message.indexOf("_)", endMethod);
 				String newVal = message.substring(endMethod + 1, endNewVal);
 				System.out.println("New Value = " + newVal);
-				boolean response = JSONUtil.setVar(channel.substring(1), varName, newVal);
-				if(response){
-					message = message.replace("(_VARS_" + varName
-							+ "_SET_" + newVal + "_)", newVal);
-				}else{
-					message = message.replace("(_VARS_" + varName
-							+ "_SET_" + newVal + "_)", "(error)");
+				boolean response = JSONUtil.setVar(channel.substring(1),
+						varName, newVal);
+				if (response) {
+					message = message.replace("(_VARS_" + varName + "_SET_"
+							+ newVal + "_)", newVal);
+				} else {
+					message = message.replace("(_VARS_" + varName + "_SET_"
+							+ newVal + "_)", "(error)");
 				}
 			}
 
 		}
+		if (message.contains("(_SILENT_)")) {
 
+			message = "";
+
+		}
+
+		return message;
+	}
+
+	public static String handleDatetime(String message, String prefix,
+			String suffix, String format) {
+
+		int commandStart = message.indexOf(prefix);
+		int commandEnd = message.indexOf(suffix);
+
+		String replaced = message.substring(commandStart,
+				commandEnd + suffix.length());
+
+		DateTimeZone tz;
+		if (commandStart + prefix.length() < commandEnd) {
+			String tzid = message.substring(commandStart + prefix.length(),
+					commandEnd);
+			try {
+				tz = DateTimeZone.forID(tzid);
+			} catch (IllegalArgumentException e) {
+				tz = DateTimeZone.UTC;
+			}
+		} else {
+			tz = DateTimeZone.UTC;
+		}
+
+		DateTimeFormatter fmt = DateTimeFormat.forPattern(format);
+		fmt = fmt.withZone(tz);
+		String dateStr = fmt.print(new DateTime());
+		message = message.replace(replaced, dateStr);
+
+		return message;
+	}
+
+	public static String handleUntil(String message, String prefix,
+			String suffix, PeriodFormatter formatter) {
+
+		int commandStart = message.indexOf(prefix);
+		int commandEnd = message.indexOf(suffix);
+
+		if (commandStart + prefix.length() < commandEnd) {
+
+			String replaced = message.substring(commandStart, commandEnd
+					+ suffix.length());
+			String dateStr = message.substring(commandStart + prefix.length(),
+					commandEnd);
+
+			DateTimeFormatter fmt = DateTimeFormat
+					.forPattern("yyyy-MM-dd'T'HH:mm");
+			String until;
+			try {
+				DateTime future = fmt.parseDateTime(dateStr);
+
+				PeriodType pType = PeriodType.dayTime().withMillisRemoved()
+						.withSecondsRemoved();
+
+				Period period = new Period(new DateTime(), future, pType);
+
+				until = period.toString(formatter);
+
+			} catch (IllegalArgumentException e) {
+				until = "Unknown date";
+				System.out.println(dateStr);
+				e.printStackTrace();
+			}
+
+			message = message.replace(replaced, until);
+		}
 		return message;
 	}
 }

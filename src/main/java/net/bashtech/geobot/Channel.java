@@ -415,6 +415,40 @@ public class Channel {
 		saveCommands(true);
 
 	}
+	public void setCommand(String key, String command, String adder, int restriction) {
+		key = key.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
+		System.out.println("Key: " + key);
+		
+
+		if (key.length() < 1)
+			return;
+
+		if (commands.containsKey(key)) {
+
+			commands.remove(key);
+			commandAdders.remove(key);
+			commands.put(key, command);
+			commandAdders.put(key, adder);
+			commandsRestrictions.put(key, restriction);
+
+		} else {
+			commands.put(key, command);
+			commandAdders.put(key, adder);
+			commandCounts.put(key, 0);
+			commandsRestrictions.put(key, restriction);
+		}
+
+		saveCommands(true);
+
+	}
+	public int getRestriction(String key){
+		key = key.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
+		if(commandsRestrictions.containsKey(key)){
+			return commandsRestrictions.get(key);
+		}else{
+			return -1;
+		}
+	}
 
 	public boolean removeCommand(String key) {
 		if (commands.containsKey(key)) {
@@ -433,7 +467,7 @@ public class Channel {
 		if(commands.containsKey(key)){
 			//save old stuff
 			String response = commands.get(key);
-			Integer restriction = commandsRestrictions.get(key);
+			int restriction = commandsRestrictions.get(key);
 			int count = commandCounts.get(key);
 			
 			//delete old stuff
