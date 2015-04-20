@@ -1225,15 +1225,15 @@ public class ReceiverBot extends PircBot {
 			}
 		}
 		// !coetime
-		if (msg[0].equalsIgnoreCase(prefix + "coetime")) {
-			String time = Calendar.getInstance().getTime().toString();
-			System.out.println(time);
-			int indexColon = time.indexOf(":") - 2;
-			int end = time.indexOf(" ", indexColon + 1);
-			end = time.indexOf(" ", end + 1);
-			time = time.substring(indexColon, end);
-			send(channel, "CoeTime is currently: " + time);
-		}
+//		if (msg[0].equalsIgnoreCase(prefix + "coetime")) {
+//			String time = Calendar.getInstance().getTime().toString();
+//			System.out.println(time);
+//			int indexColon = time.indexOf(":") - 2;
+//			int end = time.indexOf(" ", indexColon + 1);
+//			end = time.indexOf(" ", end + 1);
+//			time = time.substring(indexColon, end);
+//			send(channel, "CoeTime is currently: " + time);
+//		}
 		// !hug
 		// if (msg[0].equalsIgnoreCase(prefix + "hug") && isSub) {
 		// if (msg.length > 1) {
@@ -1778,18 +1778,23 @@ public class ReceiverBot extends PircBot {
 				.equalsIgnoreCase(prefix + "coemands")) && isSub) {
 			log("RB: Matched command !commands");
 
-			// ArrayList<String> sorted = channelInfo.getCommandList();
-			// String sortedList = "";
-			// for (int i = 0; i < sorted.size(); i++) {
-			// if (i == sorted.size() - 1) {
-			// sortedList += sorted.get(i);
-			// } else
-			// sortedList += sorted.get(i) + ", ";
-			// }
-			// send(channel, "Commands: " + sortedList);
+			if (BotManager.getInstance().CoeBotTVAPIKey.length() < 4) {
 
-			send(channel, "You can find the list of commands at coebot.tv/c/"
-					+ twitchName + "/#commands");
+				ArrayList<String> sorted = channelInfo.getCommandList();
+				String sortedList = "";
+				for (int i = 0; i < sorted.size(); i++) {
+					if (i == sorted.size() - 1) {
+						sortedList += sorted.get(i);
+					} else
+						sortedList += sorted.get(i) + ", ";
+				}
+				send(channel, "Commands: " + sortedList);
+			} else {
+
+				send(channel,
+						"You can find the list of commands at coebot.tv/c/"
+								+ twitchName + "/#commands");
+			}
 			return;
 		}
 		// youtube title parser
@@ -1973,7 +1978,7 @@ public class ReceiverBot extends PircBot {
 					key = key.toLowerCase();
 					String value = fuseArray(msg, 3);
 					int restriction = 1;
-					
+
 					if (value.contains("(_PURGE_)")
 							|| value.contains("(_TIMEOUT_)")
 							|| value.contains("(_BAN_)")
