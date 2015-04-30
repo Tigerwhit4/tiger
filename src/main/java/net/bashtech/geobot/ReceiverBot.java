@@ -89,7 +89,7 @@ public class ReceiverBot extends PircBot {
 				.compile(".*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\s+|:|/|$).*");
 
 		symbolsPatterns[0] = Pattern
-				.compile("(\\p{InPhonetic_Extensions}|\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|Ã£ï¿½Â¤|Ã‚Â°|Ã ÂºË†|Ã¢â€“â€˜|Ã¢â€“â‚¬|Ã¢â€“â€ž|ÃŒÂ°ÃŒÂ¦ÃŒÂ®ÃŒÂ eÃ�Â¦ÃŒÅ¡Ã�Â¯Ã�Â¯ÃŒï¿½Ã�Â®ÃŒÅ ÃŒï¿½Ã�Å’ÃŒâ€°Ã�â€˜Ã�Â¨ÃŒÅ Ã�ï¿½Ã�ï¿½ÃŒÂ¨ÃŒÅ¸ÃŒÂ¹|UÃŒÂ¶ÃŒÂ§Ã�Â©Ã�Â­Ã�Â§Ã�Å ÃŒâ€¦ÃŒÅ Ã�Â¥Ã�Â©ÃŒÂ¿ÃŒâ€�ÃŒâ€�Ã�Â¥Ã�Å’Ã�Â¬Ã�Å Ã�â€¹Ã�Â¬Ã’â€°|Ã¡Â»Å’ÃŒÂµÃ�â€¡ÃŒâ€“ÃŒâ€“|AÃŒÂ´Ã�ï¿½ÃŒÂ¥ÃŒÂ³ÃŒÂ ÃŒÅ¾ÃŒÂ¹Ã�Â©ÃŒâ€¹ÃŒâ€ Ã�Â¤Ã�â€¦|EÃŒÂ¡ÃŒâ€ºÃ�Å¡ÃŒÂºÃŒâ€“ÃŒÂªÃ�Ë†ÃŒÂ²ÃŒÂ»ÃŒÂ ÃŒÂ°ÃŒÂ³ÃŒï¿½ÃŒÂ¿)");
+				.compile("(\\p{InPhonetic_Extensions}|\\p{InLetterlikeSymbols}|\\p{InDingbats}|\\p{InBoxDrawing}|\\p{InBlockElements}|\\p{InGeometricShapes}|\\p{InHalfwidth_and_Fullwidth_Forms}|Ã£ï¿½Â¤|Ã‚Â°|Ỏ̷͖͈̞̩͎̻̫̫̜͉̠̫͕̭̭̫̫̹̗̹͈̼̠̖͍͚̥͈̮̼͕̠̤̯̻̥̬̗̼̳̤̳̬̪̹͚̞̼̠͕̼̠̦͚̫͔̯̹͉͉̘͎͕̼̣̝͙̱̟̹̩̟̳̦̭͉̮̖̭̣̣̞̙̗̜̺̭̻̥͚͙̝̦̲̱͉͖͉̰̦͎̫̣̼͎͍̠̮͓̹̹͉̤̰̗̙͕͇͔̱͕̭͈̳̗̭͔̘̖̺̮̜̠͖̘͓̳͕̟̠̱̫̤͓͔̘̰̲͙͍͇̙͎̣̼̗̖͙̯͉̠̟͈͍͕̪͓̝̩̦̖̹̼̠̘̮͚̟͉̺̜͍͓̯̳̱̻͕̣̳͉̻̭̭̱͍̪̩̭̺͕̺̼̥̪͖̦̟͎̻̰|Ã ÂºË†|Ã¢â€“â€˜|Ã¢â€“â‚¬|Ã¢â€“â€ž|ÃŒÂ°ÃŒÂ¦ÃŒÂ®ÃŒÂ eÃ�Â¦ÃŒÅ¡Ã�Â¯Ã�Â¯ÃŒï¿½Ã�Â®ÃŒÅ ÃŒï¿½Ã�Å’ÃŒâ€°Ã�â€˜Ã�Â¨ÃŒÅ Ã�ï¿½Ã�ï¿½ÃŒÂ¨ÃŒÅ¸ÃŒÂ¹|UÃŒÂ¶ÃŒÂ§Ã�Â©Ã�Â­Ã�Â§Ã�Å ÃŒâ€¦ÃŒÅ Ã�Â¥Ã�Â©ÃŒÂ¿ÃŒâ€�ÃŒâ€�Ã�Â¥Ã�Å’Ã�Â¬Ã�Å Ã�â€¹Ã�Â¬Ã’â€°|Ã¡Â»Å’ÃŒÂµÃ�â€¡ÃŒâ€“ÃŒâ€“|AÃŒÂ´Ã�ï¿½ÃŒÂ¥ÃŒÂ³ÃŒÂ ÃŒÅ¾ÃŒÂ¹Ã�Â©ÃŒâ€¹ÃŒâ€ Ã�Â¤Ã�â€¦|EÃŒÂ¡ÃŒâ€ºÃ�Å¡ÃŒÂºÃŒâ€“ÃŒÂªÃ�Ë†ÃŒÂ²ÃŒÂ»ÃŒÂ ÃŒÂ°ÃŒÂ³ÃŒï¿½ÃŒÂ¿)");
 		symbolsPatterns[1] = Pattern.compile("[!-/:-@\\[-`{-~]");
 
 		this.setName(BotManager.getInstance().nick);
@@ -1225,15 +1225,15 @@ public class ReceiverBot extends PircBot {
 			}
 		}
 		// !coetime
-//		if (msg[0].equalsIgnoreCase(prefix + "coetime")) {
-//			String time = Calendar.getInstance().getTime().toString();
-//			System.out.println(time);
-//			int indexColon = time.indexOf(":") - 2;
-//			int end = time.indexOf(" ", indexColon + 1);
-//			end = time.indexOf(" ", end + 1);
-//			time = time.substring(indexColon, end);
-//			send(channel, "CoeTime is currently: " + time);
-//		}
+		// if (msg[0].equalsIgnoreCase(prefix + "coetime")) {
+		// String time = Calendar.getInstance().getTime().toString();
+		// System.out.println(time);
+		// int indexColon = time.indexOf(":") - 2;
+		// int end = time.indexOf(" ", indexColon + 1);
+		// end = time.indexOf(" ", end + 1);
+		// time = time.substring(indexColon, end);
+		// send(channel, "CoeTime is currently: " + time);
+		// }
 		// !hug
 		// if (msg[0].equalsIgnoreCase(prefix + "hug") && isSub) {
 		// if (msg.length > 1) {
@@ -1798,67 +1798,73 @@ public class ReceiverBot extends PircBot {
 			return;
 		}
 		// youtube title parser
-		String msgs = fuseArray(msg, 0);
-		if ((((msgs.indexOf("youtube.com/watch?v=") > -1) || msgs
-				.indexOf("youtu.be/") > -1) && (permitted || isRegular))
-				&& !msgs.contains("--ignore")) {
-			msgs.trim();
-			if (msgs.indexOf("youtube.com/watch?v=") > -1) {
-				int indexOfId = msgs.indexOf("=") + 1;
+		if (BotManager.getInstance().YoutubeAPIKey.length() > 4) {
+			String msgs = fuseArray(msg, 0);
+			if ((((msgs.indexOf("youtube.com/watch?v=") > -1) || msgs
+					.indexOf("youtu.be/") > -1) && (permitted || isRegular))
+					&& !msgs.contains("--ignore")) {
+				msgs.trim();
+				if (msgs.indexOf("youtube.com/watch?v=") > -1) {
+					int indexOfId = msgs.indexOf("=") + 1;
 
-				int indexOfSpace = msgs.indexOf(" ", indexOfId);
-				int indexOfPound = msgs.indexOf("#", indexOfId);
-				int indexOfAnd = msgs.indexOf("&", indexOfId);
-				int indexOfQuestion = msgs.indexOf("?", indexOfId);
-				String id = "";
+					int indexOfSpace = msgs.indexOf(" ", indexOfId);
+					int indexOfPound = msgs.indexOf("#", indexOfId);
+					int indexOfAnd = msgs.indexOf("&", indexOfId);
+					int indexOfQuestion = msgs.indexOf("?", indexOfId);
+					String id = "";
 
-				if (indexOfSpace > -1) {
-					if (indexOfPound > -1 && indexOfPound <= indexOfSpace) {
-						id = msgs.substring(indexOfId, indexOfPound);
+					if (indexOfSpace > -1) {
+						if (indexOfPound > -1 && indexOfPound <= indexOfSpace) {
+							id = msgs.substring(indexOfId, indexOfPound);
+						} else {
+							id = msgs.substring(indexOfId, indexOfSpace);
+						}
 					} else {
-						id = msgs.substring(indexOfId, indexOfSpace);
+						if (indexOfPound > -1)
+							id = msgs.substring(indexOfId, indexOfPound);
+						else if (indexOfAnd > -1 && !msgs.contains("feature="))
+							id = msgs.substring(indexOfId, indexOfAnd);
+						else if (indexOfQuestion > -1)
+							id = msgs.substring(indexOfId, indexOfQuestion);
+						else
+							id = msgs.substring(indexOfId);
 					}
+					log("youtube id  " + id);
+					String title = JSONUtil.youtubeTitle(id);
+					if (title != null) {
+						send(channel, "Linked YouTube Video: \"" + title + "\"");
+					}
+
 				} else {
-					if (indexOfPound > -1)
-						id = msgs.substring(indexOfId, indexOfPound);
-					else if (indexOfAnd > -1 && !msgs.contains("feature="))
-						id = msgs.substring(indexOfId, indexOfAnd);
-					else if (indexOfQuestion > -1)
-						id = msgs.substring(indexOfId, indexOfQuestion);
-					else
-						id = msgs.substring(indexOfId);
-				}
-				log("youtube id  " + id);
-				String title = JSONUtil.youtubeTitle(id);
-				send(channel, "Linked YouTube Video: \"" + title + "\"");
+					int indexOfId = msgs.indexOf(".be/") + 4;
+					int indexOfSpace = msgs.indexOf(" ", indexOfId);
+					int indexOfPound = msgs.indexOf("#", indexOfId);
+					int indexOfAnd = msgs.indexOf("&", indexOfId);
+					int indexOfQuestion = msgs.indexOf("?", indexOfId);
+					String id = "";
 
-			} else {
-				int indexOfId = msgs.indexOf(".be/") + 4;
-				int indexOfSpace = msgs.indexOf(" ", indexOfId);
-				int indexOfPound = msgs.indexOf("#", indexOfId);
-				int indexOfAnd = msgs.indexOf("&", indexOfId);
-				int indexOfQuestion = msgs.indexOf("?", indexOfId);
-				String id = "";
-
-				if (indexOfSpace > -1) {
-					if (indexOfPound > -1 && indexOfPound <= indexOfSpace) {
-						id = msgs.substring(indexOfId, indexOfPound);
+					if (indexOfSpace > -1) {
+						if (indexOfPound > -1 && indexOfPound <= indexOfSpace) {
+							id = msgs.substring(indexOfId, indexOfPound);
+						} else {
+							id = msgs.substring(indexOfId, indexOfSpace);
+						}
 					} else {
-						id = msgs.substring(indexOfId, indexOfSpace);
+						if (indexOfPound > -1)
+							id = msgs.substring(indexOfId, indexOfPound);
+						else if (indexOfAnd > -1 && !msgs.contains("feature="))
+							id = msgs.substring(indexOfId, indexOfAnd);
+						else if (indexOfQuestion > -1)
+							id = msgs.substring(indexOfId, indexOfQuestion);
+						else
+							id = msgs.substring(indexOfId);
 					}
-				} else {
-					if (indexOfPound > -1)
-						id = msgs.substring(indexOfId, indexOfPound);
-					else if (indexOfAnd > -1 && !msgs.contains("feature="))
-						id = msgs.substring(indexOfId, indexOfAnd);
-					else if (indexOfQuestion > -1)
-						id = msgs.substring(indexOfId, indexOfQuestion);
-					else
-						id = msgs.substring(indexOfId);
+					log("youtube id  " + id);
+					String title = JSONUtil.youtubeTitle(id);
+					if (title != null) {
+						send(channel, "Linked YouTube Video: \"" + title + "\"");
+					}
 				}
-				log("youtube id  " + id);
-				String title = JSONUtil.youtubeTitle(id);
-				send(channel, "Linked YouTube Video: \"" + title + "\"");
 			}
 		}
 		// !throw - All
