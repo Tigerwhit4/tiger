@@ -1088,7 +1088,7 @@ public class ReceiverBot extends PircBot {
 		}
 
 		// !bothelp - All
-		if (msg[0].equalsIgnoreCase(prefix + "bothelp")) {
+		if (msg[0].equalsIgnoreCase(prefix + "bothelp")||msg[0].equalsIgnoreCase(prefix + "help")) {
 			log("RB: Matched command !bothelp");
 			send(channel, BotManager.getInstance().bothelpMessage);
 			return;
@@ -2890,7 +2890,10 @@ public class ReceiverBot extends PircBot {
 
 			}
 		}
-
+		//!disconnect
+		if(msg[0].equalsIgnoreCase(prefix+"disconnect")&&isAdmin){
+			this.disconnect();
+		}
 		// !clear - Ops
 		if (msg[0].equalsIgnoreCase(prefix + "clear") && isOp) {
 			log("RB: Matched command !clear");
@@ -4384,16 +4387,22 @@ public class ReceiverBot extends PircBot {
 
 				e.printStackTrace();
 			}
+			System.out.println("Reconnecting...");
 			this.reconnect();
 			for (int i = 0; i < channels.length; i++) {
-				this.joinChannel(channels[i]);
+				
+				
 				try {
-					Thread.sleep(350);
+					
+					Thread.sleep(600);
+					System.out.println("Joining: "+channels[i]);
+					this.joinChannel(channels[i]);
 				} catch (InterruptedException e) {
-
+					System.out.println("unable to sleep");
 					e.printStackTrace();
 				}
 			}
+			System.out.println("Done rejoining channels.");
 		} catch (NickAlreadyInUseException e) {
 			logMain("RB: [ERROR] Nickname already in use - " + this.getNick()
 					+ " " + this.getServer());
