@@ -1088,7 +1088,8 @@ public class ReceiverBot extends PircBot {
 		}
 
 		// !bothelp - All
-		if (msg[0].equalsIgnoreCase(prefix + "bothelp")||msg[0].equalsIgnoreCase(prefix + "help")) {
+		if (msg[0].equalsIgnoreCase(prefix + "bothelp")
+				|| msg[0].equalsIgnoreCase(prefix + "help")) {
 			log("RB: Matched command !bothelp");
 			send(channel, BotManager.getInstance().bothelpMessage);
 			return;
@@ -2890,8 +2891,8 @@ public class ReceiverBot extends PircBot {
 
 			}
 		}
-		//!disconnect
-		if(msg[0].equalsIgnoreCase(prefix+"disconnect")&&isAdmin){
+		// !disconnect
+		if (msg[0].equalsIgnoreCase(prefix + "disconnect") && isAdmin) {
 			this.disconnect();
 		}
 		// !clear - Ops
@@ -4010,13 +4011,14 @@ public class ReceiverBot extends PircBot {
 				// "#" + sender, 2);
 
 				boolean createStatus = false;
+				boolean joinStatus = BotManager.getInstance().checkChannel(
+						"#" + sender);
 				String created = BotManager.getInstance().coebotJoinChannel(
 						sender, getNick());
 				if (created.equalsIgnoreCase("ok")) {
 					createStatus = true;
 				}
-				boolean joinStatus = BotManager.getInstance().checkChannel(
-						"#" + sender);
+
 				if (!joinStatus && createStatus) {
 					BotManager.getInstance().addChannel("#" + sender, 2);
 					send(channel, "Channel #" + sender + " joined.");
@@ -4085,7 +4087,7 @@ public class ReceiverBot extends PircBot {
 				send(channel, "Channels: " + channelString);
 				return;
 			} else if (msg[1].equalsIgnoreCase("join") && msg.length > 2) {
-				if (msg[2].contains("#")) {
+				if (msg[2].startsWith("#")) {
 					String toJoin = msg[2];
 					int mode = 2;
 					if (msg.length > 3 && Main.isInteger(msg[3]))
@@ -4103,10 +4105,10 @@ public class ReceiverBot extends PircBot {
 							toJoin);
 					if (!joinStatus && createStatus) {
 						BotManager.getInstance().addChannel(toJoin, 2);
-						send(channel, "Channel #" + toJoin + " joined.");
+						send(channel, "Channel " + toJoin + " joined.");
 
 					} else {
-						send(channel, "Already in channel #" + toJoin
+						send(channel, "Already in channel " + toJoin
 								+ " or could not join.");
 					}
 
@@ -4116,7 +4118,7 @@ public class ReceiverBot extends PircBot {
 				}
 				return;
 			} else if (msg[1].equalsIgnoreCase("part") && msg.length > 2) {
-				if (msg[2].contains("#")) {
+				if (msg[2].startsWith("#")) {
 					String toPart = msg[2];
 					send(channel, "Channel " + toPart + " parting...");
 					BotManager.getInstance().removeChannel(toPart);
@@ -4128,12 +4130,35 @@ public class ReceiverBot extends PircBot {
 							"Invalid channel format. Must be in format #channelname.");
 				}
 				return;
+			} else if (msg[1].equalsIgnoreCase("block")) {
+				if (msg[2].startsWith("#")) {
+					BotManager.getInstance()
+					.addBlockedChannel(msg[2].toLowerCase());
+					send(channel, msg[2].toLowerCase()
+							+ " added to the list of blocked channels.");
+				} else {
+					send(channel,
+							"Invalid channel format. Must be in format #channelname.");
+				}
+				
+				
+			} else if (msg[1].equalsIgnoreCase("unblock")) {
+				if (msg[2].startsWith("#")) {
+					BotManager.getInstance().removeBlockedChannel(
+							msg[2].toLowerCase());
+					send(channel, msg[2].toLowerCase()
+							+ " removed from the list of blocked channels.");
+				} else {
+					send(channel,
+							"Invalid channel format. Must be in format #channelname.");
+				}
+				
 			} else if (msg[1].equalsIgnoreCase("reconnect")) {
 				send(channel, "Reconnecting all servers.");
 				BotManager.getInstance().reconnectAllBotsSoft();
 				return;
 			} else if (msg[1].equalsIgnoreCase("reload") && msg.length > 2) {
-				if (msg[2].contains("#")) {
+				if (msg[2].startsWith("#")) {
 					String toReload = msg[2];
 					send(channel, "Reloading channel " + toReload);
 					BotManager.getInstance().reloadChannel(toReload);
@@ -4390,12 +4415,11 @@ public class ReceiverBot extends PircBot {
 			System.out.println("Reconnecting...");
 			this.reconnect();
 			for (int i = 0; i < channels.length; i++) {
-				
-				
+
 				try {
-					
+
 					Thread.sleep(600);
-					System.out.println("Joining: "+channels[i]);
+					System.out.println("Joining: " + channels[i]);
 					this.joinChannel(channels[i]);
 				} catch (InterruptedException e) {
 					System.out.println("unable to sleep");

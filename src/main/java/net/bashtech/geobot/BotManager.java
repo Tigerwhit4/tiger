@@ -51,6 +51,7 @@ public class BotManager {
 	boolean useGUI;
 	BotGUI gui;
 	Map<String, Channel> channelList;
+	Set<String>blockedChannelList;
 	Set<String> admins;
 	List<String> emoteSet;
 	List<Pattern> globalBannedWords;
@@ -84,6 +85,7 @@ public class BotManager {
 		BotManager.setInstance(this);
 		_propertiesFile = propertiesFile;
 		channelList = new HashMap<String, Channel>();
+		blockedChannelList = new HashSet<String>();
 		admins = new HashSet<String>();
 		modules = new HashSet<BotModule>();
 		tagAdmins = new HashSet<String>();
@@ -480,7 +482,7 @@ public class BotManager {
 				return "Error";
 			}
 		} else
-			return "Error";
+			return "ok";
 	}
 
 	public String coebotPartChannel(String channel, String botName) {
@@ -573,6 +575,9 @@ public class BotManager {
 
 		if (!config.keyExists("channelList")) {
 			config.setString("channelList", "");
+		}
+		if(!config.keyExists("blockedChannelList")){
+			config.setString("blockedChannelList","");
 		}
 
 		if (!config.keyExists("adminList")) {
@@ -724,6 +729,12 @@ public class BotManager {
 				channelList.put(s.toLowerCase(), new Channel(s));
 			}
 		}
+		for (String s : config.getString("blockedChannelList").trim().split(",")) {
+			System.out.println("DEBUG: Adding channel " + s + " to blocked list.");
+			if (s.length() > 1&&s.startsWith("#")) {
+				blockedChannelList.add(s.toLowerCase());
+			}
+		}
 
 		for (String s : config.getString("adminList").split(",")) {
 			if (s.length() > 1) {
@@ -748,13 +759,36 @@ public class BotManager {
 		}
 	}
 
+	public synchronized void addBlockedChannel(String channel){
+		blockedChannelList.add(channel.toLowerCase());
+		writeBlockedChannelList();
+	}
+	public synchronized void removeBlockedChannel(String channel){
+		
+		blockedChannelList.remove(channel.toLowerCase());
+		writeBlockedChannelList();
+	}
 	public synchronized boolean checkChannel(String channel) {
-		return channelList.containsKey(channel.toLowerCase());
+		System.out.println("Checking channel "+channel);
+		boolean alreadyIn = channelList.containsKey(channel.toLowerCase());
+		System.out.println("Already in: "+alreadyIn);
+		boolean blocked = blockedChannelList.contains(channel.toLowerCase());
+		System.out.println("Blocked: "+blocked);
+		if(blocked||alreadyIn){
+			return true;
+		}else{
+			return false;
+		}
+		
 	}
 
 	public synchronized boolean addChannel(String name, int mode) {
 		if (channelList.containsKey(name.toLowerCase())) {
 			System.out.println("INFO: Already in channel " + name);
+			return false;
+		}
+		if(blockedChannelList.contains(name.toLowerCase())){
+			System.out.println("INFO: Channel is blocked from joining.");
 			return false;
 		}
 		Channel tempChan = new Channel(name.toLowerCase(), mode);
@@ -838,7 +872,14 @@ public class BotManager {
 
 		config.setString("channelList", channelString);
 	}
+	private synchronized void writeBlockedChannelList() {
+		String blockedChannelString = "";
+		for (String s : blockedChannelList) {
+			blockedChannelString += s + ",";
+		}
 
+		config.setString("blockedChannelList", blockedChannelString);
+	}
 	public void registerModule(BotModule module) {
 		modules.add(module);
 	}
