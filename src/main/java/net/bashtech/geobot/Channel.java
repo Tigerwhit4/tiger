@@ -136,6 +136,7 @@ public class Channel {
 	// private long timeAliveStart = System.currentTimeMillis();
 	private boolean streamAlive = false;
 	private boolean urbanEnabled = false;
+	private boolean songRequestStatus = false;
 	private ArrayList<String> ignoredUsers = new ArrayList<String>();
 	private long extraLifeID;
 	public boolean resubAlerts;
@@ -143,6 +144,7 @@ public class Channel {
 
 	public Boolean subscriberAlerts;
 	public String subscriberMessage;
+	 
 
 	public Channel(String name) {
 		channel = name;
@@ -1725,6 +1727,7 @@ public class Channel {
 		// defaults.put("channel", channel);
 		defaults.put("ignoredUsers", new JSONArray());
 		defaults.put("urbanEnabled", true);
+		defaults.put("songRequestStatus",false);
 		defaults.put("extraLifeID", 0);
 		defaults.put("subsRegsMinusLinks", new Boolean(false));
 		defaults.put("filterCaps", new Boolean(false));
@@ -1820,7 +1823,8 @@ public class Channel {
 	private void loadProperties(String name) {
 
 		setDefaults();
-
+		
+		songRequestStatus = Boolean.valueOf((Boolean)config.get("songRequestStatus"));
 		urbanEnabled = Boolean.valueOf((Boolean) config.get("urbanEnabled"));
 		extraLifeID = ((Long) config.get("extraLifeID"));
 		resubAlerts = Boolean.valueOf((Boolean) config.get("resubAlert"));
@@ -2359,5 +2363,15 @@ public class Channel {
 		subscriberMessage = newMessage;
 		config.put("subMessage", newMessage);
 		saveConfig(false);
+	}
+
+	public boolean getSongRequest() {
+		
+		return songRequestStatus;
+	}
+	public void setSongRequest(boolean newValue){
+		songRequestStatus = newValue;
+		config.put("songRequestStatus", newValue);
+		saveConfig(true);
 	}
 }

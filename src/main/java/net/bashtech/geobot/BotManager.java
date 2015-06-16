@@ -20,8 +20,11 @@ package net.bashtech.geobot;
 
 import net.bashtech.geobot.gui.BotGUI;
 import net.bashtech.geobot.modules.BotModule;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -51,7 +54,7 @@ public class BotManager {
 	boolean useGUI;
 	BotGUI gui;
 	Map<String, Channel> channelList;
-	Set<String>blockedChannelList;
+	Set<String> blockedChannelList;
 	Set<String> admins;
 	List<String> emoteSet;
 	List<Pattern> globalBannedWords;
@@ -110,9 +113,9 @@ public class BotManager {
 							channel.substring(1))
 					|| entry.getValue().staticChannel) {
 				log("BM: Joining channel " + channel);
-				receiverBot.joinChannel(channel.toLowerCase());
+				receiverBot.joinChannel(channel.toLowerCase(),true);
 				try {
-					Thread.sleep(450);
+					Thread.currentThread().sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -122,6 +125,8 @@ public class BotManager {
 			}
 
 		}
+		receiverBot.startPusher();
+		receiverBot.startJoinCheck();
 		log("BM: Done Joining Channels");
 
 		// Start EventFeedReader
@@ -367,6 +372,73 @@ public class BotManager {
 
 	}
 
+	public static String postRemoteDataSongRequest(String urlString,
+			String channel, String requester) {
+		if (BotManager.getInstance().CoeBotTVAPIKey.length() > 4) {
+			URL url;
+			HttpURLConnection conn;
+
+			try {
+				url = new URL("http://coebot.tv/api/v1/reqsongs/add/"
+						+ channel.toLowerCase() + "$"
+						+ BotManager.getInstance().CoeBotTVAPIKey + "$"
+						+ BotManager.getInstance().nick);
+
+				String postData = "url="
+						+ URLEncoder.encode(urlString, "UTF-8")
+						+ "&requestedBy="
+						+ URLEncoder.encode(requester, "UTF-8");
+				conn = (HttpURLConnection) url.openConnection();
+				System.out.println(postData);
+				conn.setDoOutput(true);
+				conn.setRequestMethod("POST");
+				conn.setRequestProperty("User-Agent", "CoeBot");
+				conn.setRequestProperty("Content-Type",
+						"application/x-www-form-urlencoded");
+				conn.setRequestProperty("Content-Length",
+						"" + Integer.toString(postData.getBytes().length));
+
+				// conn.setConnectTimeout(5 * 1000);
+				// conn.setReadTimeout(5 * 1000);
+
+				PrintWriter out = new PrintWriter(conn.getOutputStream());
+				out.print(postData);
+				out.close();
+				String response = "";
+				if (conn.getResponseCode() < 400) {
+
+					Scanner inStream = new Scanner(conn.getInputStream());
+
+					while (inStream.hasNextLine()){
+						response += (inStream.nextLine());
+					}
+					inStream.close();
+				} else {
+					Scanner inStream = new Scanner(conn.getErrorStream());
+
+					while (inStream.hasNextLine()){
+						response += (inStream.nextLine());
+					}
+					inStream.close();
+				}
+				System.out.println(response);
+
+				return response;
+
+			} catch (MalformedURLException ex) {
+				ex.printStackTrace();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+
+			}
+
+			return null;
+		} else {
+			return null;
+		}
+
+	}
+
 	public static String postCoebotConfig(String postData, String channel) {
 		if (BotManager.getInstance().CoeBotTVAPIKey.length() > 4) {
 			URL url;
@@ -478,7 +550,7 @@ public class BotManager {
 				return resp;
 
 			} catch (Exception e) {
-				
+
 				return "Error";
 			}
 		} else
@@ -576,8 +648,8 @@ public class BotManager {
 		if (!config.keyExists("channelList")) {
 			config.setString("channelList", "");
 		}
-		if(!config.keyExists("blockedChannelList")){
-			config.setString("blockedChannelList","");
+		if (!config.keyExists("blockedChannelList")) {
+			config.setString("blockedChannelList", "");
 		}
 
 		if (!config.keyExists("adminList")) {
@@ -729,9 +801,11 @@ public class BotManager {
 				channelList.put(s.toLowerCase(), new Channel(s));
 			}
 		}
-		for (String s : config.getString("blockedChannelList").trim().split(",")) {
-			System.out.println("DEBUG: Adding channel " + s + " to blocked list.");
-			if (s.length() > 1&&s.startsWith("#")) {
+		for (String s : config.getString("blockedChannelList").trim()
+				.split(",")) {
+			System.out.println("DEBUG: Adding channel " + s
+					+ " to blocked list.");
+			if (s.length() > 1 && s.startsWith("#")) {
 				blockedChannelList.add(s.toLowerCase());
 			}
 		}
@@ -759,27 +833,29 @@ public class BotManager {
 		}
 	}
 
-	public synchronized void addBlockedChannel(String channel){
+	public synchronized void addBlockedChannel(String channel) {
 		blockedChannelList.add(channel.toLowerCase());
 		writeBlockedChannelList();
 	}
-	public synchronized void removeBlockedChannel(String channel){
-		
+
+	public synchronized void removeBlockedChannel(String channel) {
+
 		blockedChannelList.remove(channel.toLowerCase());
 		writeBlockedChannelList();
 	}
+
 	public synchronized boolean checkChannel(String channel) {
-		System.out.println("Checking channel "+channel);
+		System.out.println("Checking channel " + channel);
 		boolean alreadyIn = channelList.containsKey(channel.toLowerCase());
-		System.out.println("Already in: "+alreadyIn);
+		System.out.println("Already in: " + alreadyIn);
 		boolean blocked = blockedChannelList.contains(channel.toLowerCase());
-		System.out.println("Blocked: "+blocked);
-		if(blocked||alreadyIn){
+		System.out.println("Blocked: " + blocked);
+		if (blocked || alreadyIn) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
-		
+
 	}
 
 	public synchronized boolean addChannel(String name, int mode) {
@@ -787,7 +863,7 @@ public class BotManager {
 			System.out.println("INFO: Already in channel " + name);
 			return false;
 		}
-		if(blockedChannelList.contains(name.toLowerCase())){
+		if (blockedChannelList.contains(name.toLowerCase())) {
 			System.out.println("INFO: Channel is blocked from joining.");
 			return false;
 		}
@@ -872,6 +948,7 @@ public class BotManager {
 
 		config.setString("channelList", channelString);
 	}
+
 	private synchronized void writeBlockedChannelList() {
 		String blockedChannelString = "";
 		for (String s : blockedChannelList) {
@@ -880,6 +957,7 @@ public class BotManager {
 
 		config.setString("blockedChannelList", blockedChannelString);
 	}
+
 	public void registerModule(BotModule module) {
 		modules.add(module);
 	}

@@ -1033,19 +1033,20 @@ public class JSONUtil {
 		return false;
 
 	}
+
 	public static boolean deleteVar(String channel, String varName) {
 		try {
 			JSONParser parser = new JSONParser();
 			Object obj = parser.parse(BotManager
 					.getRemoteContent("http://coebot.tv/api/v1/vars/unset/"
-							+ varName + "/" + channel+ "$"
+							+ varName + "/" + channel + "$"
 							+ BotManager.getInstance().CoeBotTVAPIKey + "$"
 							+ BotManager.getInstance().nick));
 
 			JSONObject jsonObject = (JSONObject) obj;
 
 			String status = (String) (jsonObject.get("status"));
-			return(status.equalsIgnoreCase("ok"));
+			return (status.equalsIgnoreCase("ok"));
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1053,9 +1054,11 @@ public class JSONUtil {
 		}
 
 	}
+
 	public static String getVar(String channel, String varName) {
 		try {
 			JSONParser parser = new JSONParser();
+
 			Object obj = parser.parse(BotManager
 					.getRemoteContent("http://coebot.tv/api/v1/vars/get/"
 							+ varName + "/" + channel));
@@ -1214,6 +1217,39 @@ public class JSONUtil {
 
 	}
 
+	public static void trimChannels(Long followerCount) {
+		JSONParser parser = new JSONParser();
+		ArrayList<String>toRemove = new ArrayList<String>();
+		for (Map.Entry<String, Channel> entry : BotManager.getInstance().channelList
+				.entrySet()) {
+			String name = entry.getKey().substring(1);
+			String url = "https://api.twitch.tv/kraken/channels/" + name;
+			
+			try {
+				Object obj = parser.parse(BotManager.getRemoteContent(url));
+
+				JSONObject jsonObject = (JSONObject) obj;
+				Long followers = (Long) jsonObject.get("followers");
+				System.out.println(url+" with "+followers+" followers");
+
+				if (followers < followerCount) {
+					toRemove.add(name);
+					
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		for(String s: toRemove){
+			BotManager.getInstance().removeChannel("#" + s);
+			BotManager.getInstance().coebotPartChannel(s,
+					BotManager.getInstance().nick);
+			System.out.println("Removing: "+s);
+		}
+
+	}
+
 	public static String getChatProperties(String channel) {
 		try {
 			JSONParser parser = new JSONParser();
@@ -1256,7 +1292,7 @@ public class JSONUtil {
 				if (name.length() > 0)
 					emotes.add(name);
 			}
-			emotes.add("<3");
+
 			emotes.add(":)");
 			emotes.add(":o");
 			emotes.add(":(");
