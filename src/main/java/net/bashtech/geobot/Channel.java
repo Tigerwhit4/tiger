@@ -141,7 +141,11 @@ public class Channel {
 	private long extraLifeID;
 	public boolean resubAlerts;
 	public String resubMessage;
-
+	private boolean rollTimeout = false;
+	private String rollLevel;
+	private int rollDefault = 20;
+	private int rollCooldown = 10;
+	
 	public Boolean subscriberAlerts;
 	public String subscriberMessage;
 	 
@@ -1725,6 +1729,10 @@ public class Channel {
 	private void setDefaults() {
 
 		// defaults.put("channel", channel);
+		defaults.put("rollTimeout", false);
+		defaults.put("rollDefault", 20);
+		defaults.put("rollLevel", "regulars");
+		defaults.put("rollCooldown", 10);
 		defaults.put("ignoredUsers", new JSONArray());
 		defaults.put("urbanEnabled", true);
 		defaults.put("songRequestStatus",false);
@@ -1823,7 +1831,10 @@ public class Channel {
 	private void loadProperties(String name) {
 
 		setDefaults();
-		
+		rollLevel = ((String)config.get("rollLevel"));
+		rollCooldown = ((Long) config.get("rollCooldown")).intValue();
+		rollDefault = ((Long) config.get("rollDefault")).intValue();
+		rollTimeout = Boolean.valueOf((Boolean) config.get("rollTimeout"));
 		songRequestStatus = Boolean.valueOf((Boolean)config.get("songRequestStatus"));
 		urbanEnabled = Boolean.valueOf((Boolean) config.get("urbanEnabled"));
 		extraLifeID = ((Long) config.get("extraLifeID"));
@@ -2374,4 +2385,41 @@ public class Channel {
 		config.put("songRequestStatus", newValue);
 		saveConfig(true);
 	}
+	public void setRollTimeout(boolean enabled){
+		rollTimeout = enabled;
+		config.put("rollTimeout", enabled);
+		saveConfig(true);
+	}
+	public void setRollCooldown(int cooldown){
+		rollCooldown = cooldown;
+		config.put("rollCooldown", cooldown);
+		saveConfig(true);
+	}
+	public void setRollLevel(String level){
+		rollLevel = level;
+		config.put("rollLevel", level);
+		saveConfig(true);
+	}
+	public void setRollDefault(int newDefault){
+		rollDefault = newDefault;
+		config.put("rollDefault", newDefault);
+		saveConfig(true);
+	}
+	public String getRollLevel(){
+		return rollLevel;
+	}
+	public int getRollCooldown(){
+		return rollCooldown;
+	}
+	public int getRollDefault(){
+		return rollDefault;
+	}
+	public boolean getRollTimeout(){
+		return rollTimeout;
+	}
+	
+	
+	
+	
+	
 }

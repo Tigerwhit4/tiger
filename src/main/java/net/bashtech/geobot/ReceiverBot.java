@@ -64,12 +64,14 @@ public class ReceiverBot extends PircBot {
 
 	long lastCommand = System.currentTimeMillis();
 	private boolean privMsgSub = false;
+	private boolean privMsgMod = false;
 	private ArrayList<Long> msgTimer = new ArrayList<Long>();
 	private ArrayList<QueuedMessage> queuedMessages = new ArrayList<QueuedMessage>();
 	private boolean tried;
 	private boolean delete;
 	private boolean permitted;
 	private long lastConch = System.currentTimeMillis();
+	private long lastRollTime = System.currentTimeMillis();
 
 	String botName;
 	Pusher pusher;
@@ -211,9 +213,9 @@ public class ReceiverBot extends PircBot {
 							getNick());
 					break;
 				}
-				case "say":{
-					String message = (String)actionObject.get("message");
-					send("#"+channel, message);
+				case "say": {
+					String message = (String) actionObject.get("message");
+					send("#" + channel, message);
 					break;
 				}
 				case "add command": {
@@ -417,7 +419,8 @@ public class ReceiverBot extends PircBot {
 						channelInfo.setMode(2);
 
 					} else if (value.equalsIgnoreCase("3")
-							|| value.equalsIgnoreCase("subs")|| value.equalsIgnoreCase("regs")) {
+							|| value.equalsIgnoreCase("subs")
+							|| value.equalsIgnoreCase("regs")) {
 						channelInfo.setMode(3);
 
 					} else if (value.equalsIgnoreCase("-1")
@@ -577,38 +580,45 @@ public class ReceiverBot extends PircBot {
 
 	@Override
 	protected void onAction(String sender, String login, String hostname,
-			String target, String action,String[] tags) {
-		this.onMessage(target, sender, login, hostname, "/me " + action,tags);
+			String target, String action, String[] tags) {
+		this.onMessage(target, sender, login, hostname, "/me " + action, tags);
 	}
 
-
 	@Override
-	protected void onMessage(String channel, String sender, String login, String hostname, String message, String[] tags){
-		String color = tags[0].substring(tags[0].indexOf("=") + 1);
-		String displayName = tags[1].substring(tags[1].indexOf("=") + 1);
-		String emotes = tags[2].substring(tags[2].indexOf("=") + 1);
-		String subscriber = tags[3].substring(tags[3].indexOf("=") + 1);
-		
-		boolean subStatus = false;
-		if (Integer.parseInt(subscriber) == 1) {
-		
-			subStatus = true;
-			
-		}
-		privMsgSub = subStatus;
-		String turbo = tags[4].substring(tags[4].indexOf("=") + 1);
-		boolean turboStatus = false;
-		if (Integer.parseInt(turbo) == 1) {
-			turboStatus = true;
-		}
-		String userType;
-		if (!tags[5].endsWith("=")) {
-			userType = tags[5].substring(tags[5].indexOf("=") + 1);
+	protected void onMessage(String channel, String sender, String login,
+			String hostname, String message, String[] tags) {
+		if (tags != null) {
+			String color = tags[0].substring(tags[0].indexOf("=") + 1);
+			String displayName = tags[1].substring(tags[1].indexOf("=") + 1);
+			String emotes = tags[2].substring(tags[2].indexOf("=") + 1);
+			String subscriber = tags[3].substring(tags[3].indexOf("=") + 1);
+
+			boolean subStatus = false;
+			if (Integer.parseInt(subscriber) == 1) {
+
+				subStatus = true;
+
+			}
+			privMsgSub = subStatus;
+			String turbo = tags[4].substring(tags[4].indexOf("=") + 1);
+			boolean turboStatus = false;
+			if (Integer.parseInt(turbo) == 1) {
+				turboStatus = true;
+			}
+			String userType;
+			if (!tags[5].endsWith("=")) {
+				userType = tags[5].substring(tags[5].indexOf("=") + 1);
+				if (userType.equalsIgnoreCase("mod")) {
+					privMsgMod = true;
+				}
+
+			}
 		}
 		if (!BotManager.getInstance().useEventFeed)
 			onChannelMessage(channel, channel, sender, message);
-		
+
 	}
+
 	@SuppressWarnings("rawtypes")
 	protected void onChannelMessage(String channel, String targetChannel,
 			String sender, String message) {
@@ -620,7 +630,7 @@ public class ReceiverBot extends PircBot {
 				&& !message.startsWith("CLEARCHAT")
 				&& !message.startsWith("Your color"))
 			logMain("MSG: " + targetChannel + " " + sender + " : " + message);
-
+		message = message.replaceAll("\\s+", " ");
 		Channel channelInfo = getChannelObject(targetChannel);
 		String twitchName = channelInfo.getTwitchName();
 		String prefix = channelInfo.getPrefix();
@@ -687,8 +697,10 @@ public class ReceiverBot extends PircBot {
 			isAdmin = true;
 		if (channel.equalsIgnoreCase("#" + sender))
 			isOwner = true;
-		if (channelInfo.isModerator(sender))
+		if (channelInfo.isModerator(sender) || privMsgMod) {
 			isOp = true;
+			privMsgMod = false;
+		}
 		if (channelInfo.isOwner(sender))
 			isOwner = true;
 		if (channelInfo.isRegular(sender)
@@ -753,9 +765,8 @@ public class ReceiverBot extends PircBot {
 		}
 
 		// !leave - Owner
-		if ((msg[0].equalsIgnoreCase(prefix + "leave")
-				|| msg[0].equalsIgnoreCase(prefix + "remove") || msg[0]
-					.equalsIgnoreCase(prefix + "part")) && isOwner) {
+		if ((msg[0].equalsIgnoreCase(prefix + "leave") || msg[0]
+				.equalsIgnoreCase(prefix + "part")) && isOwner) {
 			send(channel, "Leaving channel " + channelInfo.getChannel() + ".");
 			BotManager.getInstance().coebotPartChannel(channel.substring(1),
 					getNick());
@@ -1107,10 +1118,10 @@ public class ReceiverBot extends PircBot {
 
 		// Check channel mode.
 		if ((channelInfo.getMode() == 0 || channelInfo.getMode() == -1)
-				&& !isOwner){
+				&& !isOwner) {
 			return;
 		}
-		if (channelInfo.getMode() == 1 && !isOp){
+		if (channelInfo.getMode() == 1 && !isOp) {
 			return;
 		}
 		if (channelInfo.getMode() == 3 && !isSub) {
@@ -1225,9 +1236,9 @@ public class ReceiverBot extends PircBot {
 				lastConch = newConch;
 			}
 		}
-		if(msg[0].equalsIgnoreCase(prefix+"whisper")&&isAdmin){
+		if (msg[0].equalsIgnoreCase(prefix + "whisper") && isAdmin) {
 			this.sendCommand("#jtv", ".w endsgamer test");
-			
+
 		}
 		if (msg[0].equalsIgnoreCase(prefix + "punishstats") && isOp) {
 			log("RB: Matched command !punishstats");
@@ -2514,7 +2525,7 @@ public class ReceiverBot extends PircBot {
 
 		// !random - Ops
 		if ((msg[0].equalsIgnoreCase(prefix + "random") || msg[0]
-				.equalsIgnoreCase(prefix + "roll")) && isSub) {
+				.equalsIgnoreCase(prefix + "roll"))) {
 			log("RB: Matched command !random");
 
 			if (msg.length > 1) {
@@ -2539,26 +2550,49 @@ public class ReceiverBot extends PircBot {
 						send(channel,
 								"No regulars are connected to chat right now.");
 				}
-				if (msg[1].equalsIgnoreCase("coin")) {
-					Random rand = new Random();
-					boolean coin = rand.nextBoolean();
-					if (coin == true)
-						send(channel, "Heads!");
-					else
-						send(channel, "Tails!");
-				} else if (isInteger(msg[1])) {
-					int randMax = Integer.parseInt(msg[1]);
-					if (randMax <= 0)
-						return;
-					long randReturn = Math
-							.round((Math.random() * (randMax - 1)) + 1);
-					send(channel, "You rolled: " + randReturn);
-				} else {
-					long randReturn = Math.round((Math.random() * (19)) + 1);
-					send(channel, "You rolled: " + randReturn);
+				String level = channelInfo.getRollLevel();
+				boolean shouldTO = channelInfo.getRollTimeout();
+				int defaultRoll = channelInfo.getRollDefault();
+				if (level.equals("everyone")
+						|| (level.equals("regulars") && isRegular)
+						|| (level.equals("moderators") && isOp)) {
+					long newRollTime = System.currentTimeMillis();
+
+					if ((newRollTime >= (lastRollTime + channelInfo
+							.getRollCooldown() * 1000L)) || isOp) {
+						lastRollTime = newRollTime;
+						if (msg[1].equalsIgnoreCase("coin")) {
+							Random rand = new Random();
+							boolean coin = rand.nextBoolean();
+							if (coin == true)
+								send(channel, "Heads!");
+							else
+								send(channel, "Tails!");
+						} else if (isInteger(msg[1])) {
+							int randMax = Integer.parseInt(msg[1]);
+							if (randMax <= 0)
+								return;
+							long randReturn = Math
+									.round((Math.random() * (randMax - 1)) + 1);
+
+							send(channel, "You rolled: " + randReturn);
+							if (randMax > 1 && randReturn == 1 && shouldTO) {
+								sendCommand(channel,
+										".timeout " + sender.toLowerCase()+" "+randMax*5);
+							}
+						} else {
+							long randReturn = Math
+									.round((Math.random() * (defaultRoll - 1)) + 1);
+							send(channel, "You rolled: " + randReturn);
+							if (defaultRoll > 1 && randReturn == 1 && shouldTO) {
+								sendCommand(channel,
+										".timeout " + sender.toLowerCase()+" "+defaultRoll*5);
+							}
+						}
+					}
 				}
 			}
-			return;
+
 		}
 		// !songrequest
 		if (msg[0].equalsIgnoreCase(prefix + "songrequest") && isSub
@@ -3812,7 +3846,58 @@ public class ReceiverBot extends PircBot {
 					send(channel, "Feature: Topic is off");
 				}
 
+			} else if (msg[1].equalsIgnoreCase("roll")) {
+				if (msg[2].equalsIgnoreCase("timeoutoncriticalfail")) {
+					if (msg[3].equalsIgnoreCase("on")
+							|| msg[3].equalsIgnoreCase("enabled")) {
+						channelInfo.setRollTimeout(true);
+						send(channel,
+								"Timeout on critical fail has been enabled.");
+					} else if (msg[3].equalsIgnoreCase("off")
+							|| msg[3].equalsIgnoreCase("disabled")) {
+						channelInfo.setRollTimeout(false);
+						send(channel,
+								"Timeout on critical fail has been disabled.");
+					}
+				} else if (msg[2].equalsIgnoreCase("default")) {
+					if (isInteger(msg[3])) {
+						channelInfo.setRollDefault(Integer.parseInt(msg[3]));
+						send(channel, "Default maximum roll has been set to: "
+								+ msg[3]);
+					} else {
+						send(channel, "The default roll must be an integer.");
+					}
+				} else if (msg[2].equalsIgnoreCase("cooldown")) {
+					if (isInteger(msg[3])) {
+						channelInfo.setRollCooldown(Integer.parseInt(msg[3]));
+						send(channel,
+								"The cooldown between rolls has been set to: "
+										+ msg[3] + " seconds.");
+					} else {
+						send(channel, "The roll cooldown must be an integer.");
+					}
+				} else if (msg[2].equalsIgnoreCase("userlevel")) {
+					if (msg[3].equalsIgnoreCase("everyone")
+							|| msg[3].equalsIgnoreCase("all")) {
+						channelInfo.setRollLevel("everyone");
+						send(channel, "The user level required for " + prefix
+								+ "roll has been set to: everyone");
+					} else if (msg[3].equalsIgnoreCase("regulars")
+							|| msg[3].equalsIgnoreCase("regs")) {
+						channelInfo.setRollLevel("regulars");
+						send(channel, "The user level required for " + prefix
+								+ "roll has been set to: regulars");
+					} else if (msg[3].equalsIgnoreCase("mods")
+							|| msg[3].equalsIgnoreCase("moderators")) {
+						channelInfo.setRollLevel("moderators");
+						send(channel, "The user level required for " + prefix
+								+ "roll has been set to: moderators");
+					}
+
+				}
+
 			} else if (msg[1].equalsIgnoreCase("songrequest") && isOwner) {
+
 				if (msg.length > 2) {
 					boolean enabled = false;
 					if (msg[2].equalsIgnoreCase("on")
@@ -3949,8 +4034,9 @@ public class ReceiverBot extends PircBot {
 						|| msg[2].equalsIgnoreCase("everyone")) {
 					channelInfo.setMode(2);
 					send(channel, "Mode set to everyone.");
-				}else if (msg[2].equalsIgnoreCase("3")
-						|| msg[2].equalsIgnoreCase("subs")|| msg[2].equalsIgnoreCase("regs")) {
+				} else if (msg[2].equalsIgnoreCase("3")
+						|| msg[2].equalsIgnoreCase("subs")
+						|| msg[2].equalsIgnoreCase("regs")) {
 					channelInfo.setMode(3);
 					send(channel, "Mode set to regulars/subs only.");
 				} else if (msg[2].equalsIgnoreCase("-1")
@@ -5072,7 +5158,7 @@ public class ReceiverBot extends PircBot {
 
 	public static boolean isInteger(String str) {
 		try {
-			Integer.parseInt(str);
+			Integer.parseInt(str.trim());
 			return true;
 		} catch (NumberFormatException nfe) {
 			return false;
