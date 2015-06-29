@@ -148,6 +148,7 @@ public class Channel {
 	
 	public Boolean subscriberAlerts;
 	public String subscriberMessage;
+	private boolean shouldModerate;
 	 
 
 	public Channel(String name) {
@@ -1729,6 +1730,7 @@ public class Channel {
 	private void setDefaults() {
 
 		// defaults.put("channel", channel);
+		defaults.put("shouldModerate", true);
 		defaults.put("rollTimeout", false);
 		defaults.put("rollDefault", 20);
 		defaults.put("rollLevel", "regulars");
@@ -1831,6 +1833,7 @@ public class Channel {
 	private void loadProperties(String name) {
 
 		setDefaults();
+		shouldModerate = Boolean.valueOf((Boolean) config.get("shouldModerate"));
 		rollLevel = ((String)config.get("rollLevel"));
 		rollCooldown = ((Long) config.get("rollCooldown")).intValue();
 		rollDefault = ((Long) config.get("rollDefault")).intValue();
@@ -2416,6 +2419,16 @@ public class Channel {
 	}
 	public boolean getRollTimeout(){
 		return rollTimeout;
+	}
+
+	public boolean getShouldModerate() {
+		// TODO Auto-generated method stub
+		return shouldModerate;
+	}
+	public void setShouldModerate(boolean should){
+		shouldModerate = should;
+		config.put("shouldModerate", should);
+		saveConfig(true);
 	}
 	
 	

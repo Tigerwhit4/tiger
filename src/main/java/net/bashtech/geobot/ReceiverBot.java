@@ -780,7 +780,7 @@ public class ReceiverBot extends PircBot {
 		// ********************************************************************************
 
 		// Global banned word filter
-		if (!isOp && this.isGlobalBannedWord(message)) {
+		if (!isOp && this.isGlobalBannedWord(message)&&channelInfo.getShouldModerate()) {
 			this.secondaryBan(channel, sender, FilterType.GLOBALBAN);
 			logMain("GLOBALBAN: Global banned word timeout: " + sender + " in "
 					+ channel + " : " + message);
@@ -789,7 +789,7 @@ public class ReceiverBot extends PircBot {
 		}
 
 		// Voluntary Filters
-		if (channelInfo.useFilters) {
+		if (channelInfo.useFilters&&channelInfo.getShouldModerate()) {
 
 			// if (!isRegular) {
 			// Matcher m = vinePattern.matcher(message.replaceAll(" ", ""));
@@ -2578,7 +2578,8 @@ public class ReceiverBot extends PircBot {
 							send(channel, "You rolled: " + randReturn);
 							if (randMax > 1 && randReturn == 1 && shouldTO) {
 								sendCommand(channel,
-										".timeout " + sender.toLowerCase()+" "+randMax*5);
+										".timeout " + sender.toLowerCase()
+												+ " " + randMax * 5);
 							}
 						} else {
 							long randReturn = Math
@@ -2586,7 +2587,8 @@ public class ReceiverBot extends PircBot {
 							send(channel, "You rolled: " + randReturn);
 							if (defaultRoll > 1 && randReturn == 1 && shouldTO) {
 								sendCommand(channel,
-										".timeout " + sender.toLowerCase()+" "+defaultRoll*5);
+										".timeout " + sender.toLowerCase()
+												+ " " + defaultRoll * 5);
 							}
 						}
 					}
@@ -2878,7 +2880,7 @@ public class ReceiverBot extends PircBot {
 		// ********************************************************************************
 
 		// Moderation commands - Ops
-		if (isOp) {
+		if (isOp && channelInfo.getShouldModerate()) {
 			if (msg[0].equalsIgnoreCase("+m") && msg.length > 1) {
 				int time = Integer.parseInt(msg[1]);
 				sendCommand(channel, ".slow " + time);
@@ -3846,6 +3848,18 @@ public class ReceiverBot extends PircBot {
 					send(channel, "Feature: Topic is off");
 				}
 
+			} else if (msg[1].equalsIgnoreCase("shouldModerate")) {
+				if (msg[2].equalsIgnoreCase("on")
+						|| msg[2].equalsIgnoreCase("enabled")) {
+					channelInfo.setShouldModerate(true);
+					send(channel, botName
+							+ " will not attempt to moderate in this channel.");
+				} else if (msg[2].equalsIgnoreCase("off")
+						|| msg[2].equalsIgnoreCase("disabled")) {
+					channelInfo.setShouldModerate(false);
+					send(channel, botName
+							+ " will attempt to moderate in this channel.");
+				}
 			} else if (msg[1].equalsIgnoreCase("roll")) {
 				if (msg[2].equalsIgnoreCase("timeoutoncriticalfail")) {
 					if (msg[3].equalsIgnoreCase("on")
