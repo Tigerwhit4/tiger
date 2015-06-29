@@ -3853,12 +3853,12 @@ public class ReceiverBot extends PircBot {
 						|| msg[2].equalsIgnoreCase("enabled")) {
 					channelInfo.setShouldModerate(true);
 					send(channel, this.getNick()
-							+ " will not attempt to moderate in this channel.");
+							+ " will attempt to moderate in this channel.");
 				} else if (msg[2].equalsIgnoreCase("off")
 						|| msg[2].equalsIgnoreCase("disabled")) {
 					channelInfo.setShouldModerate(false);
 					send(channel, this.getNick()
-							+ " will attempt to moderate in this channel.");
+							+ " will not attempt to moderate in this channel.");
 				}
 			} else if (msg[1].equalsIgnoreCase("roll")) {
 				if (msg[2].equalsIgnoreCase("timeoutoncriticalfail")) {
