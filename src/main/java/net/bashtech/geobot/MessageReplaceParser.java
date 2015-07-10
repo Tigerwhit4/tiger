@@ -261,6 +261,21 @@ public class MessageReplaceParser {
 						"No count for that command...");
 			}
 		}
+		if(message.contains("(_LIST_")&&message.contains("_RANDOM_)")){
+			int listStart = message.indexOf("(_LIST_") + 7;
+			int listEnd = message.indexOf("_", listStart);
+			String listName = message.substring(listStart,listEnd).toLowerCase();
+			if(ci.checkList(listName)){
+				int size = ci.getListSize(listName);
+				System.out.println("size " + size);
+				int randReturn = (int) Math
+						.round((Math.random() * (size - 1)) + 1);
+				System.out.println("randReturn " + randReturn);
+				String replacer = message.substring(listStart-7,message.indexOf("_RANDOM_)",listStart)+9);
+				message=message.replace(replacer,ci.getListItem(listName,
+						randReturn - 1));
+			}
+		}
 		if (message.contains("(_VARS_")) {
 
 			int begName = message.indexOf("(_VARS_") + 7;

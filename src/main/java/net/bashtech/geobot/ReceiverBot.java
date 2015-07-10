@@ -780,7 +780,8 @@ public class ReceiverBot extends PircBot {
 		// ********************************************************************************
 
 		// Global banned word filter
-		if (!isOp && this.isGlobalBannedWord(message)&&channelInfo.getShouldModerate()) {
+		if (!isOp && this.isGlobalBannedWord(message)
+				&& channelInfo.getShouldModerate()) {
 			this.secondaryBan(channel, sender, FilterType.GLOBALBAN);
 			logMain("GLOBALBAN: Global banned word timeout: " + sender + " in "
 					+ channel + " : " + message);
@@ -789,7 +790,7 @@ public class ReceiverBot extends PircBot {
 		}
 
 		// Voluntary Filters
-		if (channelInfo.useFilters&&channelInfo.getShouldModerate()) {
+		if (channelInfo.useFilters && channelInfo.getShouldModerate()) {
 
 			// if (!isRegular) {
 			// Matcher m = vinePattern.matcher(message.replaceAll(" ", ""));
@@ -2036,6 +2037,78 @@ public class ReceiverBot extends PircBot {
 
 		}
 
+		// !list -Ops
+		if (msg[0].equalsIgnoreCase(prefix + "list") && isOp) {
+			if (msg.length > 2) {
+				if (msg[1].equalsIgnoreCase("add")) {
+					String listName = msg[2].replaceAll("[^a-zA-Z0-9]", "")
+							.toLowerCase();
+					if (channelInfo.getCommand(listName) != null) {
+						send(channel, "This list name is already a command.");
+					}
+					boolean added = channelInfo.addList(listName, 1);
+					if (added) {
+						send(channel, "List \"" + listName + "\" created.");
+					} else {
+						send(channel,
+								"Unable to create list, or it already existed.");
+					}
+
+				} else if (msg[1].equalsIgnoreCase("delete")
+						|| msg[1].equalsIgnoreCase("remove")) {
+					String listName = msg[2].replaceAll("[^a-zA-Z0-9]", "")
+							.toLowerCase();
+					boolean removed = channelInfo.deleteList(listName);
+					if (removed) {
+						send(channel, "List \"" + listName + "\" removed.");
+					} else {
+						send(channel,
+								"Unable to remove list, or it doesn't exist.");
+					}
+
+				} else if (msg[1].equalsIgnoreCase("restrict")
+						&& msg.length > 3) {
+					String listName = msg[2].toLowerCase();
+					String levelStr = msg[3].toLowerCase();
+					int level = -1;
+					if (channelInfo.checkList(listName)) {
+						if (levelStr.equalsIgnoreCase("owner")
+								|| levelStr.equalsIgnoreCase("owners")) {
+							level = 3;
+						}
+						if (levelStr.equalsIgnoreCase("mod")
+								|| levelStr.equalsIgnoreCase("mods")
+								|| levelStr.equalsIgnoreCase("moderators")
+								|| levelStr.equalsIgnoreCase("moderator")) {
+							level = 2;
+						}
+						if (levelStr.equalsIgnoreCase("regular")
+								|| levelStr.equalsIgnoreCase("regulars")
+								|| levelStr.equalsIgnoreCase("regs")
+								|| levelStr.equalsIgnoreCase("subs")) {
+							level = 1;
+						}
+						if (levelStr.equalsIgnoreCase("everyone")
+								|| levelStr.equalsIgnoreCase("all")) {
+							level = 0;
+						}
+						if (level > -1) {
+							channelInfo.restrictList(listName, level);
+							send(channel, listName
+									+ " successfully restricted to " + levelStr
+									+ ".");
+
+						} else {
+							send(channel, "Not a valid restriction group.");
+						}
+					} else {
+						send(channel, "That list does not exist.");
+					}
+				}
+
+			}
+		}
+
 		// !command - Ops
 		if ((msg[0].equalsIgnoreCase(prefix + "command") || (msg[0]
 				.equalsIgnoreCase(prefix + "coemand"))) && isOp) {
@@ -2045,8 +2118,14 @@ public class ReceiverBot extends PircBot {
 						"Syntax: \"!command add/delete [name] [message]\" - Name is the command trigger without \"!\" and message is the response.");
 			} else if (msg.length > 2) {
 				if (msg[1].equalsIgnoreCase("add") && msg.length > 3) {
+
 					String key = msg[2].replaceAll("[^a-zA-Z0-9]", "");
 					key = key.toLowerCase();
+					if (channelInfo.checkList(key)) {
+						send(channel,
+								"This command name is already registered as a list.");
+						return;
+					}
 					String value = fuseArray(msg, 3);
 					int restriction = 1;
 
@@ -2086,16 +2165,25 @@ public class ReceiverBot extends PircBot {
 					int level = 0;
 					if (channelInfo.getCommand(command) != null) {
 						if (levelStr.equalsIgnoreCase("owner")
-								|| levelStr.equalsIgnoreCase("owners"))
+								|| levelStr.equalsIgnoreCase("owners")) {
 							level = 3;
+						}
 						if (levelStr.equalsIgnoreCase("mod")
-								|| levelStr.equalsIgnoreCase("mods"))
+								|| levelStr.equalsIgnoreCase("mods")
+								|| levelStr.equalsIgnoreCase("moderators")
+								|| levelStr.equalsIgnoreCase("moderator")) {
 							level = 2;
+						}
 						if (levelStr.equalsIgnoreCase("regular")
-								|| levelStr.equalsIgnoreCase("regulars"))
+								|| levelStr.equalsIgnoreCase("regulars")
+								|| levelStr.equalsIgnoreCase("regs")
+								|| levelStr.equalsIgnoreCase("subs")) {
 							level = 1;
-						if (levelStr.equalsIgnoreCase("everyone"))
+						}
+						if (levelStr.equalsIgnoreCase("everyone")
+								|| levelStr.equalsIgnoreCase("all")) {
 							level = 0;
+						}
 
 						if (channelInfo.setCommandsRestriction(command, level))
 							send(channel, prefix + command + " restricted to "
@@ -4473,6 +4561,123 @@ public class ReceiverBot extends PircBot {
 					}
 				}
 
+			} else {
+				if (channelInfo.checkList(command) && msg.length > 1) {
+					if (msg[1].equalsIgnoreCase("add") && isOp) {
+						String rest = fuseArray(msg, 2);
+						boolean added = channelInfo.addToList(command, rest);
+						if (added) {
+							send(channel, "\"" + rest
+									+ "\" has been added to the list \""
+									+ command + "\"");
+						} else {
+							send(channel,
+									"That list item already exists in this list.");
+						}
+
+					} else if (msg[1].equalsIgnoreCase("delete")
+							|| msg[1].equalsIgnoreCase("remove") && isOp) {
+						if (isInteger(msg[2])) {
+							int index = Integer.parseInt(msg[2]) - 1;
+							boolean removed = channelInfo.removeFromList(
+									command, index);
+							if (removed) {
+								send(channel,
+										"Successfully removed list item #"
+												+ index);
+							} else {
+								send(channel, "List item #" + msg[2]
+										+ " doesn't exist.");
+							}
+						}
+					} else if (msg[1].equalsIgnoreCase("restrict") && isOp
+							&& msg.length > 2) {
+
+						String levelStr = msg[3].toLowerCase();
+						int level = -1;
+						if (channelInfo.checkList(command)) {
+							if (levelStr.equalsIgnoreCase("owner")
+									|| levelStr.equalsIgnoreCase("owners")) {
+								level = 3;
+							}
+							if (levelStr.equalsIgnoreCase("mod")
+									|| levelStr.equalsIgnoreCase("mods")
+									|| levelStr.equalsIgnoreCase("moderators")
+									|| levelStr.equalsIgnoreCase("moderator")) {
+								level = 2;
+							}
+							if (levelStr.equalsIgnoreCase("regular")
+									|| levelStr.equalsIgnoreCase("regulars")
+									|| levelStr.equalsIgnoreCase("regs")
+									|| levelStr.equalsIgnoreCase("subs")) {
+								level = 1;
+							}
+							if (levelStr.equalsIgnoreCase("everyone")
+									|| levelStr.equalsIgnoreCase("all")) {
+								level = 0;
+							}
+							if (level > -1) {
+								channelInfo.restrictList(command, level);
+								send(channel, command
+										+ " successfully restricted to "
+										+ levelStr + ".");
+
+							} else {
+								send(channel, "Not a valid restriction group.");
+							}
+						} else {
+							send(channel, "That list does not exist.");
+						}
+
+					} else if (msg[1].equalsIgnoreCase("get") && msg.length > 2
+							&& isInteger(msg[2])) {
+						if (accessLevel < channelInfo
+								.checkListRestriction(command)) {
+							return;
+						}
+						int index = Integer.valueOf(msg[2]) - 1;
+						if (index >= 0) {
+							String listValue = channelInfo.getListItem(command,
+									index);
+							if (listValue != null) {
+								send(channel, listValue);
+							} else {
+								send(channel, "No item at requested index.");
+							}
+						} else {
+							send(channel, "No item at requested index.");
+						}
+					} else if (isInteger(msg[1])) {
+						if (accessLevel < channelInfo
+								.checkListRestriction(command)) {
+							return;
+						}
+						int index = Integer.valueOf(msg[1]) - 1;
+						if (index >= 0) {
+							String listValue = channelInfo.getListItem(command,
+									index);
+							if (listValue != null) {
+								send(channel, listValue);
+							} else {
+								send(channel, "No item at requested index.");
+							}
+						} else {
+							send(channel, "No item at requested index.");
+						}
+					} else if (msg[1].equalsIgnoreCase("random")) {
+						if (accessLevel < channelInfo
+								.checkListRestriction(command)) {
+							return;
+						}
+						int size = channelInfo.getListSize(command);
+						System.out.println("size " + size);
+						int randReturn = (int) Math
+								.round((Math.random() * (size - 1)) + 1);
+						System.out.println("randReturn " + randReturn);
+						send(channel, channelInfo.getListItem(command,
+								randReturn - 1));
+					}
+				}
 			}
 
 		}

@@ -18,7 +18,6 @@
 
 package net.bashtech.geobot;
 
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -100,7 +99,7 @@ public class Channel {
 	private int timeoutDuration;
 	private boolean enableWarnings;
 	Map<String, Long> commandCooldown;
-	
+
 	String prefix;
 	String emoteSet;
 	boolean subscriberRegulars;
@@ -145,11 +144,11 @@ public class Channel {
 	private String rollLevel;
 	private int rollDefault = 20;
 	private int rollCooldown = 10;
-	
+
 	public Boolean subscriberAlerts;
 	public String subscriberMessage;
 	private boolean shouldModerate;
-	 
+	private JSONObject lists;
 
 	public Channel(String name) {
 		channel = name;
@@ -200,13 +199,13 @@ public class Channel {
 		saveConfig(true);
 	}
 
-	 public void setLastStrawpoll(int newId) {
-	 lastStrawpoll = newId;
-	 }
-	
-	 public int getLastStrawpoll() {
-	 return lastStrawpoll;
-	 }
+	public void setLastStrawpoll(int newId) {
+		lastStrawpoll = newId;
+	}
+
+	public int getLastStrawpoll() {
+		return lastStrawpoll;
+	}
 
 	public boolean getWp() {
 		return wpOn;
@@ -351,7 +350,8 @@ public class Channel {
 		else
 			return "No quote at requested index.";
 	}
-	public boolean editQuote(int index, String newQuote,String editor){
+
+	public boolean editQuote(int index, String newQuote, String editor) {
 		if (index > quotes.size() - 1)
 			return false;
 		String oldquote = quotes.get(index);
@@ -365,8 +365,7 @@ public class Channel {
 		saveQuotes(true);
 
 		return true;
-		
-		
+
 	}
 
 	public boolean deleteQuote(int index) {
@@ -422,10 +421,11 @@ public class Channel {
 		saveCommands(true);
 
 	}
-	public void setCommand(String key, String command, String adder, int restriction) {
+
+	public void setCommand(String key, String command, String adder,
+			int restriction) {
 		key = key.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
 		System.out.println("Key: " + key);
-		
 
 		if (key.length() < 1)
 			return;
@@ -448,11 +448,12 @@ public class Channel {
 		saveCommands(true);
 
 	}
-	public int getRestriction(String key){
+
+	public int getRestriction(String key) {
 		key = key.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
-		if(commandsRestrictions.containsKey(key)){
+		if (commandsRestrictions.containsKey(key)) {
 			return commandsRestrictions.get(key);
-		}else{
+		} else {
 			return -1;
 		}
 	}
@@ -466,31 +467,32 @@ public class Channel {
 
 			saveCommands(true);
 			return true;
-		}else
+		} else
 			return false;
 
 	}
-	public boolean renameCommand(String key, String newKey, String adder){
-		if(commands.containsKey(key)){
-			//save old stuff
+
+	public boolean renameCommand(String key, String newKey, String adder) {
+		if (commands.containsKey(key)) {
+			// save old stuff
 			String response = commands.get(key);
 			int restriction = commandsRestrictions.get(key);
 			int count = commandCounts.get(key);
-			
-			//delete old stuff
+
+			// delete old stuff
 			commands.remove(key);
 			commandsRestrictions.remove(key);
 			commandCounts.remove(key);
 			commandAdders.remove(key);
-			
-			//add renamed command
+
+			// add renamed command
 			commands.put(newKey, response);
 			commandsRestrictions.put(newKey, restriction);
 			commandCounts.put(newKey, count);
 			commandAdders.put(newKey, adder);
 			saveCommands(true);
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
@@ -543,7 +545,6 @@ public class Channel {
 		} else
 			return -1;
 	}
-	
 
 	public boolean setCommandsRestriction(String command, int level) {
 		command = command.toLowerCase();
@@ -1324,12 +1325,12 @@ public class Channel {
 		synchronized (offensiveWordsRegex) {
 			if (word.startsWith("REGEX:")) {
 				String line = word.substring(6);
-				
+
 				Pattern tempP = Pattern.compile(line);
 				offensiveWordsRegex.add(tempP);
 			} else {
 				String line = ".*" + Pattern.quote(word) + ".*";
-				
+
 				Pattern tempP = Pattern.compile(line, Pattern.CASE_INSENSITIVE);
 				offensiveWordsRegex.add(tempP);
 			}
@@ -1730,6 +1731,7 @@ public class Channel {
 	private void setDefaults() {
 
 		// defaults.put("channel", channel);
+		defaults.put("lists", new JSONObject());
 		defaults.put("shouldModerate", true);
 		defaults.put("rollTimeout", false);
 		defaults.put("rollDefault", 20);
@@ -1737,7 +1739,7 @@ public class Channel {
 		defaults.put("rollCooldown", 10);
 		defaults.put("ignoredUsers", new JSONArray());
 		defaults.put("urbanEnabled", true);
-		defaults.put("songRequestStatus",false);
+		defaults.put("songRequestStatus", false);
 		defaults.put("extraLifeID", 0);
 		defaults.put("subsRegsMinusLinks", new Boolean(false));
 		defaults.put("filterCaps", new Boolean(false));
@@ -1833,12 +1835,15 @@ public class Channel {
 	private void loadProperties(String name) {
 
 		setDefaults();
-		shouldModerate = Boolean.valueOf((Boolean) config.get("shouldModerate"));
-		rollLevel = ((String)config.get("rollLevel"));
+		lists = (JSONObject) config.get("lists");
+		shouldModerate = Boolean
+				.valueOf((Boolean) config.get("shouldModerate"));
+		rollLevel = ((String) config.get("rollLevel"));
 		rollCooldown = ((Long) config.get("rollCooldown")).intValue();
 		rollDefault = ((Long) config.get("rollDefault")).intValue();
 		rollTimeout = Boolean.valueOf((Boolean) config.get("rollTimeout"));
-		songRequestStatus = Boolean.valueOf((Boolean)config.get("songRequestStatus"));
+		songRequestStatus = Boolean.valueOf((Boolean) config
+				.get("songRequestStatus"));
 		urbanEnabled = Boolean.valueOf((Boolean) config.get("urbanEnabled"));
 		extraLifeID = ((Long) config.get("extraLifeID"));
 		resubAlerts = Boolean.valueOf((Boolean) config.get("resubAlert"));
@@ -2182,7 +2187,7 @@ public class Channel {
 	public void runCommercial() {
 
 		if (JSONUtil.krakenIsLive(getChannel().substring(1))) {
-			
+
 			String dataIn = "";
 			dataIn = BotManager.postRemoteDataTwitch(
 					"https://api.twitch.tv/kraken/channels/"
@@ -2380,44 +2385,53 @@ public class Channel {
 	}
 
 	public boolean getSongRequest() {
-		
+
 		return songRequestStatus;
 	}
-	public void setSongRequest(boolean newValue){
+
+	public void setSongRequest(boolean newValue) {
 		songRequestStatus = newValue;
 		config.put("songRequestStatus", newValue);
 		saveConfig(true);
 	}
-	public void setRollTimeout(boolean enabled){
+
+	public void setRollTimeout(boolean enabled) {
 		rollTimeout = enabled;
 		config.put("rollTimeout", enabled);
 		saveConfig(true);
 	}
-	public void setRollCooldown(int cooldown){
+
+	public void setRollCooldown(int cooldown) {
 		rollCooldown = cooldown;
 		config.put("rollCooldown", cooldown);
 		saveConfig(true);
 	}
-	public void setRollLevel(String level){
+
+	public void setRollLevel(String level) {
 		rollLevel = level;
 		config.put("rollLevel", level);
 		saveConfig(true);
 	}
-	public void setRollDefault(int newDefault){
+
+	public void setRollDefault(int newDefault) {
 		rollDefault = newDefault;
 		config.put("rollDefault", newDefault);
 		saveConfig(true);
 	}
-	public String getRollLevel(){
+
+	public String getRollLevel() {
 		return rollLevel;
 	}
-	public int getRollCooldown(){
+
+	public int getRollCooldown() {
 		return rollCooldown;
 	}
-	public int getRollDefault(){
+
+	public int getRollDefault() {
 		return rollDefault;
 	}
-	public boolean getRollTimeout(){
+
+	public boolean getRollTimeout() {
 		return rollTimeout;
 	}
 
@@ -2425,14 +2439,106 @@ public class Channel {
 		// TODO Auto-generated method stub
 		return shouldModerate;
 	}
-	public void setShouldModerate(boolean should){
+
+	public void setShouldModerate(boolean should) {
 		shouldModerate = should;
 		config.put("shouldModerate", should);
 		saveConfig(true);
 	}
-	
-	
-	
-	
-	
+
+	public boolean addList(String listName,int restriction) {
+		if (lists.containsKey(listName)) {
+			return false;
+		} else {
+			JSONObject newList = new JSONObject();
+			newList.put("items", new JSONArray());
+			newList.put("restriction", restriction);
+			lists.put(listName, newList);
+			config.put("lists", lists);
+			saveConfig(true);
+			return true;
+		}
+	}
+
+	public boolean deleteList(String listName) {
+		if (lists.containsKey(listName)) {
+			lists.remove(listName);
+			config.put("lists", lists);
+			saveConfig(true);
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	public boolean restrictList(String listName, int restriction){
+		if(lists.containsKey(listName)){
+			JSONObject list1 = (JSONObject) lists.get(listName);
+			list1.put("restriction", restriction);
+			lists.put(listName, list1);
+			config.put("lists", lists);
+			saveConfig(true);
+			return true;
+		}else{
+			return false;
+		}
+	}
+	public int checkListRestriction(String listName){
+		if(lists.containsKey(listName)){
+		JSONObject list1 = (JSONObject) lists.get(listName);
+		int restrictions = (int)list1.get("restriction");
+		return restrictions;
+		}else{
+			return -1;
+		}
+	}
+	public boolean checkList(String listName) {
+		return (lists.containsKey(listName));
+	}
+
+	public boolean addToList(String listName, String newItem) {
+		JSONObject list1 = (JSONObject) lists.get(listName);
+		JSONArray list = (JSONArray)list1.get("items");
+		if (!list.contains(newItem)) {
+			list.add(newItem);
+			list1.put("items", list);
+			lists.put(listName, list1);
+			config.put("lists", lists);
+			saveConfig(true);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean removeFromList(String listName, int index) {
+		JSONObject list1 = (JSONObject) lists.get(listName);
+		JSONArray list = (JSONArray) list1.get("items");
+		if (list.size() > index) {
+			list.remove(index);
+			list1.put("items", list);
+			lists.put(listName, list1);
+			config.put("lists", lists);
+			saveConfig(true);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public String getListItem(String listName, int index) {
+		JSONObject list1 = (JSONObject) lists.get(listName);
+		JSONArray list = (JSONArray) list1.get("items");
+		if (list.size() > index) {
+			return (String) list.get(index);
+		}else{
+			return null;
+		}
+	}
+	public int getListSize(String listName){
+		JSONObject list1 = (JSONObject) lists.get(listName);
+		JSONArray list = (JSONArray) list1.get("items");
+		return list.size();
+	}
 }
