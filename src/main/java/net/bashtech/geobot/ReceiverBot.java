@@ -1117,6 +1117,13 @@ public class ReceiverBot extends PircBot {
 		// ************************************
 		// ********************************************************************************
 
+		// !ht
+		if (msg[0].equalsIgnoreCase(prefix + "highlightthat")
+				|| msg[0].equalsIgnoreCase(prefix + "ht")) {
+			JSONUtil.highlightThat("http://coebot.tv/oldhl/botadd/"
+					+ channel.substring(1) + "/" + sender);
+		}
+
 		// Check channel mode.
 		if ((channelInfo.getMode() == 0 || channelInfo.getMode() == -1)
 				&& !isOwner) {
@@ -2719,13 +2726,7 @@ public class ReceiverBot extends PircBot {
 			send(channel, "You can find all marked highlights at: coebot.tv/c/"
 					+ channel.substring(1) + "#highlights");
 		}
-		// !ht
-		if (msg[0].equalsIgnoreCase(prefix + "highlightthat")
-				|| msg[0].equalsIgnoreCase(prefix + "ht")) {
-			JSONUtil.highlightThat("http://coebot.tv/oldhl/botadd/"
-					+ channel.substring(1) + "/" + sender);
-			// send(channel, result.replaceAll("\"", ""));
-		}
+
 		// ##########################QUOTES##############################
 		if (msg[0].equalsIgnoreCase(prefix + "quotes") && isSub) {
 			send(channel, "http://coebot.tv/c/" + channel.substring(1)
