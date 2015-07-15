@@ -1219,33 +1219,33 @@ public class JSONUtil {
 
 	public static void trimChannels(Long followerCount) {
 		JSONParser parser = new JSONParser();
-		ArrayList<String>toRemove = new ArrayList<String>();
+		ArrayList<String> toRemove = new ArrayList<String>();
 		for (Map.Entry<String, Channel> entry : BotManager.getInstance().channelList
 				.entrySet()) {
 			String name = entry.getKey().substring(1);
 			String url = "https://api.twitch.tv/kraken/channels/" + name;
-			
+
 			try {
 				Object obj = parser.parse(BotManager.getRemoteContent(url));
 
 				JSONObject jsonObject = (JSONObject) obj;
 				Long followers = (Long) jsonObject.get("followers");
-				System.out.println(url+" with "+followers+" followers");
+				System.out.println(url + " with " + followers + " followers");
 
 				if (followers < followerCount) {
 					toRemove.add(name);
-					
+
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
-		for(String s: toRemove){
+
+		for (String s : toRemove) {
 			BotManager.getInstance().removeChannel("#" + s);
 			BotManager.getInstance().coebotPartChannel(s,
 					BotManager.getInstance().nick);
-			System.out.println("Removing: "+s);
+			System.out.println("Removing: " + s);
 		}
 
 	}
@@ -1292,6 +1292,17 @@ public class JSONUtil {
 				if (name.length() > 0)
 					emotes.add(name);
 			}
+			Object obj1 = parser.parse(BotManager
+					.getRemoteContent("https://api.betterttv.net/emotes"));
+
+			JSONObject jsonObject1 = (JSONObject) obj1;
+
+			JSONArray emotesObj = (JSONArray)jsonObject1.get("emotes");
+			for(int i = 0;i<emotesObj.size();i++){
+				JSONObject emoteObject = (JSONObject) emotesObj.get(i);
+				String emoteStr = (String) emoteObject.get("regex");
+				emotes.add(emoteStr);
+			}
 
 			emotes.add(":)");
 			emotes.add(":o");
@@ -1311,9 +1322,11 @@ public class JSONUtil {
 			emotes.add(":P");
 		} catch (Exception ex) {
 			ex.printStackTrace();
-		} finally {
+		
+		}finally{
 			return emotes;
 		}
+		
 
 	}
 

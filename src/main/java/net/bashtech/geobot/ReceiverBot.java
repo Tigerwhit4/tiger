@@ -2111,6 +2111,15 @@ public class ReceiverBot extends PircBot {
 					} else {
 						send(channel, "That list does not exist.");
 					}
+				} else if (msg[1].equalsIgnoreCase("rename") && msg.length > 3) {
+					String listName = msg[2].toLowerCase();
+					String newName = msg[3].toLowerCase().replaceAll(
+							"[^a-zA-Z0-9]", "");
+					if (channelInfo.checkList(listName)) {
+						channelInfo.renameList(listName, newName);
+						send(channel, "List \"" + listName + "\" renamed to \""
+								+ newName + "\"");
+					}
 				}
 
 			}
@@ -2670,16 +2679,38 @@ public class ReceiverBot extends PircBot {
 							long randReturn = Math
 									.round((Math.random() * (randMax - 1)) + 1);
 
-							send(channel, "You rolled: " + randReturn);
+							send(channel, sender + " rolled: " + randReturn);
 							if (randMax > 1 && randReturn == 1 && shouldTO) {
 								sendCommand(channel,
 										".timeout " + sender.toLowerCase()
 												+ " " + randMax * 5);
 							}
+						} else if (msg[1].matches("[123456]d\\d+")) {
+							int numDice = Integer.parseInt(msg[1].substring(0,
+									1));
+
+							int randMax = Integer.parseInt(msg[1].substring(2));
+							String rollReturn = sender + " rolled: ";
+
+							if (randMax <= 0) {
+								return;
+							}
+							for (int i = 0; i < numDice; i++) {
+								long randReturn = Math
+										.round((Math.random() * (randMax - 1)) + 1);
+
+								rollReturn+=randReturn+", ";
+								if (randMax > 1 && randReturn == 1 && shouldTO) {
+									sendCommand(channel,
+											".timeout " + sender.toLowerCase()
+													+ " " + randMax * 5);
+								}
+							}
+							send(channel, rollReturn.substring(0,rollReturn.length()-2)+".");
 						} else {
 							long randReturn = Math
 									.round((Math.random() * (defaultRoll - 1)) + 1);
-							send(channel, "You rolled: " + randReturn);
+							send(channel, sender + " rolled: " + randReturn);
 							if (defaultRoll > 1 && randReturn == 1 && shouldTO) {
 								sendCommand(channel,
 										".timeout " + sender.toLowerCase()
@@ -4056,7 +4087,7 @@ public class ReceiverBot extends PircBot {
 			else if (msg[1].equalsIgnoreCase("bullet") && isOwner) {
 				if (msg.length > 2) {
 					if (!msg[2].startsWith("/") && !msg[2].startsWith(".")
-							&& !msg[2].equalsIgnoreCase("")) {
+							&& !msg[2].equalsIgnoreCase("")&&msg[2].length()<30) {
 
 						bullet[0] = msg[2];
 
@@ -4585,7 +4616,7 @@ public class ReceiverBot extends PircBot {
 							if (removed) {
 								send(channel,
 										"Successfully removed list item #"
-												+ index);
+												+ index + 1);
 							} else {
 								send(channel, "List item #" + msg[2]
 										+ " doesn't exist.");
@@ -4641,7 +4672,57 @@ public class ReceiverBot extends PircBot {
 							String listValue = channelInfo.getListItem(command,
 									index);
 							if (listValue != null) {
-								send(channel, listValue);
+								if (listValue.contains("(_PURGE_)")) {
+									listValue = listValue.replace("(_PURGE_)",
+											msg[3].toLowerCase());
+									sendCommand(channel,
+											".timeout " + msg[3].toLowerCase()
+													+ " 1");
+								} else if (listValue.contains("(_TIMEOUT_)")) {
+									listValue = listValue
+											.replace("(_TIMEOUT_)",
+													msg[3].toLowerCase());
+									sendCommand(channel,
+											".timeout " + msg[3].toLowerCase());
+
+								} else if (listValue.contains("(_BAN_)")) {
+									listValue = listValue.replace("(_BAN_)",
+											msg[1].toLowerCase());
+									sendCommand(channel,
+											".ban " + msg[3].toLowerCase());
+								}
+								if (listValue.contains("(_PARAMETER_)")) {
+
+									String[] parts = fuseArray(msg, 3).split(
+											";");
+									if (parts.length > 1) {
+										for (String s : parts) {
+											listValue = listValue.replaceFirst(
+													"\\(_PARAMETER_\\)",
+													s.trim());
+										}
+									} else
+										listValue = listValue.replace(
+												"(_PARAMETER_)", parts[0]);
+
+								}
+								if (listValue.contains("(_PARAMETER_CAPS_)")) {
+
+									String[] parts = fuseArray(msg, 3).split(
+											";");
+									if (parts.length > 1) {
+										for (String s : parts) {
+											listValue = listValue.replaceFirst(
+													"\\(_PARAMETER_CAPS_\\)",
+													s.trim());
+										}
+									} else
+										listValue = listValue.replace(
+												"(_PARAMETER_CAPS_)",
+												parts[0].toUpperCase());
+
+								}
+								send(channel, sender, listValue);
 							} else {
 								send(channel, "No item at requested index.");
 							}
@@ -4658,9 +4739,57 @@ public class ReceiverBot extends PircBot {
 							String listValue = channelInfo.getListItem(command,
 									index);
 							if (listValue != null) {
-								send(channel, listValue);
-							} else {
-								send(channel, "No item at requested index.");
+								if (listValue.contains("(_PURGE_)")) {
+									listValue = listValue.replace("(_PURGE_)",
+											msg[2].toLowerCase());
+									sendCommand(channel,
+											".timeout " + msg[2].toLowerCase()
+													+ " 1");
+								} else if (listValue.contains("(_TIMEOUT_)")) {
+									listValue = listValue
+											.replace("(_TIMEOUT_)",
+													msg[2].toLowerCase());
+									sendCommand(channel,
+											".timeout " + msg[2].toLowerCase());
+
+								} else if (listValue.contains("(_BAN_)")) {
+									listValue = listValue.replace("(_BAN_)",
+											msg[1].toLowerCase());
+									sendCommand(channel,
+											".ban " + msg[2].toLowerCase());
+								}
+								if (listValue.contains("(_PARAMETER_)")) {
+
+									String[] parts = fuseArray(msg, 2).split(
+											";");
+									if (parts.length > 1) {
+										for (String s : parts) {
+											listValue = listValue.replaceFirst(
+													"\\(_PARAMETER_\\)",
+													s.trim());
+										}
+									} else
+										listValue = listValue.replace(
+												"(_PARAMETER_)", parts[0]);
+
+								}
+								if (listValue.contains("(_PARAMETER_CAPS_)")) {
+
+									String[] parts = fuseArray(msg, 2).split(
+											";");
+									if (parts.length > 1) {
+										for (String s : parts) {
+											listValue = listValue.replaceFirst(
+													"\\(_PARAMETER_CAPS_\\)",
+													s.trim());
+										}
+									} else
+										listValue = listValue.replace(
+												"(_PARAMETER_CAPS_)",
+												parts[0].toUpperCase());
+
+								}
+								send(channel, sender, listValue);
 							}
 						} else {
 							send(channel, "No item at requested index.");
@@ -4674,9 +4803,59 @@ public class ReceiverBot extends PircBot {
 						System.out.println("size " + size);
 						int randReturn = (int) Math
 								.round((Math.random() * (size - 1)) + 1);
-						System.out.println("randReturn " + randReturn);
-						send(channel, channelInfo.getListItem(command,
-								randReturn - 1));
+
+						String listValue = channelInfo.getListItem(command,
+								randReturn - 1);
+						if (listValue != null) {
+							if (listValue.contains("(_PURGE_)")) {
+								listValue = listValue.replace("(_PURGE_)",
+										msg[2].toLowerCase());
+								sendCommand(channel,
+										".timeout " + msg[2].toLowerCase()
+												+ " 1");
+							} else if (listValue.contains("(_TIMEOUT_)")) {
+								listValue = listValue.replace("(_TIMEOUT_)",
+										msg[2].toLowerCase());
+								sendCommand(channel,
+										".timeout " + msg[2].toLowerCase());
+
+							} else if (listValue.contains("(_BAN_)")) {
+								listValue = listValue.replace("(_BAN_)",
+										msg[1].toLowerCase());
+								sendCommand(channel,
+										".ban " + msg[2].toLowerCase());
+							}
+							if (listValue.contains("(_PARAMETER_)")) {
+
+								String[] parts = fuseArray(msg, 2).split(";");
+								if (parts.length > 1) {
+									for (String s : parts) {
+										listValue = listValue.replaceFirst(
+												"\\(_PARAMETER_\\)", s.trim());
+									}
+								} else
+									listValue = listValue.replace(
+											"(_PARAMETER_)", parts[0]);
+
+							}
+							if (listValue.contains("(_PARAMETER_CAPS_)")) {
+
+								String[] parts = fuseArray(msg, 2).split(";");
+								if (parts.length > 1) {
+									for (String s : parts) {
+										listValue = listValue.replaceFirst(
+												"\\(_PARAMETER_CAPS_\\)",
+												s.trim());
+									}
+								} else
+									listValue = listValue.replace(
+											"(_PARAMETER_CAPS_)",
+											parts[0].toUpperCase());
+
+							}
+							send(channel, sender, listValue);
+						}
+
 					}
 				}
 			}

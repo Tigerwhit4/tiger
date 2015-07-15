@@ -25,15 +25,10 @@ public class Tester {
 	static ArrayList<String>responses = new ArrayList<String>();
 	static ArrayList<String>patterns = new ArrayList<String>();
 	public static void main(String[] args) {
-		for(int i = 0; i<5;i++){
-			responses.add("test"+i);
-			patterns.add("pattern"+i);
-		}
-		System.out.println(responses.toString());
-		System.out.println(patterns.toString());
-		responses.remove(2);
-		responses.add(2,"test2");
-		System.out.println(responses.toString());
+		String pattern="([123456]d\\d+)";
+		System.out.println("7d100".matches(pattern));
+		System.out.println("2d20".replaceAll(pattern, "$1"));
+			
 	}
 
 	

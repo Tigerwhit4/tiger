@@ -2484,11 +2484,23 @@ public class Channel {
 			return false;
 		}
 	}
+	public boolean renameList(String listName, String newName){
+		if(lists.containsKey(listName)){
+			JSONObject list1 = (JSONObject) lists.get(listName);
+			lists.remove(listName);
+			lists.put(newName, list1);
+			config.put("lists", lists);
+			saveConfig(true);
+			return true;
+		}else{
+			return false;
+		}
+	}
 	public int checkListRestriction(String listName){
 		if(lists.containsKey(listName)){
 		JSONObject list1 = (JSONObject) lists.get(listName);
-		int restrictions = (int)list1.get("restriction");
-		return restrictions;
+		long restrictions = (long)list1.get("restriction");
+		return (int)restrictions;
 		}else{
 			return -1;
 		}
