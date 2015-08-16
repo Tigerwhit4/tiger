@@ -1663,6 +1663,7 @@ public class ReceiverBot extends PircBot {
 		}
 		if (msg[0].equalsIgnoreCase(prefix + "unhost") && isOwner) {
 			sendCommand(channel, ".unhost");
+			send(channel,"Exited host mode.");
 		}
 		// !raid commands
 		if (msg[0].equalsIgnoreCase(prefix + "raid") && isOwner) {
@@ -2703,7 +2704,7 @@ public class ReceiverBot extends PircBot {
 								if (randMax > 1 && randReturn == 1 && shouldTO) {
 									sendCommand(channel,
 											".timeout " + sender.toLowerCase()
-													+ " " + randMax * 5);
+													+ " " + randMax * 5*numDice);
 								}
 							}
 							send(channel, rollReturn.substring(0,rollReturn.length()-2)+".");
@@ -3922,7 +3923,8 @@ public class ReceiverBot extends PircBot {
 					value = value.replace("(_BAN_)", msg[1].toLowerCase());
 					sendCommand(channel, ".ban " + msg[1].toLowerCase());
 				}
-				if (value.contains("(_PARAMETER_)")) {
+				String msgstr = fuseArray(msg,0);
+				if (value.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 					String[] parts = fuseArray(msg, 1).split(";");
 					if (parts.length > 1) {
@@ -3934,7 +3936,7 @@ public class ReceiverBot extends PircBot {
 						value = value.replace("(_PARAMETER_)", parts[0]);
 
 				}
-				if (value.contains("(_PARAMETER_CAPS_)")) {
+				if (value.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 					String[] parts = fuseArray(msg, 1).split(";");
 					if (parts.length > 1) {
@@ -4561,7 +4563,8 @@ public class ReceiverBot extends PircBot {
 									msg[1].toLowerCase());
 							sendCommand(channel, ".ban " + msg[1].toLowerCase());
 						}
-						if (value.contains("(_PARAMETER_)")) {
+						String msgstr = fuseArray(msg,0);
+						if (value.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 							String[] parts = fuseArray(msg, 1).split(";");
 							if (parts.length > 1) {
@@ -4574,7 +4577,7 @@ public class ReceiverBot extends PircBot {
 										.replace("(_PARAMETER_)", parts[0]);
 
 						}
-						if (value.contains("(_PARAMETER_CAPS_)")) {
+						if (value.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 							String[] parts = fuseArray(msg, 1).split(";");
 							if (parts.length > 1) {
@@ -4691,7 +4694,8 @@ public class ReceiverBot extends PircBot {
 									sendCommand(channel,
 											".ban " + msg[3].toLowerCase());
 								}
-								if (listValue.contains("(_PARAMETER_)")) {
+								String msgstr = fuseArray(msg,0);
+								if (listValue.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 									String[] parts = fuseArray(msg, 3).split(
 											";");
@@ -4706,7 +4710,7 @@ public class ReceiverBot extends PircBot {
 												"(_PARAMETER_)", parts[0]);
 
 								}
-								if (listValue.contains("(_PARAMETER_CAPS_)")) {
+								if (listValue.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 									String[] parts = fuseArray(msg, 3).split(
 											";");
@@ -4758,7 +4762,8 @@ public class ReceiverBot extends PircBot {
 									sendCommand(channel,
 											".ban " + msg[2].toLowerCase());
 								}
-								if (listValue.contains("(_PARAMETER_)")) {
+								String msgstr = fuseArray(msg,0);
+								if (listValue.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 									String[] parts = fuseArray(msg, 2).split(
 											";");
@@ -4773,7 +4778,7 @@ public class ReceiverBot extends PircBot {
 												"(_PARAMETER_)", parts[0]);
 
 								}
-								if (listValue.contains("(_PARAMETER_CAPS_)")) {
+								if (listValue.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 									String[] parts = fuseArray(msg, 2).split(
 											";");
@@ -4825,7 +4830,8 @@ public class ReceiverBot extends PircBot {
 								sendCommand(channel,
 										".ban " + msg[2].toLowerCase());
 							}
-							if (listValue.contains("(_PARAMETER_)")) {
+							String msgstr = fuseArray(msg,0);
+							if (listValue.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 								String[] parts = fuseArray(msg, 2).split(";");
 								if (parts.length > 1) {
@@ -4838,7 +4844,7 @@ public class ReceiverBot extends PircBot {
 											"(_PARAMETER_)", parts[0]);
 
 							}
-							if (listValue.contains("(_PARAMETER_CAPS_)")) {
+							if (listValue.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
 
 								String[] parts = fuseArray(msg, 2).split(";");
 								if (parts.length > 1) {
@@ -4892,6 +4898,14 @@ public class ReceiverBot extends PircBot {
 							} else if (value.contains("(_BAN_)")) {
 								value = value.replace("(_BAN_)", sender);
 								sendCommand(channel, ".ban " + sender);
+							}else if(value.contains("(_COMMAND_")&&value.contains("_)")){
+								int commandStart = value.indexOf("(_COMMAND_")+10;
+								int commandEnd = value.indexOf("_)",commandStart+1);
+								String origCommand = value.substring(commandStart,commandEnd);
+								String command = origCommand.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
+								String response = channelInfo.getCommand(command);
+								value = value.replace("(_COMMAND_"+origCommand+"_)", response);
+								
 							}
 							send(channel, sender, value);
 							channelInfo
@@ -4910,6 +4924,14 @@ public class ReceiverBot extends PircBot {
 						} else if (value.contains("(_BAN_)")) {
 							value = value.replace("(_BAN_)", sender);
 							sendCommand(channel, ".ban " + sender);
+						}else if(value.contains("(_COMMAND_")&&value.contains("_)")){
+							int commandStart = value.indexOf("(_COMMAND_")+10;
+							int commandEnd = value.indexOf("_)",commandStart+1);
+							String origCommand = value.substring(commandStart,commandEnd);
+							String command = origCommand.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
+							String response = channelInfo.getCommand(command);
+							value = value.replace("(_COMMAND_"+origCommand+"_)", response);
+							
 						}
 
 						send(channel, sender, value);
