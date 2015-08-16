@@ -3127,9 +3127,6 @@ public class ReceiverBot extends PircBot {
 					if (result.length() > 140)
 						result = result.substring(0, 140);
 					send(channel, "\"" + result + "\"");
-				} else {
-					send(channel, prefix
-							+ "urban is currently not enabled on this channel.");
 				}
 
 			}
