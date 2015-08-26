@@ -241,7 +241,7 @@ public class BotManager {
 
 			c.setRequestMethod("POST");
 			c.setRequestProperty("Content-Type", "application/json");
-			c.setRequestProperty("User-Agent", "CB1");
+			c.setRequestProperty("User-Agent", "CB2");
 
 			c.setDoOutput(true);
 			c.setDoInput(true);

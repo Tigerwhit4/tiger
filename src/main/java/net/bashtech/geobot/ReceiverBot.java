@@ -1791,6 +1791,7 @@ public class ReceiverBot extends PircBot {
 				postObject.put("options", optionsArr);
 				postObject.put("multi", multi);
 				postObject.put("permissive", permissive);
+				postObject.put("captcha", false);
 				String postData = postObject.toJSONString();
 				System.out.println(postData);
 				String id = BotManager.postRemoteDataStrawpoll(postData);
@@ -3016,6 +3017,12 @@ public class ReceiverBot extends PircBot {
 			}
 			if (msg[0].equalsIgnoreCase("-s")) {
 				sendCommand(channel, ".subscribersoff");
+			}
+			if(msg[0].equalsIgnoreCase("+r9k")){
+				sendCommand(channel, ".r9kbeta");
+			}
+			if(msg[0].equalsIgnoreCase("-r9k")){
+				sendCommand(channel, ".r9kbetaoff");
 			}
 			if (msg.length > 0) {
 				if (msg[0].equalsIgnoreCase("+b")
