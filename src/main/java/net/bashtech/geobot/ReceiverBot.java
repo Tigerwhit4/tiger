@@ -606,8 +606,8 @@ public class ReceiverBot extends PircBot {
 				turboStatus = true;
 			}
 			String userType;
-			if (!tags[5].endsWith("=")) {
-				userType = tags[5].substring(tags[5].indexOf("=") + 1);
+			if (!tags[6].endsWith("=")) {
+				userType = tags[6].substring(tags[6].indexOf("=") + 1);
 				if (userType.equalsIgnoreCase("mod")) {
 					privMsgMod = true;
 				}
@@ -3350,7 +3350,7 @@ public class ReceiverBot extends PircBot {
 							send(channel, "Word already exists. " + "("
 									+ phrase + ")");
 						} else {
-							if (phrase.startsWith("REGEX:") && !isAdmin) {
+							if (phrase.startsWith("REGEX:") && !isOwner) {
 								send(channel,
 										"You must have Admin status to add regex phrases.");
 								return;

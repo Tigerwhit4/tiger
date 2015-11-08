@@ -948,17 +948,26 @@ public class JSONUtil {
 	}
 
 	public static String extraLifeAmount(String channel) {
-		String source = BotManager
-				.getRemoteContent("http://www.extra-life.org/index.cfm?fuseaction=donorDrive.participant&participantID="
-						+ BotManager.getInstance().getChannel(channel)
-								.getExtraLifeID());
-		int indexStart = source.indexOf("actualAmount=") + 13;
-		int indexEnd = source.indexOf("&", indexStart);
-		String amount = source.substring(indexStart, indexEnd);
-		if (amount.length() > 40) {
-			amount = "";
+	
+		
+		try {
+			JSONParser parser = new JSONParser();
+			Object obj = parser.parse(BotManager
+					.getRemoteContent("http://www.extra-life.org/index.cfm?fuseaction=donorDrive.participant&participantID="
+							+ BotManager.getInstance().getChannel(channel)
+									.getExtraLifeID()+"&format=json"));
+			
+
+			JSONObject jsonObject = (JSONObject) obj;
+
+			Double amount = (Double) jsonObject.get("totalRaisedAmount");
+			
+			return amount+"";
+		} catch (Exception ex) {
+			 ex.printStackTrace();
+			return "";
 		}
-		return amount;
+		
 	}
 
 	public static boolean krakenChannelExist(String channel) {

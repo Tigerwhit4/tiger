@@ -174,6 +174,19 @@ public class MessageReplaceParser {
 			message = message.replace("(_UPDATE_SITE_)", "");
 			ci.updateSite();
 		}
+		if(message.contains("(_GAME_IS_")&&message.contains("_)")){
+			int start = message.indexOf("(_GAME_IS_")+10;
+			int end = message.indexOf("_)",start+1);
+			String wantedGame = message.substring(start,end);
+			System.out.println(wantedGame);
+			System.out.println(JSONUtil.krakenGame(channel.substring(1)).replace(" ", "-"));
+			
+			if(JSONUtil.krakenGame(channel.substring(1)).replace(" ","-").equalsIgnoreCase(wantedGame)){
+				message = message.replace("(_GAME_IS_"+wantedGame+"_)", "");
+			}else{
+				message = "";
+			}
+		}
 
 		if (message.contains("(_DATE_") && message.contains("_)")) {
 			message = handleDatetime(message, "(_DATE_", "_)", "MMM d, yyyy");

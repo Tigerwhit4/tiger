@@ -1372,12 +1372,12 @@ public class Channel {
 			for (String w : offensiveWords) {
 				if (w.startsWith("REGEX:")) {
 					String line = w.substring(6);
-					System.out.println("ReAdding: " + line);
+//					System.out.println("ReAdding: " + line);
 					Pattern tempP = Pattern.compile(line);
 					offensiveWordsRegex.add(tempP);
 				} else {
 					String line = ".*" + Pattern.quote(w) + ".*";
-					System.out.println("ReAdding: " + line);
+//					System.out.println("ReAdding: " + line);
 					Pattern tempP = Pattern.compile(line);
 					offensiveWordsRegex.add(tempP);
 				}
@@ -2099,12 +2099,12 @@ public class Channel {
 					offensiveWords.add(w);
 					if (w.startsWith("REGEX:")) {
 						String line = w.substring(6);
-						System.out.println("Adding: " + line);
+//						System.out.println("Adding: " + line);
 						Pattern tempP = Pattern.compile(line);
 						offensiveWordsRegex.add(tempP);
 					} else {
 						String line = "(?i).*" + Pattern.quote(w) + ".*";
-						System.out.println("Adding: " + line);
+//						System.out.println("Adding: " + line);
 						Pattern tempP = Pattern.compile(line);
 						offensiveWordsRegex.add(tempP);
 					}
