@@ -229,7 +229,9 @@ public class ReceiverBot extends PircBot {
 					if (value.contains("(_PURGE_)")
 							|| value.contains("(_TIMEOUT_)")
 							|| value.contains("(_BAN_)")
-							|| value.contains("(_COMMERCIAL_)")) {
+							|| value.contains("(_COMMERCIAL_)")
+							|| value.contains("(_SUBMODE_ON_)")
+							|| value.contains("(_SUBMODE_OFF_)")) {
 						channelInfo.setCommandsRestriction(key, 2);
 					} else
 						channelInfo.setCommandsRestriction(key, 1);
@@ -1663,7 +1665,7 @@ public class ReceiverBot extends PircBot {
 		}
 		if (msg[0].equalsIgnoreCase(prefix + "unhost") && isOwner) {
 			sendCommand(channel, ".unhost");
-			send(channel,"Exited host mode.");
+			send(channel, "Exited host mode.");
 		}
 		// !raid commands
 		if (msg[0].equalsIgnoreCase(prefix + "raid") && isOwner) {
@@ -1865,7 +1867,8 @@ public class ReceiverBot extends PircBot {
 			return;
 		}
 		// youtube title parser
-		if (BotManager.getInstance().YoutubeAPIKey.length() > 4) {
+		if ((BotManager.getInstance().YoutubeAPIKey.length() > 4)
+				&& channelInfo.shouldParseYoutube()) {
 			String msgs = fuseArray(msg, 0);
 			if (!msg[0].equalsIgnoreCase(prefix + "songrequest")) {
 				if ((((msgs.indexOf("youtube.com/watch?v=") > -1) || msgs
@@ -2154,7 +2157,9 @@ public class ReceiverBot extends PircBot {
 							|| (value.contains("(_VARS_") && (value
 									.contains("_INCREMENT_")
 									|| value.contains("_DECREMENT_") || value
-										.contains("_SET_")))) {
+										.contains("_SET_")))
+							|| value.contains("(_SUBMODE_ON_)")
+							|| value.contains("(_SUBMODE_OFF_)")) {
 						restriction = 2;
 					} else {
 						channelInfo.setCommandsRestriction(key, 1);
@@ -2250,6 +2255,20 @@ public class ReceiverBot extends PircBot {
 					} else {
 						send(channel,
 								"Channel to be cloned from must be in format: #channel");
+					}
+				} else if ((msg[1].equalsIgnoreCase("author") || msg[1]
+						.equalsIgnoreCase("editor")) && msg.length > 2) {
+					String key = msg[2].toLowerCase();
+					String editor = channelInfo.getAuthor(key);
+					if (editor != null && !editor.equals("-1")) {
+						send(channel,
+								"The last person to modify this command was "
+										+ editor + ".");
+					} else if (editor != null) {
+						send(channel, "That command does not exist.");
+					} else {
+						send(channel,
+								"The last editor for this command is unknown.");
 					}
 				}
 			}
@@ -2701,14 +2720,17 @@ public class ReceiverBot extends PircBot {
 								long randReturn = Math
 										.round((Math.random() * (randMax - 1)) + 1);
 
-								rollReturn+=randReturn+", ";
+								rollReturn += randReturn + ", ";
 								if (randMax > 1 && randReturn == 1 && shouldTO) {
 									sendCommand(channel,
 											".timeout " + sender.toLowerCase()
-													+ " " + randMax * 5*numDice);
+													+ " " + randMax * 5
+													* numDice);
 								}
 							}
-							send(channel, rollReturn.substring(0,rollReturn.length()-2)+".");
+							send(channel,
+									rollReturn.substring(0,
+											rollReturn.length() - 2) + ".");
 						} else {
 							long randReturn = Math
 									.round((Math.random() * (defaultRoll - 1)) + 1);
@@ -3018,10 +3040,10 @@ public class ReceiverBot extends PircBot {
 			if (msg[0].equalsIgnoreCase("-s")) {
 				sendCommand(channel, ".subscribersoff");
 			}
-			if(msg[0].equalsIgnoreCase("+r9k")){
+			if (msg[0].equalsIgnoreCase("+r9k")) {
 				sendCommand(channel, ".r9kbeta");
 			}
-			if(msg[0].equalsIgnoreCase("-r9k")){
+			if (msg[0].equalsIgnoreCase("-r9k")) {
 				sendCommand(channel, ".r9kbetaoff");
 			}
 			if (msg.length > 0) {
@@ -3927,8 +3949,10 @@ public class ReceiverBot extends PircBot {
 					value = value.replace("(_BAN_)", msg[1].toLowerCase());
 					sendCommand(channel, ".ban " + msg[1].toLowerCase());
 				}
-				String msgstr = fuseArray(msg,0);
-				if (value.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+
+				String msgstr = fuseArray(msg, 0);
+				if (value.contains("(_PARAMETER_)") && !msgstr.contains("(_")
+						&& !msgstr.contains("_)")) {
 
 					String[] parts = fuseArray(msg, 1).split(";");
 					if (parts.length > 1) {
@@ -3940,7 +3964,8 @@ public class ReceiverBot extends PircBot {
 						value = value.replace("(_PARAMETER_)", parts[0]);
 
 				}
-				if (value.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+				if (value.contains("(_PARAMETER_CAPS_)")
+						&& !msgstr.contains("(_") && !msgstr.contains("_)")) {
 
 					String[] parts = fuseArray(msg, 1).split(";");
 					if (parts.length > 1) {
@@ -3974,6 +3999,17 @@ public class ReceiverBot extends PircBot {
 					send(channel, "Feature: Topic is off");
 				}
 
+			} else if (msg[1].equalsIgnoreCase("parseYoutube")) {
+				if (msg[2].equalsIgnoreCase("on")
+						|| msg[2].equalsIgnoreCase("enabled")) {
+					channelInfo.setParseYoutube(true);
+					send(channel, "Youtube video title parsing is now enabled.");
+				} else if (msg[2].equalsIgnoreCase("off")
+						|| msg[2].equalsIgnoreCase("disabled")) {
+					channelInfo.setParseYoutube(false);
+					send(channel,
+							"Youtube video title parsing is now disabled.");
+				}
 			} else if (msg[1].equalsIgnoreCase("shouldModerate")) {
 				if (msg[2].equalsIgnoreCase("on")
 						|| msg[2].equalsIgnoreCase("enabled")) {
@@ -4093,7 +4129,8 @@ public class ReceiverBot extends PircBot {
 			else if (msg[1].equalsIgnoreCase("bullet") && isOwner) {
 				if (msg.length > 2) {
 					if (!msg[2].startsWith("/") && !msg[2].startsWith(".")
-							&& !msg[2].equalsIgnoreCase("")&&msg[2].length()<30) {
+							&& !msg[2].equalsIgnoreCase("")
+							&& msg[2].length() < 30) {
 
 						bullet[0] = msg[2];
 
@@ -4567,8 +4604,17 @@ public class ReceiverBot extends PircBot {
 									msg[1].toLowerCase());
 							sendCommand(channel, ".ban " + msg[1].toLowerCase());
 						}
-						String msgstr = fuseArray(msg,0);
-						if (value.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+						if (value.contains("(_SUBMODE_ON_)")) {
+							sendCommand(channel, ".subscribers");
+							value = value.replace("(_SUBMODE_ON_)", "");
+						} else if (value.contains("(_SUBMODE_OFF_)")) {
+							sendCommand(channel, ".subscribersoff");
+							value = value.replace("(_SUBMODE_OFF_)", "");
+						}
+						String msgstr = fuseArray(msg, 0);
+						if (value.contains("(_PARAMETER_)")
+								&& !msgstr.contains("(_")
+								&& !msgstr.contains("_)")) {
 
 							String[] parts = fuseArray(msg, 1).split(";");
 							if (parts.length > 1) {
@@ -4581,7 +4627,9 @@ public class ReceiverBot extends PircBot {
 										.replace("(_PARAMETER_)", parts[0]);
 
 						}
-						if (value.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+						if (value.contains("(_PARAMETER_CAPS_)")
+								&& !msgstr.contains("(_")
+								&& !msgstr.contains("_)")) {
 
 							String[] parts = fuseArray(msg, 1).split(";");
 							if (parts.length > 1) {
@@ -4698,8 +4746,20 @@ public class ReceiverBot extends PircBot {
 									sendCommand(channel,
 											".ban " + msg[3].toLowerCase());
 								}
-								String msgstr = fuseArray(msg,0);
-								if (listValue.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+								if (listValue.contains("(_SUBMODE_ON_)")) {
+									sendCommand(channel, ".subscribers");
+									listValue = listValue.replace(
+											"(_SUBMODE_ON_)", "");
+								} else if (listValue
+										.contains("(_SUBMODE_OFF_)")) {
+									sendCommand(channel, ".subscribersoff");
+									listValue = listValue.replace(
+											"(_SUBMODE_OFF_)", "");
+								}
+								String msgstr = fuseArray(msg, 0);
+								if (listValue.contains("(_PARAMETER_)")
+										&& !msgstr.contains("(_")
+										&& !msgstr.contains("_)")) {
 
 									String[] parts = fuseArray(msg, 3).split(
 											";");
@@ -4714,7 +4774,9 @@ public class ReceiverBot extends PircBot {
 												"(_PARAMETER_)", parts[0]);
 
 								}
-								if (listValue.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+								if (listValue.contains("(_PARAMETER_CAPS_)")
+										&& !msgstr.contains("(_")
+										&& !msgstr.contains("_)")) {
 
 									String[] parts = fuseArray(msg, 3).split(
 											";");
@@ -4766,8 +4828,20 @@ public class ReceiverBot extends PircBot {
 									sendCommand(channel,
 											".ban " + msg[2].toLowerCase());
 								}
-								String msgstr = fuseArray(msg,0);
-								if (listValue.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+								String msgstr = fuseArray(msg, 0);
+								if (listValue.contains("(_SUBMODE_ON_)")) {
+									sendCommand(channel, ".subscribers");
+									listValue = listValue.replace(
+											"(_SUBMODE_ON_)", "");
+								} else if (listValue
+										.contains("(_SUBMODE_OFF_)")) {
+									sendCommand(channel, ".subscribersoff");
+									listValue = listValue.replace(
+											"(_SUBMODE_OFF_)", "");
+								}
+								if (listValue.contains("(_PARAMETER_)")
+										&& !msgstr.contains("(_")
+										&& !msgstr.contains("_)")) {
 
 									String[] parts = fuseArray(msg, 2).split(
 											";");
@@ -4782,7 +4856,9 @@ public class ReceiverBot extends PircBot {
 												"(_PARAMETER_)", parts[0]);
 
 								}
-								if (listValue.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+								if (listValue.contains("(_PARAMETER_CAPS_)")
+										&& !msgstr.contains("(_")
+										&& !msgstr.contains("_)")) {
 
 									String[] parts = fuseArray(msg, 2).split(
 											";");
@@ -4834,8 +4910,19 @@ public class ReceiverBot extends PircBot {
 								sendCommand(channel,
 										".ban " + msg[2].toLowerCase());
 							}
-							String msgstr = fuseArray(msg,0);
-							if (listValue.contains("(_PARAMETER_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+							if (listValue.contains("(_SUBMODE_ON_)")) {
+								sendCommand(channel, ".subscribers");
+								listValue = listValue.replace("(_SUBMODE_ON_)",
+										"");
+							} else if (listValue.contains("(_SUBMODE_OFF_)")) {
+								sendCommand(channel, ".subscribersoff");
+								listValue = listValue.replace(
+										"(_SUBMODE_OFF_)", "");
+							}
+							String msgstr = fuseArray(msg, 0);
+							if (listValue.contains("(_PARAMETER_)")
+									&& !msgstr.contains("(_")
+									&& !msgstr.contains("_)")) {
 
 								String[] parts = fuseArray(msg, 2).split(";");
 								if (parts.length > 1) {
@@ -4848,7 +4935,9 @@ public class ReceiverBot extends PircBot {
 											"(_PARAMETER_)", parts[0]);
 
 							}
-							if (listValue.contains("(_PARAMETER_CAPS_)")&&!msgstr.contains("(_")&&!msgstr.contains("_)")) {
+							if (listValue.contains("(_PARAMETER_CAPS_)")
+									&& !msgstr.contains("(_")
+									&& !msgstr.contains("_)")) {
 
 								String[] parts = fuseArray(msg, 2).split(";");
 								if (parts.length > 1) {
@@ -4902,14 +4991,20 @@ public class ReceiverBot extends PircBot {
 							} else if (value.contains("(_BAN_)")) {
 								value = value.replace("(_BAN_)", sender);
 								sendCommand(channel, ".ban " + sender);
-							}else if(value.contains("(_COMMAND_")&&value.contains("_)")){
-								int commandStart = value.indexOf("(_COMMAND_")+10;
-								int commandEnd = value.indexOf("_)",commandStart+1);
-								String origCommand = value.substring(commandStart,commandEnd);
-								String command = origCommand.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
-								String response = channelInfo.getCommand(command);
-								value = value.replace("(_COMMAND_"+origCommand+"_)", response);
-								
+							} else if (value.contains("(_COMMAND_")
+									&& value.contains("_)")) {
+								int commandStart = value.indexOf("(_COMMAND_") + 10;
+								int commandEnd = value.indexOf("_)",
+										commandStart + 1);
+								String origCommand = value.substring(
+										commandStart, commandEnd);
+								String command = origCommand.toLowerCase()
+										.replaceAll("[^a-zA-Z0-9]", "");
+								String response = channelInfo
+										.getCommand(command);
+								value = value.replace("(_COMMAND_"
+										+ origCommand + "_)", response);
+
 							}
 							send(channel, sender, value);
 							channelInfo
@@ -4928,14 +5023,19 @@ public class ReceiverBot extends PircBot {
 						} else if (value.contains("(_BAN_)")) {
 							value = value.replace("(_BAN_)", sender);
 							sendCommand(channel, ".ban " + sender);
-						}else if(value.contains("(_COMMAND_")&&value.contains("_)")){
-							int commandStart = value.indexOf("(_COMMAND_")+10;
-							int commandEnd = value.indexOf("_)",commandStart+1);
-							String origCommand = value.substring(commandStart,commandEnd);
-							String command = origCommand.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
+						} else if (value.contains("(_COMMAND_")
+								&& value.contains("_)")) {
+							int commandStart = value.indexOf("(_COMMAND_") + 10;
+							int commandEnd = value.indexOf("_)",
+									commandStart + 1);
+							String origCommand = value.substring(commandStart,
+									commandEnd);
+							String command = origCommand.toLowerCase()
+									.replaceAll("[^a-zA-Z0-9]", "");
 							String response = channelInfo.getCommand(command);
-							value = value.replace("(_COMMAND_"+origCommand+"_)", response);
-							
+							value = value.replace("(_COMMAND_" + origCommand
+									+ "_)", response);
+
 						}
 
 						send(channel, sender, value);
@@ -5120,7 +5220,6 @@ public class ReceiverBot extends PircBot {
 					+ " times in msgTimer. Diff = " + diff);
 			if (diff > 30 * 1000L) {
 
-				msgTimer.remove(0);
 				Channel channelInfo = getChannelObject(target);
 
 				if (!BotManager.getInstance().verboseLogging)
@@ -5129,6 +5228,13 @@ public class ReceiverBot extends PircBot {
 
 				message = MessageReplaceParser.parseMessage(target, sender,
 						message, args);
+
+				if (message.equals("")) {
+					logMain("Empty message, not attempting to send.");
+					return;
+				}
+				msgTimer.remove(0);
+
 				boolean useBullet = true;
 
 				if (message.startsWith("/me "))

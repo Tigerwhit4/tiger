@@ -34,7 +34,22 @@ public class MessageReplaceParser {
 	public static String parseMessage(String channel, String sender,
 			String message, String[] args) {
 		Channel ci = BotManager.getInstance().getChannel(channel);
+		ReceiverBot rb = ReceiverBot.getInstance();
 
+		if (message.contains("(_ONLINE_CHECK_)")) {
+			if (!JSONUtil.krakenIsLive(channel.substring(1))) {
+				message = "";
+			} else {
+				message = message.replace("(_ONLINE_CHECK_)", "");
+			}
+		}
+		if(rb!=null&&message.contains("(_SUBMODE_ON_)")){
+			rb.sendCommand(channel, ".subscribers");
+			message = message.replace("(_SUBMODE_ON_)", "");
+		}else if (rb!=null&&message.contains("(_SUBMODE_OFF_)")){
+				rb.sendCommand(channel, ".subscribersoff");
+				message = message.replace("(_SUBMODE_OFF_)", "");
+		}
 		if (sender != null && message.contains("(_USER_)"))
 			message = message.replace("(_USER_)", sender);
 		if (message.contains("(_GAME_)"))
@@ -119,13 +134,7 @@ public class MessageReplaceParser {
 			message = message.replace("(_COMMERCIAL_)", "");
 
 		}
-		if (message.contains("(_ONLINE_CHECK_)")) {
-			if (!JSONUtil.krakenIsLive(channel.substring(1))) {
-				message = "";
-			} else {
-				message = message.replace("(_ONLINE_CHECK_)", "");
-			}
-		}
+		
 		if (message.contains("(_SONG_URL_)")) {
 			message = message.replace("(_SONG_URL_)",
 					JSONUtil.lastFMURL(ci.getLastfm()));

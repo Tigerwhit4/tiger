@@ -150,6 +150,8 @@ public class Channel {
 	private boolean shouldModerate;
 	private JSONObject lists;
 
+	private boolean parseYoutube;
+
 	public Channel(String name) {
 		channel = name;
 		twitchname = channel.substring(1);
@@ -1372,12 +1374,12 @@ public class Channel {
 			for (String w : offensiveWords) {
 				if (w.startsWith("REGEX:")) {
 					String line = w.substring(6);
-//					System.out.println("ReAdding: " + line);
+					// System.out.println("ReAdding: " + line);
 					Pattern tempP = Pattern.compile(line);
 					offensiveWordsRegex.add(tempP);
 				} else {
 					String line = ".*" + Pattern.quote(w) + ".*";
-//					System.out.println("ReAdding: " + line);
+					// System.out.println("ReAdding: " + line);
 					Pattern tempP = Pattern.compile(line);
 					offensiveWordsRegex.add(tempP);
 				}
@@ -1731,6 +1733,7 @@ public class Channel {
 	private void setDefaults() {
 
 		// defaults.put("channel", channel);
+		defaults.put("parseYoutube", true);
 		defaults.put("lists", new JSONObject());
 		defaults.put("shouldModerate", true);
 		defaults.put("rollTimeout", false);
@@ -1835,6 +1838,7 @@ public class Channel {
 	private void loadProperties(String name) {
 
 		setDefaults();
+		parseYoutube = Boolean.valueOf((Boolean) config.get("parseYoutube"));
 		lists = (JSONObject) config.get("lists");
 		shouldModerate = Boolean
 				.valueOf((Boolean) config.get("shouldModerate"));
@@ -2099,12 +2103,12 @@ public class Channel {
 					offensiveWords.add(w);
 					if (w.startsWith("REGEX:")) {
 						String line = w.substring(6);
-//						System.out.println("Adding: " + line);
+						// System.out.println("Adding: " + line);
 						Pattern tempP = Pattern.compile(line);
 						offensiveWordsRegex.add(tempP);
 					} else {
 						String line = "(?i).*" + Pattern.quote(w) + ".*";
-//						System.out.println("Adding: " + line);
+						// System.out.println("Adding: " + line);
 						Pattern tempP = Pattern.compile(line);
 						offensiveWordsRegex.add(tempP);
 					}
@@ -2435,6 +2439,16 @@ public class Channel {
 		return rollTimeout;
 	}
 
+	public void setParseYoutube(boolean shouldParse) {
+		parseYoutube = shouldParse;
+		config.put("parseYoutube", shouldParse);
+		saveConfig(false);
+	}
+
+	public boolean shouldParseYoutube() {
+		return parseYoutube;
+	}
+
 	public boolean getShouldModerate() {
 		// TODO Auto-generated method stub
 		return shouldModerate;
@@ -2446,7 +2460,7 @@ public class Channel {
 		saveConfig(true);
 	}
 
-	public boolean addList(String listName,int restriction) {
+	public boolean addList(String listName, int restriction) {
 		if (lists.containsKey(listName)) {
 			return false;
 		} else {
@@ -2472,46 +2486,49 @@ public class Channel {
 
 	}
 
-	public boolean restrictList(String listName, int restriction){
-		if(lists.containsKey(listName)){
+	public boolean restrictList(String listName, int restriction) {
+		if (lists.containsKey(listName)) {
 			JSONObject list1 = (JSONObject) lists.get(listName);
 			list1.put("restriction", restriction);
 			lists.put(listName, list1);
 			config.put("lists", lists);
 			saveConfig(true);
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
-	public boolean renameList(String listName, String newName){
-		if(lists.containsKey(listName)){
+
+	public boolean renameList(String listName, String newName) {
+		if (lists.containsKey(listName)) {
 			JSONObject list1 = (JSONObject) lists.get(listName);
 			lists.remove(listName);
 			lists.put(newName, list1);
 			config.put("lists", lists);
 			saveConfig(true);
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
-	public int checkListRestriction(String listName){
-		if(lists.containsKey(listName)){
-		JSONObject list1 = (JSONObject) lists.get(listName);
-		long restrictions = (long)list1.get("restriction");
-		return (int)restrictions;
-		}else{
+
+	public int checkListRestriction(String listName) {
+		if (lists.containsKey(listName)) {
+			JSONObject list1 = (JSONObject) lists.get(listName);
+			long restrictions = (long) list1.get("restriction");
+			return (int) restrictions;
+		} else {
 			return -1;
 		}
 	}
+
 	public boolean checkList(String listName) {
 		return (lists.containsKey(listName));
 	}
 
 	public boolean addToList(String listName, String newItem) {
 		JSONObject list1 = (JSONObject) lists.get(listName);
-		JSONArray list = (JSONArray)list1.get("items");
+		JSONArray list = (JSONArray) list1.get("items");
 		if (!list.contains(newItem)) {
 			list.add(newItem);
 			list1.put("items", list);
@@ -2544,13 +2561,22 @@ public class Channel {
 		JSONArray list = (JSONArray) list1.get("items");
 		if (list.size() > index) {
 			return (String) list.get(index);
-		}else{
+		} else {
 			return null;
 		}
 	}
-	public int getListSize(String listName){
+
+	public int getListSize(String listName) {
 		JSONObject list1 = (JSONObject) lists.get(listName);
 		JSONArray list = (JSONArray) list1.get("items");
 		return list.size();
+	}
+
+	public String getAuthor(String key) {
+		if (commandAdders.containsKey(key)) {
+			return commandAdders.get(key);
+		} else {
+			return "-1";
+		}
 	}
 }
