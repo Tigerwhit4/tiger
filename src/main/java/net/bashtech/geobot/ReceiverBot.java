@@ -5219,7 +5219,8 @@ public class ReceiverBot extends PircBot {
 			log("RB: There are " + msgTimer.size()
 					+ " times in msgTimer. Diff = " + diff);
 			if (diff > 30 * 1000L) {
-
+				
+				msgTimer.remove(0);
 				Channel channelInfo = getChannelObject(target);
 
 				if (!BotManager.getInstance().verboseLogging)
@@ -5229,11 +5230,17 @@ public class ReceiverBot extends PircBot {
 				message = MessageReplaceParser.parseMessage(target, sender,
 						message, args);
 
-				if (message.equals("")) {
-					logMain("Empty message, not attempting to send.");
-					return;
-				}
-				msgTimer.remove(0);
+//				if (message.equals("")) {
+//					logMain("Empty message, not attempting to send.");
+//					msgTimer.remove(msgTimer.size()-1);
+//					if (tried) {
+//						delete = true;
+//						tried = false;
+//					}
+//					checkQueued();
+//					return;
+//				}
+				
 
 				boolean useBullet = true;
 
