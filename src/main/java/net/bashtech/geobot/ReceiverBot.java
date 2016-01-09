@@ -716,7 +716,7 @@ public class ReceiverBot extends PircBot {
 			privMsgSub = false;
 		}
 		if (channelInfo.getIgnoredUsers().contains(sender.toLowerCase())) {
-			isAdmin = false;
+
 			isOwner = false;
 			isRegular = false;
 			isSub = false;
@@ -864,7 +864,7 @@ public class ReceiverBot extends PircBot {
 			}
 
 			// Link filter
-			if (channelInfo.getFilterLinks() && !(isRegular)
+			if (channelInfo.getFilterLinks() && !(channelInfo.isRegular(sender.toLowerCase()))
 					&& this.containsLink(message, channelInfo)) {
 				permitted = channelInfo.linkPermissionCheck(sender);
 				int warningCount = 0;
@@ -1022,7 +1022,7 @@ public class ReceiverBot extends PircBot {
 		}
 
 		// ignore messages from blacklisted users
-		if (!BotManager.getInstance().isAdmin(sender)
+		if (!(BotManager.getInstance().isAdmin(sender) || isAdmin)
 				&& (channelInfo.getIgnoredUsers()
 						.contains(sender.toLowerCase()) || BotManager
 						.getInstance().blockedChannelList.contains("#"
@@ -3722,6 +3722,11 @@ public class ReceiverBot extends PircBot {
 								"You can't add the channel owner to the ignore list.");
 						return;
 					}
+					if (BotManager.getInstance().isAdmin(msg[2].toLowerCase())) {
+						send(channel,
+								"You can't add bot admins to the ignore list.");
+						return;
+					}
 					if (channelInfo.addIgnoredUser(msg[2].toLowerCase())) {
 						send(channel,
 								msg[2].toLowerCase()
@@ -5219,7 +5224,7 @@ public class ReceiverBot extends PircBot {
 			log("RB: There are " + msgTimer.size()
 					+ " times in msgTimer. Diff = " + diff);
 			if (diff > 30 * 1000L) {
-				
+
 				msgTimer.remove(0);
 				Channel channelInfo = getChannelObject(target);
 
@@ -5230,17 +5235,16 @@ public class ReceiverBot extends PircBot {
 				message = MessageReplaceParser.parseMessage(target, sender,
 						message, args);
 
-//				if (message.equals("")) {
-//					logMain("Empty message, not attempting to send.");
-//					msgTimer.remove(msgTimer.size()-1);
-//					if (tried) {
-//						delete = true;
-//						tried = false;
-//					}
-//					checkQueued();
-//					return;
-//				}
-				
+				// if (message.equals("")) {
+				// logMain("Empty message, not attempting to send.");
+				// msgTimer.remove(msgTimer.size()-1);
+				// if (tried) {
+				// delete = true;
+				// tried = false;
+				// }
+				// checkQueued();
+				// return;
+				// }
 
 				boolean useBullet = true;
 
